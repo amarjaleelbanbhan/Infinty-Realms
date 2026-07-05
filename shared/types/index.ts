@@ -176,6 +176,22 @@ export interface NPCMemory {
   sentiment: 'positive' | 'negative' | 'neutral';
 }
 
+// ─── Leyline Automation System (Factorio Twist) ─────────────
+
+export type LeylineNodeType = 'essence_collector' | 'mana_relay' | 'elemental_forge';
+
+export interface LeylineNode {
+  id: UUID;
+  ownerPlayerId: UUID;
+  x: number;
+  y: number;
+  type: LeylineNodeType;
+  biome: BiomeType;
+  ratePerMin: number;
+  accumulatedEssence: number;
+  lastHarvestAt: number;
+}
+
 // ─── Enemies ──────────────────────────────────────────────────
 
 export type EnemyType =
