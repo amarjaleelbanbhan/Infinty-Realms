@@ -133,23 +133,21 @@ export class SocketManager {
     });
   }
 
-  private listeners: Map<string, Array<(data: unknown) => void>> = new Map();
-
-  on(event: string, callback: (data: unknown) => void) {
+  on(event: string, callback: (data: any) => void) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
     this.listeners.get(event)?.push(callback);
   }
 
-  off(event: string, callback: (data: unknown) => void) {
+  off(event: string, callback: (data: any) => void) {
     const list = this.listeners.get(event);
     if (list) {
       this.listeners.set(event, list.filter((cb) => cb !== callback));
     }
   }
 
-  private emitLocal(event: string, data: unknown) {
+  private emitLocal(event: string, data: any) {
     this.listeners.get(event)?.forEach((cb) => cb(data));
   }
 
