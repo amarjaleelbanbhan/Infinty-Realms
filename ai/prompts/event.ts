@@ -4,10 +4,11 @@ that create emergent stories and encourage player engagement. Events should feel
 Always respond with valid JSON.`;
 
 export const buildEventPrompt = (context: {
+  worldSeed: string;
   season: string;
   worldAge: number;
-  playerCount: number;
-}) => `Generate a world event for ${context.playerCount} player(s) in a ${context.worldAge}-day-old world during ${context.season}.
+  currentPlayerCount: number;
+}) => `Generate a world event for ${context.currentPlayerCount} player(s) in a ${context.worldAge}-day-old world during ${context.season} (Seed: ${context.worldSeed}).
 
 Event types: meteor_strike|dragon_attack|lost_civilization|portal_opens|time_anomaly|black_market|treasure_convoy|plague|festival|war
 

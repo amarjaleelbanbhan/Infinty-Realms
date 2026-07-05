@@ -41,7 +41,6 @@ export class MainMenuScene extends Phaser.Scene {
       stroke: '#6c63ff',
       strokeThickness: 2,
       shadow: { offsetX: 0, offsetY: 0, color: '#6c63ff', blur: 30, fill: true },
-      letterSpacing: 8,
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
@@ -57,7 +56,6 @@ export class MainMenuScene extends Phaser.Scene {
       fontFamily: 'Inter, sans-serif',
       fontSize: Math.min(18, width * 0.025) + 'px',
       color: '#9ca3af',
-      letterSpacing: 2,
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
@@ -96,10 +94,6 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private drawBackground(width: number, height: number) {
-    const gradient = this.bgGraphics.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, '#0a0a1a');
-    gradient.addColorStop(0.5, '#1a0a2e');
-    gradient.addColorStop(1, '#0a1a2e');
     this.bgGraphics.fillGradientStyle(0x0a0a1a, 0x1a0a2e, 0x0a1a2e, 0x0a0a1a, 1);
     this.bgGraphics.fillRect(0, 0, width, height);
   }

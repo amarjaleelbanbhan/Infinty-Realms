@@ -12,7 +12,8 @@ export function Chat() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleMessage = (msg: ChatMessage) => {
+    const handleMessage = (data: unknown) => {
+      const msg = data as ChatMessage;
       setMessages((prev) => [...prev.slice(-49), msg]);
     };
 

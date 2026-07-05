@@ -390,14 +390,16 @@ export class PreloadScene extends Phaser.Scene {
     // Mana icon
     const m = this.make.graphics({ x: 0, y: 0 });
     m.fillStyle(0x5d8be8, 1);
-    m.fillStar(10, 10, 5, 4, 8);
+    m.fillCircle(10, 10, 7);
+    m.fillTriangle(10, 2, 17, 14, 3, 14);
     m.generateTexture('icon-mana', 20, 20);
     m.destroy();
 
     // XP icon
     const x = this.make.graphics({ x: 0, y: 0 });
     x.fillStyle(0x5de88b, 1);
-    x.fillStar(10, 10, 5, 4, 9);
+    x.fillCircle(10, 10, 7);
+    x.fillTriangle(10, 2, 18, 16, 2, 16);
     x.generateTexture('icon-xp', 20, 20);
     x.destroy();
   }
