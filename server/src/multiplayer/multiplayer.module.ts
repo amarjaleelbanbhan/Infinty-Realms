@@ -1,9 +1,9 @@
-// Phase 2 stub — WebSocket gateway for multiplayer
-// Will be fully implemented in Phase 2
-
 import { Module } from '@nestjs/common';
+import { GameGateway } from './game.gateway';
+import { RoomService } from './room.service';
 
-@Module({})
-export class MultiplayerModule {
-  // TODO Phase 2: Add GameGateway (Socket.IO), RoomService, RoomController
-}
+@Module({
+  providers: [GameGateway, RoomService],
+  exports: [RoomService],
+})
+export class MultiplayerModule {}

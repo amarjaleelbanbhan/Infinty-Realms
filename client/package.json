@@ -17,6 +17,7 @@
     "zustand": "^4.5.2",
     "@infinity-realms/shared": "*",
     "simplex-noise": "^4.0.1",
+    "socket.io-client": "^4.7.4",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

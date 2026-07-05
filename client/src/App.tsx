@@ -8,6 +8,7 @@ import { Dialogue } from '@ui/Dialogue';
 import { PauseMenu } from '@ui/PauseMenu';
 import { ToastSystem } from '@ui/ToastSystem';
 import { MobileControls } from '@ui/MobileControls';
+import { Chat } from '@ui/Chat';
 import { useUIStore } from '@stores/useUIStore';
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
             <Dialogue />
             <PauseMenu />
             <MobileControls />
+            <Chat />
           </>
         )}
 
