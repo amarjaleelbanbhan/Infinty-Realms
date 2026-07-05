@@ -14,6 +14,7 @@ import { GuildUI } from '@ui/GuildUI';
 import { MarketplaceUI } from '@ui/MarketplaceUI';
 import { WorldJournalUI } from '@ui/WorldJournalUI';
 import { EventBanner } from '@ui/EventBanner';
+import { SkillUI } from '@ui/SkillUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -23,6 +24,7 @@ export default function App() {
   const [showGuild, setShowGuild] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
+  const [showSkills, setShowSkills] = useState(false);
 
   useEffect(() => {
     // Check mobile screen size
@@ -82,11 +84,18 @@ export default function App() {
               >
                 📖 Chronicle
               </button>
+              <button
+                onClick={() => setShowSkills(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
+              >
+                🔮 Spells
+              </button>
             </div>
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
             {showMarket && <MarketplaceUI onClose={() => setShowMarket(false)} />}
             {showJournal && <WorldJournalUI onClose={() => setShowJournal(false)} />}
+            {showSkills && <SkillUI onClose={() => setShowSkills(false)} />}
           </>
         )}
 
