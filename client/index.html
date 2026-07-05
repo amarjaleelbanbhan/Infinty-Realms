@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0a0a1a" />
+    <meta name="description" content="Infinity Realms — A never-ending browser RPG. Every session is different. Every decision changes your story." />
+    <meta property="og:title" content="Infinity Realms" />
+    <meta property="og:description" content="Every session is different. Every decision changes your story." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <title>Infinity Realms</title>
+    <style>
+      /* Critical path styles — prevent FOUC */
+      html, body { margin: 0; padding: 0; background: #0a0a1a; color: #e2e8f0; }
+      #root { width: 100vw; height: 100vh; overflow: hidden; }
+      #loading-screen {
+        position: fixed; inset: 0; background: #0a0a1a;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        font-family: 'Cinzel', serif; color: #6c63ff; z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      #loading-screen h1 { font-size: 2.5rem; letter-spacing: 0.2em; margin-bottom: 0.5rem; }
+      #loading-screen p { color: #9ca3af; font-family: 'Inter', sans-serif; letter-spacing: 0.1em; }
+      .loading-bar { width: 200px; height: 2px; background: #1a1a3a; border-radius: 2px; margin-top: 2rem; }
+      .loading-bar-fill { height: 100%; background: linear-gradient(90deg, #6c63ff, #8b83ff); border-radius: 2px; animation: load 1.5s ease-in-out infinite; }
+      @keyframes load { 0% { width: 0%; } 60% { width: 100%; } 100% { width: 100%; opacity: 0; } }
+    </style>
+  </head>
+  <body>
+    <div id="loading-screen">
+      <h1>INFINITY REALMS</h1>
+      <p>Every session is different.</p>
+      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Hide loading screen once React mounts
+      window.__hideLoading = () => {
+        const el = document.getElementById('loading-screen');
+        if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
+      };
+    </script>
+  </body>
+</html>

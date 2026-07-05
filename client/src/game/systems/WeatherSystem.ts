@@ -1,0 +1,78 @@
+// ============================================================
+// Weather System — Dynamic weather that affects gameplay
+// ============================================================
+
+import Phaser from 'phaser';
+import type { WeatherType } from '@shared/types';
+
+export const WEATHER_EFFECTS: Record<WeatherType, { label: string; particleColor: number; particleCount: number; overlay: number; overlayAlpha: number }> = {
+  clear:    { label: '☀️ Clear',    particleColor: 0xffff88, particleCount: 0,   overlay: 0x000000, overlayAlpha: 0 },
+  cloudy:   { label: '☁️ Cloudy',   particleColor: 0x888888, particleCount: 0,   overlay: 0x334455, overlayAlpha: 0.15 },
+  rain:     { label: '🌧️ Rain',     particleColor: 0x4488cc, particleCount: 80,  overlay: 0x001122, overlayAlpha: 0.25 },
+  storm:    { label: '⛈️ Storm',    particleColor: 0x2266aa, particleCount: 150, overlay: 0x000511, overlayAlpha: 0.4 },
+  snow:     { label: '❄️ Snow',     particleColor: 0xeeeeff, particleCount: 60,  overlay: 0xaabbcc, overlayAlpha: 0.1 },
+  fog:      { label: '🌫️ Fog',      particleColor: 0xbbbbbb, particleCount: 0,   overlay: 0x888888, overlayAlpha: 0.3 },
+  heat:     { label: '🌡️ Heat',     particleColor: 0xff8800, particleCount: 20,  overlay: 0xff4400, overlayAlpha: 0.05 },
+  blizzard: { label: '🌨️ Blizzard', particleColor: 0xddddff, particleCount: 200, overlay: 0xaabbdd, overlayAlpha: 0.35 },
+};
+
+export class WeatherSystem {
+  private scene: Phaser.Scene;
+  private particles: Phaser.GameObjects.Graphics[] = [];
+  private overlay: Phaser.GameObjects.Rectangle | null = null;
+  private currentWeather: WeatherType = 'clear';
+  private weatherTimer = 0;
+  private weatherDuration = 300; // seconds
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+  }
+
+  setWeather(type: WeatherType) {
+    this.currentWeather = type;
+    this.updateOverlay(type);
+    console.log(`[Weather] Changed to ${type}`);
+  }
+
+  getRandomWeather(biome: string): WeatherType {
+    const rng = Math.random();
+    if (biome === 'snow' || biome === 'volcano') {
+      return rng < 0.4 ? 'snow' : rng < 0.7 ? 'clear' : 'blizzard';
+    }
+    if (biome === 'desert') {
+      return rng < 0.6 ? 'clear' : rng < 0.8 ? 'heat' : 'storm';
+    }
+    if (rng < 0.4) return 'clear';
+    if (rng < 0.6) return 'cloudy';
+    if (rng < 0.75) return 'rain';
+    if (rng < 0.85) return 'storm';
+    return 'fog';
+  }
+
+  private updateOverlay(type: WeatherType) {
+    const effect = WEATHER_EFFECTS[type];
+    if (this.overlay) {
+      this.scene.tweens.add({
+        targets: this.overlay,
+        fillAlpha: effect.overlayAlpha,
+        duration: 3000,
+        ease: 'Linear',
+      });
+    }
+  }
+
+  createOverlay(width: number, height: number) {
+    this.overlay = this.scene.add.rectangle(0, 0, width, height, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(50);
+  }
+
+  getCurrentWeather(): WeatherType {
+    return this.currentWeather;
+  }
+
+  getWeatherLabel(): string {
+    return WEATHER_EFFECTS[this.currentWeather].label;
+  }
+}

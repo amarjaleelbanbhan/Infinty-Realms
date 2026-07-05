@@ -1,0 +1,130 @@
+// Prisma Schema for Infinity Realms
+// SQLite for development — switch to postgresql for production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Player ───────────────────────────────────────────────────
+
+model Player {
+  id          String   @id @default(uuid())
+  name        String
+  guestToken  String?  @unique
+  email       String?  @unique
+  passwordHash String?
+  
+  // Position
+  worldSeed   String   @default("default")
+  posX        Float    @default(128)
+  posY        Float    @default(128)
+  
+  // Stats (stored as JSON string for SQLite)
+  statsJson   String   @default("{\"hp\":100,\"maxHp\":100,\"mana\":50,\"maxMana\":50,\"attack\":10,\"defense\":5,\"speed\":150,\"luck\":5}")
+  level       Int      @default(1)
+  experience  Int      @default(0)
+  gold        Int      @default(50)
+  
+  inventoryJson String @default("[]")
+  equipmentJson String @default("{}")
+  skillsJson    String @default("[]")
+  reputationJson String @default("{}")
+  titlesJson    String @default("[]")
+  
+  playtime    Int      @default(0)
+  
+  // Relations
+  quests      Quest[]
+  sessions    GameSession[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastSeenAt  DateTime @default(now())
+}
+
+// ─── World ────────────────────────────────────────────────────
+
+model WorldState {
+  id          String   @id @default(uuid())
+  seed        String   @unique
+  width       Int      @default(256)
+  height      Int      @default(256)
+  
+  citiesJson  String   @default("[]")
+  season      String   @default("spring")
+  dayTime     Float    @default(8)
+  worldAge    Int      @default(0)
+  
+  eventsJson  String   @default("[]")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Quest ────────────────────────────────────────────────────
+
+model Quest {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  type          String   // QuestType
+  lore          String
+  aiGenerated   Boolean  @default(false)
+  
+  objectivesJson String  @default("[]")
+  rewardsJson    String  @default("{}")
+  
+  status        String   @default("available")
+  expiresAt     DateTime?
+  
+  playerId      String?
+  player        Player?  @relation(fields: [playerId], references: [id])
+  
+  giverNpcId    String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ─── NPC ──────────────────────────────────────────────────────
+
+model NPC {
+  id            String   @id @default(uuid())
+  name          String
+  role          String
+  personality   String
+  posX          Float
+  posY          Float
+  cityId        String?
+  biome         String
+  mood          Int      @default(50)
+  
+  memoryJson    String   @default("[]")
+  dialogueJson  String   @default("[]")
+  questIdsJson  String   @default("[]")
+  shopJson      String   @default("[]")
+  
+  worldSeed     String
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ─── Game Session ─────────────────────────────────────────────
+
+model GameSession {
+  id          String   @id @default(uuid())
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id])
+  worldSeed   String
+  roomCode    String?
+  isPublic    Boolean  @default(false)
+  
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+}
