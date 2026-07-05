@@ -338,7 +338,8 @@ export type WorldEventType =
   | 'treasure_convoy'
   | 'plague'
   | 'festival'
-  | 'war';
+  | 'war'
+  | 'arcane_aurora';
 
 export interface WorldEvent {
   id: UUID;
@@ -348,10 +349,14 @@ export interface WorldEvent {
   x?: number;
   y?: number;
   radius?: number;
-  startsAt: number;
-  endsAt: number;
-  active: boolean;
-  participants: UUID[];
+  startsAt?: number;
+  endsAt?: number;
+  startTime: number;
+  duration: number;
+  effects: string;
+  rewards: string;
+  active?: boolean;
+  participants?: UUID[];
 }
 
 // ─── Weather ──────────────────────────────────────────────────
