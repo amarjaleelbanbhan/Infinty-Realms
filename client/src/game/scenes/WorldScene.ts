@@ -64,7 +64,11 @@ export class WorldScene extends Phaser.Scene {
   private eKey!: Phaser.Input.Keyboard.Key;
   private iKey!: Phaser.Input.Keyboard.Key;
   private qKey!: Phaser.Input.Keyboard.Key;
+  private mKey!: Phaser.Input.Keyboard.Key;  // World map
+  private fKey!: Phaser.Input.Keyboard.Key;  // Sprint toggle
   private escKey!: Phaser.Input.Keyboard.Key;
+
+  private isSprinting = false;
 
   private minimap!: Phaser.GameObjects.Graphics;
   private minimapData: Uint32Array = new Uint32Array(0);
@@ -95,6 +99,9 @@ export class WorldScene extends Phaser.Scene {
 
     console.log(`[WorldScene] Generating world with seed: ${seed}`);
     this.world = generateWorld(seed, 128, 128);
+
+    // Expose world data for React UI (WorldMapUI reads this)
+    (window as Window & { __worldData?: GeneratedWorld }).__worldData = this.world;
   }
 
   create() {
@@ -430,6 +437,8 @@ export class WorldScene extends Phaser.Scene {
     this.eKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.iKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
     this.qKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+    this.mKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+    this.fKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
   }
 
@@ -546,12 +555,13 @@ export class WorldScene extends Phaser.Scene {
     const speed = (gameStore.player?.stats?.speed ?? 150);
 
     let vx = 0, vy = 0;
+    const sprintMult = this.isSprinting ? 1.7 : 1.0;
 
     // Keyboard
-    if (this.cursors.left?.isDown  || this.wasd.left?.isDown)  { vx = -speed; this.playerDirection = 'left'; }
-    if (this.cursors.right?.isDown || this.wasd.right?.isDown) { vx =  speed; this.playerDirection = 'right'; }
-    if (this.cursors.up?.isDown    || this.wasd.up?.isDown)    { vy = -speed; this.playerDirection = 'up'; }
-    if (this.cursors.down?.isDown  || this.wasd.down?.isDown)  { vy =  speed; this.playerDirection = 'down'; }
+    if (this.cursors.left?.isDown  || this.wasd.left?.isDown)  { vx = -speed * sprintMult; this.playerDirection = 'left'; }
+    if (this.cursors.right?.isDown || this.wasd.right?.isDown) { vx =  speed * sprintMult; this.playerDirection = 'right'; }
+    if (this.cursors.up?.isDown    || this.wasd.up?.isDown)    { vy = -speed * sprintMult; this.playerDirection = 'up'; }
+    if (this.cursors.down?.isDown  || this.wasd.down?.isDown)  { vy =  speed * sprintMult; this.playerDirection = 'down'; }
 
     // Mobile joystick
     if (this.joystickPointer && (Math.abs(this.joystickVector.x) > 0.1 || Math.abs(this.joystickVector.y) > 0.1)) {
@@ -605,6 +615,15 @@ export class WorldScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.qKey)) {
       const ui = useUIStore.getState();
       ui.isQuestLogOpen ? ui.closeQuestLog() : ui.openQuestLog();
+    }
+    // M — World map
+    if (Phaser.Input.Keyboard.JustDown(this.mKey)) {
+      window.dispatchEvent(new CustomEvent('ir:togglemap'));
+    }
+    // F — Sprint toggle
+    if (Phaser.Input.Keyboard.JustDown(this.fKey)) {
+      this.isSprinting = !this.isSprinting;
+      this.cameras.main.setZoom(this.isSprinting ? 1.0 : 1.2);
     }
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       useUIStore.getState().togglePause();

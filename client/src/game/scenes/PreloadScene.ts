@@ -215,40 +215,64 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private generatePlayerSprite() {
-    const W = 24, H = 32;
+    const W = 28, H = 36;
     const g = this.make.graphics({ x: 0, y: 0 });
 
-    // Shadow
-    g.fillStyle(0x000000, 0.3);
-    g.fillEllipse(12, 30, 16, 6);
+    // Drop shadow
+    g.fillStyle(0x000000, 0.35);
+    g.fillEllipse(14, 34, 18, 6);
 
-    // Body
-    g.fillStyle(0x2a4a8a, 1);
-    g.fillRect(7, 16, 10, 12);
+    // ── Cloak / Robe (dark indigo) ──
+    g.fillStyle(0x1a1540, 1);
+    g.fillRect(5, 16, 16, 14);     // Robe body
+    g.fillRect(3, 20, 6, 10);      // Left hem flare
+    g.fillRect(19, 20, 6, 10);     // Right hem flare
 
-    // Head
-    g.fillStyle(0xf4a460, 1);
-    g.fillCircle(12, 10, 8);
+    // Cloak shoulders
+    g.fillStyle(0x251e5c, 1);
+    g.fillRect(4, 14, 20, 5);
 
-    // Hair
-    g.fillStyle(0x4a3a2a, 1);
-    g.fillRect(5, 4, 14, 5);
+    // Hood (darker top)
+    g.fillStyle(0x100d30, 1);
+    g.fillEllipse(14, 10, 20, 18); // Hood outline
+    g.fillStyle(0x1a1540, 1);
+    g.fillEllipse(14, 11, 16, 15); // Hood inner
 
-    // Eyes
-    g.fillStyle(0x1a1a2a, 1);
-    g.fillRect(9, 9, 2, 2);
-    g.fillRect(14, 9, 2, 2);
+    // Face (shadowed — only chin shows from hood)
+    g.fillStyle(0x2a1f12, 1);
+    g.fillEllipse(14, 15, 10, 7);
 
-    // Sword
-    g.fillStyle(0xc0c0c0, 1);
-    g.fillRect(19, 10, 3, 14);
-    g.fillStyle(0x8a6a2a, 1);
-    g.fillRect(17, 18, 7, 3);
+    // ── Glowing Leyline Eyes ── (the defining feature)
+    g.fillStyle(0x7c6bff, 1);
+    g.fillRect(10, 11, 3, 2);
+    g.fillRect(16, 11, 3, 2);
+    // Eye inner glow (brighter core)
+    g.fillStyle(0xd0c8ff, 1);
+    g.fillRect(11, 11, 1, 2);
+    g.fillRect(17, 11, 1, 2);
 
-    // Legs
-    g.fillStyle(0x3a2a4a, 1);
-    g.fillRect(7, 26, 4, 6);
-    g.fillRect(13, 26, 4, 6);
+    // ── Runic Chest Sigil ──
+    g.fillStyle(0x7c6bff, 0.9);
+    g.fillRect(12, 19, 4, 1);
+    g.fillRect(13, 18, 2, 4);
+    g.fillRect(11, 20, 6, 1);
+
+    // ── Staff (right side, wood + orb) ──
+    g.fillStyle(0x5a3f1e, 1);
+    g.fillRect(22, 8, 3, 26);     // Staff shaft
+    g.fillStyle(0x7c6bff, 1);
+    g.fillCircle(23, 7, 5);        // Orb
+    g.fillStyle(0xd0c8ff, 1);
+    g.fillCircle(23, 6, 2);        // Orb highlight
+
+    // Rune ring around orb
+    g.lineStyle(1, 0x3fffa0, 0.8);
+    g.strokeCircle(23, 7, 6);
+
+    // ── Boots ──
+    g.fillStyle(0x0d0b20, 1);
+    g.fillRect(7, 28, 5, 6);
+    g.fillRect(14, 28, 5, 6);
 
     g.generateTexture('player', W, H);
     g.destroy();

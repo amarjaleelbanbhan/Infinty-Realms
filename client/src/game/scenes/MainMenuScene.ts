@@ -51,11 +51,11 @@ export class MainMenuScene extends Phaser.Scene {
       ease: 'Power2',
     });
 
-    // ── Subtitle ──
-    this.subtitle = this.add.text(width / 2, height * 0.44, 'Every session is different. Every decision changes your story.', {
-      fontFamily: 'Inter, sans-serif',
-      fontSize: Math.min(18, width * 0.025) + 'px',
-      color: '#9ca3af',
+    // ── Subtitle (lore tagline) ──
+    this.subtitle = this.add.text(width / 2, height * 0.44, 'You are a Leyline Seeker — shape the world or let it consume you.', {
+      fontFamily: 'Cinzel, serif',
+      fontSize: Math.min(15, width * 0.022) + 'px',
+      color: '#a89fff',
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
@@ -63,6 +63,27 @@ export class MainMenuScene extends Phaser.Scene {
       alpha: 1,
       duration: 1200,
       delay: 600,
+      ease: 'Power2',
+    });
+
+    // ── Lore hook ──
+    const loreText = this.add.text(
+      width / 2,
+      height * 0.50,
+      'A living world breathes around you.\nEvery seed. Every choice. Every leyline node you claim echoes across the realm.',
+      {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: Math.min(13, width * 0.018) + 'px',
+        color: '#5a6480',
+        align: 'center',
+      }
+    ).setOrigin(0.5).setAlpha(0);
+
+    this.tweens.add({
+      targets: loreText,
+      alpha: 1,
+      duration: 1000,
+      delay: 900,
       ease: 'Power2',
     });
 

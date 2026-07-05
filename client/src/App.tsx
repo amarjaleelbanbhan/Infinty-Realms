@@ -16,6 +16,7 @@ import { WorldJournalUI } from '@ui/WorldJournalUI';
 import { EventBanner } from '@ui/EventBanner';
 import { SkillUI } from '@ui/SkillUI';
 import { WorldMapUI } from '@ui/WorldMapUI';
+import { KeybindPanel } from '@ui/KeybindPanel';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -39,8 +40,13 @@ export default function App() {
     // Start world event engine
     eventSystem.start();
 
+    // M key from WorldScene toggles map
+    const onToggleMap = () => setShowMap((v) => !v);
+    window.addEventListener('ir:togglemap', onToggleMap);
+
     return () => {
       window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('ir:togglemap', onToggleMap);
       eventSystem.stop();
     };
   }, []);
@@ -105,6 +111,9 @@ export default function App() {
             {showJournal && <WorldJournalUI onClose={() => setShowJournal(false)} />}
             {showSkills && <SkillUI onClose={() => setShowSkills(false)} />}
             {showMap && <WorldMapUI onClose={() => setShowMap(false)} />}
+
+            {/* Keyboard controls legend */}
+            <KeybindPanel />
           </>
         )}
 

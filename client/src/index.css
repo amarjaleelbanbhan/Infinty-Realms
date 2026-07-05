@@ -7,22 +7,48 @@
 
 /* ─── CSS Custom Properties ─────────────────────────────────── */
 :root {
-  --color-bg: #0a0a1a;
-  --color-surface: #12122a;
-  --color-card: #1a1a3a;
-  --color-border: #2a2a5a;
-  --color-accent: #6c63ff;
-  --color-accent-light: #8b83ff;
-  --color-gold: #ffd700;
-  --color-hp: #e85d5d;
-  --color-mana: #5d8be8;
-  --color-xp: #5de88b;
-  --color-text: #e2e8f0;
-  --color-text-muted: #94a3b8;
+  /* ── Core palette ── */
+  --color-bg:            #07071a;   /* Abyssal void            */
+  --color-surface:       #0f0f2a;   /* Deep night              */
+  --color-card:          #181830;   /* Panel surface           */
+  --color-border:        #252550;   /* Subtle divider          */
+
+  /* ── Accent spectrum ── */
+  --color-accent:        #7c6bff;   /* Leyline violet          */
+  --color-accent-light:  #a89fff;   /* Faded leyline           */
+  --color-accent-dim:    rgba(124,107,255,0.15);
+
+  /* ── Status colours ── */
+  --color-gold:          #ffcb47;   /* Warm amber gold         */
+  --color-gold-dim:      rgba(255,203,71,0.15);
+  --color-hp:            #ff4d6d;   /* Vivid crimson           */
+  --color-mana:          #4d9fff;   /* Astral blue             */
+  --color-xp:            #3fffa0;   /* Leyline green           */
+  --color-xp-dim:        rgba(63,255,160,0.15);
+
+  /* ── Text ── */
+  --color-text:          #dde4f0;
+  --color-text-muted:    #7a8399;
+  --color-text-dim:      #404a60;
+
+  /* ── Fonts ── */
   --font-game: 'Cinzel', serif;
-  --font-ui: 'Inter', sans-serif;
+  --font-ui:   'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
+
+/* ─── Tailwind design token aliases (utility classes) ───────── */
+/* These make e.g. text-realm-gold etc. work via inline style   */
+.text-realm-gold   { color: var(--color-gold); }
+.text-realm-accent { color: var(--color-accent); }
+.text-realm-hp     { color: var(--color-hp); }
+.text-realm-mana   { color: var(--color-mana); }
+.text-realm-xp     { color: var(--color-xp); }
+.text-realm-text-muted { color: var(--color-text-muted); }
+.text-realm-white  { color: var(--color-text); }
+.border-realm-border  { border-color: var(--color-border); }
+.border-realm-accent  { border-color: var(--color-accent); }
+.bg-realm-surface  { background: var(--color-surface); }
 
 /* ─── Reset ──────────────────────────────────────────────────── */
 *, *::before, *::after {
@@ -81,18 +107,18 @@ html, body {
 
 /* ─── Glass Card ─────────────────────────────────────────────── */
 .glass {
-  background: rgba(26, 26, 58, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(108, 99, 255, 0.2);
+  background: rgba(15, 15, 42, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(124, 107, 255, 0.22);
   border-radius: 12px;
 }
 
 .glass-dark {
-  background: rgba(10, 10, 26, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(42, 42, 90, 0.6);
+  background: rgba(7, 7, 26, 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(37, 37, 80, 0.7);
   border-radius: 12px;
 }
 
@@ -431,4 +457,133 @@ html, body {
   background: white;
   border-radius: 50%;
   animation: twinkle ease-in-out infinite;
+}
+
+/* ─── Slide-up animation ─────────────────────────────────────── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.2s ease; }
+
+/* ─── kbd (keyboard key) ─────────────────────────────────────── */
+kbd {
+  display: inline-block;
+  padding: 0.15em 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  line-height: 1.4;
+  color: var(--color-gold);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WORLD MAP UI
+═══════════════════════════════════════════════════════════════ */
+.world-map-panel {
+  width: min(90vw, 680px);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 60px rgba(124, 107, 255, 0.15), 0 24px 48px rgba(0,0,0,0.6);
+}
+
+.world-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(124, 107, 255, 0.06);
+}
+
+.world-map-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #07071a;
+  overflow: hidden;
+}
+
+.world-map-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.world-map-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Pin base style */
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.player-pin {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid #07071a;
+  box-shadow: 0 0 10px white, 0 0 4px white;
+  z-index: 10;
+  animation: player-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes player-pulse {
+  0%, 100% { box-shadow: 0 0 8px white, 0 0 3px white; }
+  50%       { box-shadow: 0 0 18px white, 0 0 6px white; }
+}
+
+.city-pin {
+  width: 6px;
+  height: 6px;
+  background: var(--color-gold);
+  border: 1.5px solid #07071a;
+  box-shadow: 0 0 6px var(--color-gold);
+}
+
+.dungeon-pin {
+  width: 5px;
+  height: 5px;
+  background: var(--color-accent);
+  border: 1.5px solid #07071a;
+  box-shadow: 0 0 6px var(--color-accent);
+}
+
+.leyline-pin {
+  width: 5px;
+  height: 5px;
+  background: var(--color-xp);
+  border: 1.5px solid #07071a;
+  box-shadow: 0 0 6px var(--color-xp);
+}
+
+.world-map-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--color-border);
+  background: rgba(7, 7, 26, 0.5);
+}
+
+.world-map-season-bar {
+  padding: 0.35rem 1.25rem;
+  background: rgba(124, 107, 255, 0.06);
+  border-top: 1px solid rgba(124, 107, 255, 0.1);
+  text-align: center;
 }
