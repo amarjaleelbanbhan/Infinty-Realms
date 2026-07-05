@@ -227,6 +227,68 @@ export interface DropEntry {
   chance: number;   // 0–1
 }
 
+// ─── Guild System (Phase 3) ───────────────────────────────────
+
+export interface Guild {
+  id: UUID;
+  name: string;
+  tag: string;         // e.g. [LEY]
+  leaderId: UUID;
+  members: GuildMember[];
+  vaultGold: number;
+  level: number;
+  perks: string[];
+}
+
+export interface GuildMember {
+  playerId: UUID;
+  name: string;
+  role: 'leader' | 'officer' | 'member';
+  joinedAt: number;
+}
+
+// ─── Dungeon System (Phase 3) ─────────────────────────────────
+
+export interface DungeonRoom {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  type: 'entrance' | 'hall' | 'boss' | 'treasure';
+  cleared: boolean;
+}
+
+export interface DungeonState {
+  id: UUID;
+  seed: string;
+  name: string;
+  biome: BiomeType;
+  rooms: DungeonRoom[];
+  bossAlive: boolean;
+}
+
+// ─── Marketplace System (Phase 4) ─────────────────────────────
+
+export interface MarketListing {
+  id: UUID;
+  sellerId: UUID;
+  sellerName: string;
+  item: Item;
+  quantity: number;
+  pricePerUnit: number;
+  createdAt: number;
+}
+
+// ─── Settings & Accessibility (Phase 5) ───────────────────────
+
+export interface GameSettings {
+  colorblindMode: 'none' | 'deuteranopia' | 'protanopia' | 'tritanopia';
+  lowEndMode: boolean;
+  musicVolume: number;
+  sfxVolume: number;
+  showMinimap: boolean;
+}
+
 // ─── Quests ───────────────────────────────────────────────────
 
 export type QuestType = 'kill' | 'collect' | 'escort' | 'explore' | 'deliver' | 'mystery' | 'boss';

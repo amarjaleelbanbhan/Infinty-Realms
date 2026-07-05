@@ -10,11 +10,15 @@ import { ToastSystem } from '@ui/ToastSystem';
 import { MobileControls } from '@ui/MobileControls';
 import { Chat } from '@ui/Chat';
 import { LeylineUI } from '@ui/LeylineUI';
+import { GuildUI } from '@ui/GuildUI';
+import { MarketplaceUI } from '@ui/MarketplaceUI';
 import { useUIStore } from '@stores/useUIStore';
 
 export default function App() {
   const { currentScreen, setScreen } = useUIStore();
   const [gameStarted, setGameStarted] = useState(false);
+  const [showGuild, setShowGuild] = useState(false);
+  const [showMarket, setShowMarket] = useState(false);
 
   useEffect(() => {
     // Check mobile screen size
@@ -45,6 +49,25 @@ export default function App() {
             <MobileControls />
             <Chat />
             <LeylineUI />
+
+            {/* Quick action buttons for Guild & Market */}
+            <div className="fixed top-4 left-[420px] z-20 flex gap-2">
+              <button
+                onClick={() => setShowGuild(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
+              >
+                🏰 Guild
+              </button>
+              <button
+                onClick={() => setShowMarket(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
+              >
+                🏪 Bazaar
+              </button>
+            </div>
+
+            {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
+            {showMarket && <MarketplaceUI onClose={() => setShowMarket(false)} />}
           </>
         )}
 

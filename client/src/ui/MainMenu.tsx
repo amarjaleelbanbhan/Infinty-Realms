@@ -3,6 +3,10 @@ import { useGameStore } from '@stores/useGameStore';
 import { startWorld } from '@game/PhaserGame';
 import { saveSystem } from '@game/systems/SaveSystem';
 
+import { MultiplayerMenu } from './MultiplayerMenu';
+import { SettingsUI } from './SettingsUI';
+import { CreatorToolsUI } from './CreatorToolsUI';
+
 interface MainMenuProps {
   onStart: () => void;
 }
@@ -18,6 +22,9 @@ export function MainMenu({ onStart }: MainMenuProps) {
   const [screen, setScreen] = useState<'main' | 'new' | 'class'>('main');
   const [playerName, setPlayerName] = useState('');
   const [selectedClass, setSelectedClass] = useState('warrior');
+  const [showMultiplayer, setShowMultiplayer] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showCreator, setShowCreator] = useState(false);
   const { startSession } = useGameStore();
   const saveMeta = saveSystem.getSaveMeta();
 
@@ -73,8 +80,25 @@ export function MainMenu({ onStart }: MainMenuProps) {
               </button>
             )}
 
-            <button className="btn-secondary text-sm">
+            <button
+              className="btn-secondary text-sm"
+              onClick={() => setShowMultiplayer(true)}
+            >
+              👥 Multiplayer Realm
+            </button>
+
+            <button
+              className="btn-secondary text-sm"
+              onClick={() => setShowSettings(true)}
+            >
               ⚙️ Settings
+            </button>
+
+            <button
+              className="btn-secondary text-sm"
+              onClick={() => setShowCreator(true)}
+            >
+              🎨 Creator Tools
             </button>
 
             <a
@@ -161,6 +185,10 @@ export function MainMenu({ onStart }: MainMenuProps) {
           </div>
         </div>
       )}
+
+      {showMultiplayer && <MultiplayerMenu onClose={() => setShowMultiplayer(false)} />}
+      {showSettings && <SettingsUI onClose={() => setShowSettings(false)} />}
+      {showCreator && <CreatorToolsUI onClose={() => setShowCreator(false)} />}
     </div>
   );
 }
