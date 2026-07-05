@@ -12,6 +12,7 @@ import { Chat } from '@ui/Chat';
 import { LeylineUI } from '@ui/LeylineUI';
 import { GuildUI } from '@ui/GuildUI';
 import { MarketplaceUI } from '@ui/MarketplaceUI';
+import { WorldJournalUI } from '@ui/WorldJournalUI';
 import { useUIStore } from '@stores/useUIStore';
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const [showGuild, setShowGuild] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
 
   useEffect(() => {
     // Check mobile screen size
@@ -50,7 +52,7 @@ export default function App() {
             <Chat />
             <LeylineUI />
 
-            {/* Quick action buttons for Guild & Market */}
+            {/* Quick action buttons for Guild, Market, & Journal */}
             <div className="fixed top-4 left-[420px] z-20 flex gap-2">
               <button
                 onClick={() => setShowGuild(true)}
@@ -64,10 +66,17 @@ export default function App() {
               >
                 🏪 Bazaar
               </button>
+              <button
+                onClick={() => setShowJournal(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-xp border border-realm-xp/40 hover:bg-realm-xp/10 transition-colors flex items-center gap-1"
+              >
+                📖 Chronicle
+              </button>
             </div>
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
             {showMarket && <MarketplaceUI onClose={() => setShowMarket(false)} />}
+            {showJournal && <WorldJournalUI onClose={() => setShowJournal(false)} />}
           </>
         )}
 
