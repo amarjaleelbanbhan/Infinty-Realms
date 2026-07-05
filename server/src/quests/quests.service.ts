@@ -49,7 +49,7 @@ export class QuestsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return quests.map((q) => ({
+    return quests.map((q: { objectivesJson: string; rewardsJson: string }) => ({
       ...q,
       objectives: JSON.parse(q.objectivesJson),
       rewards: JSON.parse(q.rewardsJson),

@@ -79,7 +79,6 @@ export class CombatSystem {
       color,
       stroke: '#000000',
       strokeThickness: 3,
-      alpha: 1,
     }).setDepth(100);
 
     this.scene.tweens.add({
