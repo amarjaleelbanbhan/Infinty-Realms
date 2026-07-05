@@ -13,6 +13,8 @@ import { LeylineUI } from '@ui/LeylineUI';
 import { GuildUI } from '@ui/GuildUI';
 import { MarketplaceUI } from '@ui/MarketplaceUI';
 import { WorldJournalUI } from '@ui/WorldJournalUI';
+import { EventBanner } from '@ui/EventBanner';
+import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
 export default function App() {
@@ -29,7 +31,14 @@ export default function App() {
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    // Start world event engine
+    eventSystem.start();
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      eventSystem.stop();
+    };
   }, []);
 
   return (
@@ -44,6 +53,7 @@ export default function App() {
         ) : (
           <>
             <HUD />
+            <EventBanner />
             <QuestLog />
             <Inventory />
             <Dialogue />
