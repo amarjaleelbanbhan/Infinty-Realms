@@ -20,7 +20,7 @@ export function LeylineUI() {
   if (currentScreen !== 'game') return null;
 
   const handleBuildNode = (type: LeylineNodeType) => {
-    if (!player) return;
+    if (!player || player.x === undefined || player.y === undefined) return;
     const node = leylineSystem.placeNode(player.x, player.y, type, 'plains');
     if (node) setNodes([...leylineSystem.getNodes()]);
   };

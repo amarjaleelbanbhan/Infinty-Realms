@@ -32,7 +32,7 @@ export class LeylineSystem {
 
   placeNode(x: number, y: number, type: LeylineNodeType, biome: BiomeType): LeylineNode | null {
     const player = useGameStore.getState().player;
-    if (!player) return null;
+    if (!player || !player.id) return null;
 
     const baseRate: Record<LeylineNodeType, number> = {
       essence_collector: 5,
