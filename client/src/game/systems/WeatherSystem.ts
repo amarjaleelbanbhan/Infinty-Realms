@@ -16,6 +16,17 @@ export const WEATHER_EFFECTS: Record<WeatherType, { label: string; particleColor
   blizzard: { label: '🌨️ Blizzard', particleColor: 0xddddff, particleCount: 200, overlay: 0xaabbdd, overlayAlpha: 0.35 },
 };
 
+export const WEATHER_MODIFIERS: Record<WeatherType, { description: string; statBonus: string }> = {
+  clear:    { description: 'Optimal visibility and balanced essence flow.', statBonus: 'Standard Stats' },
+  cloudy:   { description: 'Cool breeze reduces stamina drain.', statBonus: '+5 Speed' },
+  rain:     { description: 'Rain dampens flames but empowers lightning magic.', statBonus: '+30% Lightning Damage' },
+  storm:    { description: 'Violent winds boost arcane spell velocity.', statBonus: '+20% Critical Chance' },
+  snow:     { description: 'Chilly air empowers frost spells.', statBonus: '+30% Frost Damage' },
+  fog:      { description: 'Thick fog conceals movements from enemies.', statBonus: '+15 Stealth & Dodge' },
+  heat:     { description: 'Sweltering heat increases attack power.', statBonus: '+15% Physical Attack' },
+  blizzard: { description: 'Freezing gale slows movement speed.', statBonus: '-10% Speed, +40% Frost' },
+};
+
 export class WeatherSystem {
   private scene: Phaser.Scene;
   private particles: Phaser.GameObjects.Graphics[] = [];

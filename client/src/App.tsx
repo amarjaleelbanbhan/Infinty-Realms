@@ -15,6 +15,7 @@ import { MarketplaceUI } from '@ui/MarketplaceUI';
 import { WorldJournalUI } from '@ui/WorldJournalUI';
 import { EventBanner } from '@ui/EventBanner';
 import { SkillUI } from '@ui/SkillUI';
+import { WorldMapUI } from '@ui/WorldMapUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -25,6 +26,7 @@ export default function App() {
   const [showMarket, setShowMarket] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     // Check mobile screen size
@@ -90,12 +92,19 @@ export default function App() {
               >
                 🔮 Spells
               </button>
+              <button
+                onClick={() => setShowMap(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
+              >
+                🗺️ Map
+              </button>
             </div>
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
             {showMarket && <MarketplaceUI onClose={() => setShowMarket(false)} />}
             {showJournal && <WorldJournalUI onClose={() => setShowJournal(false)} />}
             {showSkills && <SkillUI onClose={() => setShowSkills(false)} />}
+            {showMap && <WorldMapUI onClose={() => setShowMap(false)} />}
           </>
         )}
 
