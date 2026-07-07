@@ -98,17 +98,28 @@ export class WorldScene extends Phaser.Scene {
   // Interaction range
   private readonly INTERACT_RANGE = 64;
   private readonly ATTACK_RANGE = 80;
+  private returnFromDungeon = false;
+  private returnRx = 0;
+  private returnRy = 0;
 
   constructor() {
     super({ key: 'WorldScene' });
   }
 
-  init(data: { seed?: string }) {
+  init(data: { seed?: string; returnFromDungeon?: boolean; rx?: number; ry?: number }) {
     const gameStore = useGameStore.getState();
     const seed = data.seed ?? gameStore.worldState?.seed ?? `realm-${Date.now()}`;
 
     console.log(`[WorldScene] Generating world with seed: ${seed}`);
     this.world = generateWorld(seed, 128, 128);
+
+    this.returnFromDungeon = data.returnFromDungeon ?? false;
+    this.returnRx = data.rx ?? 0;
+    this.returnRy = data.ry ?? 0;
+
+    this.enemies = [];
+    this.npcs = [];
+    this.items = [];
 
     // Expose world data for React UI (WorldMapUI reads this)
     (window as Window & { __worldData?: GeneratedWorld }).__worldData = this.world;
@@ -134,8 +145,12 @@ export class WorldScene extends Phaser.Scene {
     this.drawWorldTiles();
 
     // ── Spawn player ──
-    const spawnX = this.world.spawnX * TILE_SIZE + TILE_SIZE / 2;
-    const spawnY = this.world.spawnY * TILE_SIZE + TILE_SIZE / 2;
+    let spawnX = this.world.spawnX * TILE_SIZE + TILE_SIZE / 2;
+    let spawnY = this.world.spawnY * TILE_SIZE + TILE_SIZE / 2;
+    if (this.returnFromDungeon) {
+      spawnX = this.returnRx;
+      spawnY = this.returnRy;
+    }
     this.spawnPlayer(spawnX, spawnY);
 
     // ── Spawn entities near player ──
@@ -560,6 +575,7 @@ export class WorldScene extends Phaser.Scene {
     this.updateEnemies(dt);
     this.checkItemPickup();
     this.checkNPCInteraction();
+    this.checkDungeonEntry();
     this.updateCooldowns(delta);
 
     // Update minimap every 30 frames
@@ -1146,6 +1162,24 @@ export class WorldScene extends Phaser.Scene {
     if (remote) {
       remote.destroy();
       this.remotePlayers.delete(data.playerId);
+    }
+  }
+
+  private checkDungeonEntry() {
+    if (!this.player) return;
+    for (const dungeon of this.world.dungeonTiles) {
+      const dx = this.player.x - (dungeon.x * TILE_SIZE + TILE_SIZE / 2);
+      const dy = this.player.y - (dungeon.y * TILE_SIZE + TILE_SIZE / 2);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < TILE_SIZE / 2) {
+        this.scene.stop('WorldScene');
+        this.scene.start('DungeonScene', {
+          seed: `${this.world.seed}-dungeon-${dungeon.x}-${dungeon.y}`,
+          returnX: this.player.x,
+          returnY: this.player.y + TILE_SIZE,
+        });
+        break;
+      }
     }
   }
 

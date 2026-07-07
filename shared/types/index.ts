@@ -265,6 +265,7 @@ export interface DungeonState {
   biome: BiomeType;
   rooms: DungeonRoom[];
   bossAlive: boolean;
+  grid?: number[][];
 }
 
 // ─── Marketplace System (Phase 4) ─────────────────────────────

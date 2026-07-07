@@ -3,6 +3,7 @@ import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { WorldScene } from './scenes/WorldScene';
+import { DungeonScene } from './scenes/DungeonScene';
 import { UIScene } from './scenes/UIScene';
 import { PauseScene } from './scenes/PauseScene';
 
@@ -16,7 +17,7 @@ export function createPhaserGame(parent: HTMLElement): Phaser.Game {
     pixelArt: true,
     antialias: false,
     roundPixels: true,
-    scene: [BootScene, PreloadScene, MainMenuScene, WorldScene, UIScene, PauseScene],
+    scene: [BootScene, PreloadScene, MainMenuScene, WorldScene, DungeonScene, UIScene, PauseScene],
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
