@@ -25,15 +25,23 @@ export function MainMenu({ onStart }: MainMenuProps) {
   const [showMultiplayer, setShowMultiplayer] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showCreator, setShowCreator] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { startSession } = useGameStore();
   const saveMeta = saveSystem.getSaveMeta();
 
-  const handleNewGame = () => {
+  const handleNewGame = async () => {
     const name = playerName.trim() || 'Hero';
-    startSession(name);
-    const worldSeed = useGameStore.getState().worldState?.seed ?? 'default';
-    startWorld(worldSeed);
-    onStart();
+    setLoading(true);
+    try {
+      await startSession(name);
+      const worldSeed = useGameStore.getState().worldState?.seed ?? 'default';
+      startWorld(worldSeed);
+      onStart();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleContinue = () => {
@@ -176,11 +184,11 @@ export function MainMenu({ onStart }: MainMenuProps) {
           </div>
 
           <div className="flex gap-3">
-            <button className="btn-secondary flex-1 text-sm" onClick={() => setScreen('new')}>
+            <button className="btn-secondary flex-1 text-sm" onClick={() => setScreen('new')} disabled={loading}>
               ← Back
             </button>
-            <button className="btn-gold flex-1 text-sm" onClick={handleNewGame}>
-              Begin Journey ✨
+            <button className="btn-gold flex-1 text-sm disabled:opacity-50" onClick={handleNewGame} disabled={loading}>
+              {loading ? 'Connecting to Realm...' : 'Begin Journey ✨'}
             </button>
           </div>
         </div>

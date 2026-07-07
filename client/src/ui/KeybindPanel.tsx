@@ -5,6 +5,7 @@ const CONTROLS = [
   { keys: ['↑', '←', '↓', '→'], label: 'Move (arrows)', icon: '🧭' },
   { keys: ['F'], label: 'Sprint / Walk toggle', icon: '💨' },
   { keys: ['SPACE'], label: 'Attack', icon: '⚔️' },
+  { keys: ['1', '2', '3', '4'], label: 'Cast Spells 1-4', icon: '🔮' },
   { keys: ['E'], label: 'Interact / Talk', icon: '💬' },
   { keys: ['I'], label: 'Inventory', icon: '🎒' },
   { keys: ['Q'], label: 'Quest Log', icon: '📜' },

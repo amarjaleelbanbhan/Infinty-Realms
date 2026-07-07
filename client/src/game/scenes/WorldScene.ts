@@ -10,6 +10,7 @@ import { saveSystem } from '@game/systems/SaveSystem';
 import { questSystem } from '@game/systems/QuestSystem';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+import { useSkillStore } from '@game/systems/SkillSystem';
 import type { BiomeType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -69,6 +70,7 @@ export class WorldScene extends Phaser.Scene {
   private escKey!: Phaser.Input.Keyboard.Key;
 
   private isSprinting = false;
+  private numberKeys!: Phaser.Input.Keyboard.Key[];
 
   private minimap!: Phaser.GameObjects.Graphics;
   private minimapData: Uint32Array = new Uint32Array(0);
@@ -440,6 +442,13 @@ export class WorldScene extends Phaser.Scene {
     this.mKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
     this.fKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+    this.numberKeys = [
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE),
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO),
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE),
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR),
+    ];
   }
 
   private setupTouchInput() {
@@ -628,6 +637,36 @@ export class WorldScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       useUIStore.getState().togglePause();
     }
+
+    // Skill casts (keys 1-4)
+    this.numberKeys.forEach((key, idx) => {
+      if (Phaser.Input.Keyboard.JustDown(key)) {
+        const skillStore = useSkillStore.getState();
+        const skill = skillStore.equippedSkills[idx];
+        if (skill) {
+          const castSuccess = skillStore.castSkill(skill.id);
+          if (castSuccess) {
+            const colors: Record<string, number> = {
+              damage: 0xff4444, // Red
+              heal: 0x44ff44,   // Green
+              shield: 0x4444ff, // Blue
+              utility: 0xffff44 // Yellow
+            };
+            const flashColor = colors[skill.type] ?? 0xffffff;
+            this.tweens.add({
+              targets: this.playerBody,
+              tint: { from: 0xffffff, to: flashColor },
+              duration: 150,
+              yoyo: true,
+            });
+
+            if (skill.type === 'damage') {
+              this.castDamageSpell(skill.value);
+            }
+          }
+        }
+      }
+    });
   }
 
   private playerAttack() {
@@ -669,6 +708,42 @@ export class WorldScene extends Phaser.Scene {
           targets: bodyImg,
           tint: { from: 0xffffff, to: 0xffffff },
           duration: 80,
+          yoyo: true,
+        });
+
+        if (enemy.enemyData.hp <= 0) {
+          this.killEnemy(enemy);
+        } else {
+          enemy.enemyData.state = 'chase';
+        }
+      }
+    }
+  }
+
+  private castDamageSpell(baseDamage: number) {
+    const gameStore = useGameStore.getState();
+    const playerStats = gameStore.player?.stats;
+    if (!playerStats) return;
+
+    const spellRange = this.ATTACK_RANGE * 1.5;
+    const hitbox = this.combatSystem.getMeleeHitbox(this.player.x, this.player.y, this.playerDirection, spellRange);
+
+    for (const enemy of this.enemies) {
+      if (enemy.enemyData.state === 'dead') continue;
+      if (hitbox.contains(enemy.x, enemy.y)) {
+        const damage = Math.floor((playerStats.attack * 0.5 + baseDamage) * (0.9 + Math.random() * 0.2));
+        const isCrit = Math.random() * 100 < playerStats.luck;
+        const finalDamage = isCrit ? damage * 2 : damage;
+
+        enemy.enemyData.hp -= finalDamage;
+        this.combatSystem.showDamageNumber(enemy.x, enemy.y, finalDamage, isCrit);
+        this.updateEnemyHPBar(enemy);
+
+        const bodyImg = enemy.list[1] as Phaser.GameObjects.Image;
+        this.tweens.add({
+          targets: bodyImg,
+          tint: { from: 0xff00ff, to: 0xffffff },
+          duration: 100,
           yoyo: true,
         });
 

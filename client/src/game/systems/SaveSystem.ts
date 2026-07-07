@@ -47,6 +47,28 @@ export class SaveSystem {
 
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveState));
       console.log('[Save] Game saved at', new Date().toLocaleTimeString());
+
+      // Cloud save sync
+      const token = gameStore.playerToken;
+      if (token && gameStore.player) {
+        fetch('/api/players/save', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(gameStore.player),
+        }).then((res) => {
+          if (res.ok) {
+            console.log('[Save] Cloud save synced successfully.');
+          } else {
+            console.warn('[Save] Cloud save sync failed with status:', res.status);
+          }
+        }).catch((err) => {
+          console.error('[Save] Cloud save sync failed:', err);
+        });
+      }
+
       return true;
     } catch (e) {
       console.error('[Save] Failed to save:', e);

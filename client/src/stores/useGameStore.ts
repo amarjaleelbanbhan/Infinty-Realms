@@ -16,7 +16,7 @@ interface GameState {
 
   // Actions
   setLoaded: (loaded: boolean) => void;
-  startSession: (playerName: string) => void;
+  startSession: (playerName: string) => Promise<void>;
   setPlayer: (player: Partial<Player>) => void;
   updatePlayerPosition: (x: number, y: number) => void;
   updatePlayerStats: (stats: Partial<Player['stats']>) => void;
@@ -46,13 +46,69 @@ export const useGameStore = create<GameState>()(
 
       setLoaded: (loaded) => set({ isLoaded: loaded }),
 
-      startSession: (playerName) => {
-        const worldSeed = `realm-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      startSession: async (playerName) => {
+        let guestToken = '';
+        let playerId = crypto.randomUUID();
+        let finalName = playerName;
+        let worldSeed = `realm-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        let worldWidth = 256;
+        let worldHeight = 256;
+        let worldSeason: Season = 'spring';
+        let worldDayTime = 8;
+        let worldAge = 0;
+
+        try {
+          const response = await fetch('/api/auth/guest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: playerName }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            guestToken = data.token;
+            playerId = data.playerId;
+            finalName = data.name;
+
+            const playerResponse = await fetch('/api/players/me', {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${guestToken}`,
+              },
+            });
+
+            if (playerResponse.ok) {
+              const playerData = await playerResponse.json();
+              if (playerData.worldSeed) {
+                worldSeed = playerData.worldSeed;
+              }
+            }
+
+            const worldResponse = await fetch(`/api/world/${worldSeed}`, {
+              method: 'GET',
+            });
+
+            if (worldResponse.ok) {
+              const worldData = await worldResponse.json();
+              worldWidth = worldData.width ?? 256;
+              worldHeight = worldData.height ?? 256;
+              worldSeason = worldData.season ?? 'spring';
+              worldDayTime = worldData.dayTime ?? 8;
+              worldAge = worldData.worldAge ?? 0;
+            }
+          }
+        } catch (err) {
+          console.error('[Session] Failed to connect to server backend, falling back to local simulation:', err);
+        }
+
         set({
           sessionStarted: true,
+          playerToken: guestToken || null,
           player: {
-            id: crypto.randomUUID(),
-            name: playerName,
+            id: playerId,
+            name: finalName,
             x: 128 * 32,
             y: 128 * 32,
             stats: { ...DEFAULT_PLAYER_STATS },
@@ -70,12 +126,12 @@ export const useGameStore = create<GameState>()(
           },
           worldState: {
             seed: worldSeed,
-            width: 256,
-            height: 256,
+            width: worldWidth,
+            height: worldHeight,
             cities: [],
-            season: 'spring',
-            dayTime: 8,
-            worldAge: 0,
+            season: worldSeason,
+            dayTime: worldDayTime,
+            worldAge: worldAge,
           },
         });
       },
