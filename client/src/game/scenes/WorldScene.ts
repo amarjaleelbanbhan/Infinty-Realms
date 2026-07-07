@@ -11,6 +11,7 @@ import { questSystem } from '@game/systems/QuestSystem';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
+import { socketManager } from '@game/systems/SocketManager';
 import type { BiomeType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -71,6 +72,12 @@ export class WorldScene extends Phaser.Scene {
 
   private isSprinting = false;
   private numberKeys!: Phaser.Input.Keyboard.Key[];
+  private remotePlayers = new Map<string, Phaser.GameObjects.Container>();
+  private lastSentPos = { x: 0, y: 0 };
+  private handleJoinedBound = this.handleRemotePlayerJoined.bind(this);
+  private handleMovedBound = this.handleRemotePlayerMoved.bind(this);
+  private handleAttackedBound = this.handleRemotePlayerAttacked.bind(this);
+  private handleLeftBound = this.handleRemotePlayerLeft.bind(this);
 
   private minimap!: Phaser.GameObjects.Graphics;
   private minimapData: Uint32Array = new Uint32Array(0);
@@ -172,6 +179,9 @@ export class WorldScene extends Phaser.Scene {
     if (useUIStore.getState().isMobile) {
       this.setupTouchInput();
     }
+
+    // ── Multiplayer Setup ──
+    this.setupMultiplayerSync();
 
     // ── Depth sort on update ──
     this.events.on('update', this.depthSort, this);
@@ -557,6 +567,16 @@ export class WorldScene extends Phaser.Scene {
 
     // Sync player position to store
     useGameStore.getState().updatePlayerPosition(this.player.x, this.player.y);
+
+    // Broadcast position to server if active room is set and player has moved
+    if (socketManager.getRoomCode()) {
+      const distSq = Phaser.Math.Distance.Squared(this.lastSentPos.x, this.lastSentPos.y, this.player.x, this.player.y);
+      if (distSq > 4) { // Only send if moved more than 2 pixels to reduce spam
+        socketManager.sendMove({ x: this.player.x, y: this.player.y }, this.playerDirection);
+        this.lastSentPos.x = this.player.x;
+        this.lastSentPos.y = this.player.y;
+      }
+    }
   }
 
   private handlePlayerInput(dt: number) {
@@ -663,6 +683,10 @@ export class WorldScene extends Phaser.Scene {
             if (skill.type === 'damage') {
               this.castDamageSpell(skill.value);
             }
+
+            if (socketManager.getRoomCode()) {
+              socketManager.sendAttack(this.playerDirection);
+            }
           }
         }
       }
@@ -685,6 +709,10 @@ export class WorldScene extends Phaser.Scene {
       duration: 100,
       yoyo: true,
     });
+
+    if (socketManager.getRoomCode()) {
+      socketManager.sendAttack(this.playerDirection);
+    }
 
     // Check enemies in attack range
     const hitbox = this.combatSystem.getMeleeHitbox(this.player.x, this.player.y, this.playerDirection, this.ATTACK_RANGE);
@@ -992,10 +1020,107 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
+  setupMultiplayerSync() {
+    // If a room is active, connect immediately
+    if (socketManager.getRoomCode()) {
+      socketManager.connect();
+    }
+
+    socketManager.on('remotePlayerJoined', this.handleJoinedBound);
+    socketManager.on('remotePlayerMoved', this.handleMovedBound);
+    socketManager.on('remotePlayerAttacked', this.handleAttackedBound);
+    socketManager.on('remotePlayerLeft', this.handleLeftBound);
+  }
+
+  private handleRemotePlayerJoined(data: { playerId: string; name: string; pos?: { x: number; y: number }; level?: number }) {
+    if (this.remotePlayers.has(data.playerId)) return;
+
+    const x = data.pos?.x ?? this.world.spawnX * TILE_SIZE;
+    const y = data.pos?.y ?? this.world.spawnY * TILE_SIZE;
+
+    const body = this.add.image(0, 0, 'player');
+    body.setTint(0xa0a0ff); // Light blue tint for remote players
+
+    const shadow = this.add.ellipse(0, 12, 16, 6, 0x000000, 0.3);
+
+    const label = this.add.text(0, -26, `${data.name} (Lv.${data.level ?? 1})`, {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '9px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2,
+    }).setOrigin(0.5);
+
+    const container = this.add.container(x, y, [shadow, body, label]);
+    container.setDepth(20);
+
+    this.entityLayer.add(container);
+    this.remotePlayers.set(data.playerId, container);
+  }
+
+  private handleRemotePlayerMoved(data: { playerId: string; pos: { x: number; y: number }; direction: string }) {
+    const remote = this.remotePlayers.get(data.playerId);
+    if (!remote) {
+      this.handleRemotePlayerJoined({ playerId: data.playerId, name: 'Remote Player', pos: data.pos });
+      return;
+    }
+
+    this.tweens.add({
+      targets: remote,
+      x: data.pos.x,
+      y: data.pos.y,
+      duration: 100,
+      ease: 'Linear',
+    });
+
+    const body = remote.list[1] as Phaser.GameObjects.Image;
+    if (data.direction === 'left') {
+      body.setFlipX(true);
+    } else if (data.direction === 'right') {
+      body.setFlipX(false);
+    }
+  }
+
+  private handleRemotePlayerAttacked(data: { playerId: string; direction: string }) {
+    const remote = this.remotePlayers.get(data.playerId);
+    if (!remote) return;
+
+    const body = remote.list[1] as Phaser.GameObjects.Image;
+    this.tweens.add({
+      targets: body,
+      tint: { from: 0xa0a0ff, to: 0xff4444 },
+      duration: 100,
+      yoyo: true,
+      onComplete: () => {
+        body.setTint(0xa0a0ff);
+      }
+    });
+  }
+
+  private handleRemotePlayerLeft(data: { playerId: string }) {
+    const remote = this.remotePlayers.get(data.playerId);
+    if (remote) {
+      remote.destroy();
+      this.remotePlayers.delete(data.playerId);
+    }
+  }
+
   shutdown() {
     saveSystem.stopAutoSave();
     saveSystem.save();
     this.events.off('update', this.depthSort, this);
+
+    // Unsubscribe from SocketManager events
+    socketManager.off('remotePlayerJoined', this.handleJoinedBound);
+    socketManager.off('remotePlayerMoved', this.handleMovedBound);
+    socketManager.off('remotePlayerAttacked', this.handleAttackedBound);
+    socketManager.off('remotePlayerLeft', this.handleLeftBound);
+
+    // Destroy remote players
+    for (const remote of this.remotePlayers.values()) {
+      remote.destroy();
+    }
+    this.remotePlayers.clear();
   }
 }
 
