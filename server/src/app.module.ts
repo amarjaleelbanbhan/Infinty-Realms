@@ -7,6 +7,7 @@ import { QuestsModule } from './quests/quests.module';
 import { AiModule } from './ai/ai.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MultiplayerModule } from './multiplayer/multiplayer.module';
+import { NpcsModule } from './npcs/npcs.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MultiplayerModule } from './multiplayer/multiplayer.module';
     QuestsModule,
     AiModule,
     MultiplayerModule,
+    NpcsModule,
   ],
 })
 export class AppModule {}

@@ -21,3 +21,27 @@ Respond with this exact JSON structure:
   "questHook": "Optional hint at a quest they might give",
   "quirk": "One unique behavioral trait (e.g., 'always speaks in riddles', 'constantly looks over shoulder')"
 }`;
+
+export const buildNPCDialoguePrompt = (context: {
+  npcName: string;
+  role: string;
+  personality: string;
+  biome: string;
+  playerName: string;
+  playerLevel: number;
+  memory: string[];
+}) => `You are the NPC ${context.npcName}, a ${context.role} with a ${context.personality} personality living in the ${context.biome} biome of Infinity Realms.
+You are talking to the player ${context.playerName} (Level ${context.playerLevel}).
+
+Your memories of previous interactions with this player:
+${context.memory.length > 0 ? context.memory.map((m) => `- ${m}`).join('\n') : 'No previous meetings.'}
+
+Write your response dialogue to the player. Be fully in-character, concise (1-2 sentences), and acknowledge your past memories if they exist.
+
+Respond with this exact JSON structure:
+{
+  "dialogue": "your response dialogue",
+  "moodShift": 5,
+  "memoryLog": "a brief 1-sentence description of what happened in this interaction to store in your memory"
+}`;
+

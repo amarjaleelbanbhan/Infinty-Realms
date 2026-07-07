@@ -45,6 +45,7 @@ interface NPCSprite extends Phaser.GameObjects.Container {
     role: string;
     personality: string;
     dialogue: string[];
+    biome?: string;
   };
 }
 
@@ -382,6 +383,7 @@ export class WorldScene extends Phaser.Scene {
       role,
       personality: 'friendly',
       dialogue: dialogues[role] ?? ['...'],
+      biome: this.world.tiles[Math.floor(y / TILE_SIZE)]?.[Math.floor(x / TILE_SIZE)]?.biome ?? 'plains',
     };
 
     this.npcs.push(container);
@@ -980,7 +982,7 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  private interactWithNearest() {
+  private async interactWithNearest() {
     let nearestNPC: NPCSprite | null = null;
     let nearestDist = Infinity;
 
@@ -996,12 +998,54 @@ export class WorldScene extends Phaser.Scene {
 
     if (nearestNPC) {
       const ui = useUIStore.getState();
-      const dialogue = nearestNPC.npcData.dialogue[Math.floor(Math.random() * nearestNPC.npcData.dialogue.length)];
-      const options = [
+      const gameStore = useGameStore.getState();
+      const token = gameStore.playerToken;
+
+      const npcInfo = {
+        id: nearestNPC.npcData.id,
+        name: nearestNPC.npcData.name,
+        role: nearestNPC.npcData.role as NPC['role'],
+      };
+
+      // Show temporary loading dialogue
+      ui.openDialogue(npcInfo, 'Thinking...', []);
+
+      let dialogue = nearestNPC.npcData.dialogue[Math.floor(Math.random() * nearestNPC.npcData.dialogue.length)];
+      let options = [
         { text: 'Tell me about your quests', action: 'quest' },
         { text: 'Farewell', action: 'close' },
       ];
-      ui.openDialogue({ id: nearestNPC.npcData.id, name: nearestNPC.npcData.name, role: nearestNPC.npcData.role as NPC['role'] }, dialogue, options);
+
+      if (token && gameStore.player) {
+        try {
+          const res = await fetch('/api/npcs/interact', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              npcId: nearestNPC.npcData.id,
+              name: nearestNPC.npcData.name,
+              role: nearestNPC.npcData.role,
+              biome: nearestNPC.npcData.biome ?? 'plains',
+              worldSeed: gameStore.player.worldSeed ?? 'default',
+              playerLevel: gameStore.player.level ?? 1,
+              playerName: gameStore.player.name ?? 'Hero',
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            dialogue = data.dialogue;
+            options = data.options ?? options;
+          }
+        } catch (err) {
+          console.warn('[Dialogue] Failed to fetch NPC dialogue from server, falling back to local simulation:', err);
+        }
+      }
+
+      ui.openDialogue(npcInfo, dialogue, options);
     }
   }
 
