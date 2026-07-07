@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Player, WorldState, Season } from '@shared/types';
+import type { Player, WorldState, Season, Item } from '@shared/types';
 
 interface GameState {
   // Session
@@ -22,6 +22,8 @@ interface GameState {
   updatePlayerStats: (stats: Partial<Player['stats']>) => void;
   addGold: (amount: number) => void;
   addExperience: (amount: number) => void;
+  addToInventory: (item: Item, quantity: number) => void;
+  removeFromInventory: (itemId: string, quantity: number) => boolean;
   setWorldState: (world: Partial<WorldState>) => void;
   updateSeason: (season: Season) => void;
   setToken: (token: string) => void;
@@ -184,6 +186,40 @@ export const useGameStore = create<GameState>()(
             player: s.player ? { ...s.player, experience: newXp } : null,
           }));
         }
+      },
+
+      addToInventory: (item, quantity) => {
+        const { player } = get();
+        if (!player) return;
+
+        const inventory = [...(player.inventory ?? [])];
+        const existingSlot = inventory.find((slot) => slot.item.id === item.id);
+        if (existingSlot) {
+          existingSlot.quantity += quantity;
+        } else {
+          inventory.push({ item, quantity });
+        }
+
+        set({ player: { ...player, inventory } });
+      },
+
+      removeFromInventory: (itemId, quantity) => {
+        const { player } = get();
+        if (!player) return false;
+
+        const inventory = [...(player.inventory ?? [])];
+        const idx = inventory.findIndex((slot) => slot.item.id === itemId);
+        if (idx === -1) return false;
+
+        if (inventory[idx].quantity < quantity) return false;
+
+        inventory[idx].quantity -= quantity;
+        if (inventory[idx].quantity === 0) {
+          inventory.splice(idx, 1);
+        }
+
+        set({ player: { ...player, inventory } });
+        return true;
       },
 
       setWorldState: (world) => set({ worldState: world }),

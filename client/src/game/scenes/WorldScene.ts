@@ -12,6 +12,7 @@ import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
 import { socketManager } from '@game/systems/SocketManager';
+import { leylineSystem } from '@game/systems/LeylineSystem';
 import type { BiomeType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -75,6 +76,9 @@ export class WorldScene extends Phaser.Scene {
   private numberKeys!: Phaser.Input.Keyboard.Key[];
   private remotePlayers = new Map<string, Phaser.GameObjects.Container>();
   private lastSentPos = { x: 0, y: 0 };
+  private leylineGraphics!: Phaser.GameObjects.Graphics;
+  private nodeSprites = new Map<string, Phaser.GameObjects.Container>();
+  private golemCaravans = new Map<string, Phaser.GameObjects.Container>();
   private handleJoinedBound = this.handleRemotePlayerJoined.bind(this);
   private handleMovedBound = this.handleRemotePlayerMoved.bind(this);
   private handleAttackedBound = this.handleRemotePlayerAttacked.bind(this);
@@ -138,8 +142,11 @@ export class WorldScene extends Phaser.Scene {
 
     // ── Layers ──
     this.tileGraphics = this.add.graphics();
+    this.leylineGraphics = this.add.graphics();
     this.structureLayer = this.add.container(0, 0);
     this.entityLayer = this.add.container(0, 0);
+    this.nodeSprites.clear();
+    this.golemCaravans.clear();
 
     // ── Draw world tiles ──
     this.drawWorldTiles();
@@ -576,6 +583,7 @@ export class WorldScene extends Phaser.Scene {
     this.checkItemPickup();
     this.checkNPCInteraction();
     this.checkDungeonEntry();
+    this.updateLeylineRendering();
     this.updateCooldowns(delta);
 
     // Update minimap every 30 frames
@@ -1179,6 +1187,101 @@ export class WorldScene extends Phaser.Scene {
           returnY: this.player.y + TILE_SIZE,
         });
         break;
+      }
+    }
+  }
+
+  private updateLeylineRendering() {
+    const nodes = leylineSystem.getNodes();
+
+    // Register textures if they don't exist
+    if (!this.textures.exists('tile-essence_collector')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x7c6bff, 1);
+      g.fillCircle(16, 16, 10);
+      g.fillStyle(0xffffff, 0.8);
+      g.fillCircle(16, 16, 4);
+      g.generateTexture('tile-essence_collector', 32, 32);
+      g.destroy();
+    }
+    if (!this.textures.exists('tile-mana_relay')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0x3fffa0, 1);
+      g.fillCircle(16, 16, 8);
+      g.fillStyle(0xffffff, 0.8);
+      g.fillCircle(16, 16, 3);
+      g.generateTexture('tile-mana_relay', 32, 32);
+      g.destroy();
+    }
+    if (!this.textures.exists('tile-elemental_forge')) {
+      const g = this.make.graphics({ x: 0, y: 0 });
+      g.fillStyle(0xffa03f, 1);
+      g.fillRect(4, 4, 24, 24);
+      g.fillStyle(0xffffff, 0.8);
+      g.fillRect(10, 10, 12, 12);
+      g.generateTexture('tile-elemental_forge', 32, 32);
+      g.destroy();
+    }
+
+    // Spawn new nodes
+    for (const node of nodes) {
+      if (!this.nodeSprites.has(node.id)) {
+        const body = this.add.image(0, 0, `tile-${node.type}`);
+        const label = this.add.text(0, -18, node.type.replace('_', ' '), {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '8px',
+          color: '#ffd700',
+          stroke: '#000000',
+          strokeThickness: 1,
+        }).setOrigin(0.5);
+
+        const container = this.add.container(node.x, node.y, [body, label]);
+        container.setDepth(15);
+        this.entityLayer.add(container);
+        this.nodeSprites.set(node.id, container);
+      }
+    }
+
+    // Draw links
+    this.leylineGraphics.clear();
+    this.leylineGraphics.lineStyle(2, 0x7c6bff, 0.5);
+    for (const node of nodes) {
+      if (node.connectedNodeIds) {
+        for (const connId of node.connectedNodeIds) {
+          const target = nodes.find((n) => n.id === connId);
+          if (target) {
+            this.leylineGraphics.lineBetween(node.x, node.y, target.x, target.y);
+
+            // Spawn Golem Caravan if it doesn't exist
+            const key = [node.id, target.id].sort().join('-');
+            if (!this.golemCaravans.has(key)) {
+              const body = this.add.image(0, 0, 'player');
+              body.setTint(0x888888); // Stone color Golem
+              body.setScale(0.5);
+
+              const label = this.add.text(0, -14, 'Golem Caravan', {
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '6px',
+                color: '#ffffff',
+              }).setOrigin(0.5);
+
+              const caravan = this.add.container(node.x, node.y, [body, label]);
+              caravan.setDepth(18);
+              this.entityLayer.add(caravan);
+              this.golemCaravans.set(key, caravan);
+
+              this.tweens.add({
+                targets: caravan,
+                x: target.x,
+                y: target.y,
+                duration: 5000 + Math.random() * 2000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Linear',
+              });
+            }
+          }
+        }
       }
     }
   }

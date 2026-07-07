@@ -190,6 +190,7 @@ export interface LeylineNode {
   ratePerMin: number;
   accumulatedEssence: number;
   lastHarvestAt: number;
+  connectedNodeIds?: UUID[];
 }
 
 // ─── Enemies ──────────────────────────────────────────────────

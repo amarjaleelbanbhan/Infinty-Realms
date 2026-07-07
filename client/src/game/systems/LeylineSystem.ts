@@ -1,6 +1,16 @@
-import type { LeylineNode, LeylineNodeType, BiomeType } from '@shared/types';
+import type { LeylineNode, LeylineNodeType, BiomeType, Item } from '@shared/types';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+
+export const LEYLINE_ESSENCE_ITEM: Item = {
+  id: 'leyline-essence',
+  name: 'Leyline Essence',
+  description: 'Raw magical energy harvested from active world leylines.',
+  type: 'material',
+  rarity: 'rare',
+  icon: '⚡',
+  value: 10,
+};
 
 export class LeylineSystem {
   private nodes: LeylineNode[] = [];
@@ -50,7 +60,20 @@ export class LeylineSystem {
       ratePerMin: baseRate[type],
       accumulatedEssence: 0,
       lastHarvestAt: Date.now(),
+      connectedNodeIds: [],
     };
+
+    // Auto-link with nodes within 300px
+    for (const existing of this.nodes) {
+      const dx = existing.x - x;
+      const dy = existing.y - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 300) {
+        existing.connectedNodeIds = existing.connectedNodeIds ?? [];
+        existing.connectedNodeIds.push(node.id);
+        node.connectedNodeIds?.push(existing.id);
+      }
+    }
 
     this.nodes.push(node);
     useUIStore.getState().addToast(`Leyline ${type.replace('_', ' ')} placed!`, 'success');
@@ -66,11 +89,40 @@ export class LeylineSystem {
     node.lastHarvestAt = Date.now();
 
     if (harvested > 0) {
-      useGameStore.getState().addGold(harvested * 2);
-      useUIStore.getState().addToast(`Harvested ${harvested} Leyline Essence (+${harvested * 2} Gold)`, 'gold');
+      useGameStore.getState().addToInventory(LEYLINE_ESSENCE_ITEM, harvested);
+      useUIStore.getState().addToast(`Harvested ${harvested} Leyline Essence into inventory!`, 'success');
     }
 
     return harvested;
+  }
+
+  refineEquipment(type: 'weapon' | 'armor', essenceCost = 5): boolean {
+    const gameStore = useGameStore.getState();
+    const player = gameStore.player;
+    if (!player || !player.inventory) return false;
+
+    // Find essence slot
+    const essenceSlot = player.inventory.find((slot) => slot.item.id === 'leyline-essence');
+    if (!essenceSlot || essenceSlot.quantity < essenceCost) {
+      useUIStore.getState().addToast(`Requires ${essenceCost} Leyline Essence!`, 'error');
+      return false;
+    }
+
+    // Deduct essence
+    gameStore.removeFromInventory('leyline-essence', essenceCost);
+
+    // Refine stats
+    if (type === 'weapon') {
+      const currentAttack = player.stats?.attack ?? 10;
+      gameStore.updatePlayerStats({ attack: Math.round(currentAttack * 1.1) });
+      useUIStore.getState().addToast('Weapon refined! Attack increased by +10%!', 'success');
+    } else {
+      const currentDefense = player.stats?.defense ?? 5;
+      gameStore.updatePlayerStats({ defense: Math.round(currentDefense * 1.1) });
+      useUIStore.getState().addToast('Armor refined! Defense increased by +10%!', 'success');
+    }
+
+    return true;
   }
 
   getNodes(): LeylineNode[] {

@@ -86,6 +86,7 @@ export function LeylineUI() {
                   <div>
                     <div className="font-game text-xs text-white capitalize">{n.type.replace('_', ' ')}</div>
                     <div className="font-mono text-xs text-realm-xp">Yield: {n.accumulatedEssence} Essence</div>
+                    <div className="text-[10px] text-realm-text-muted">Links: {n.connectedNodeIds?.length ?? 0}</div>
                   </div>
                   <button
                     onClick={() => handleHarvest(n.id)}
@@ -101,6 +102,32 @@ export function LeylineUI() {
                 <p className="text-xs font-ui text-realm-text-muted text-center py-4">No active leyline nodes. Build one above!</p>
               )}
             </div>
+
+            {/* Gear Refinement (Available if they have an elemental forge) */}
+            {nodes.some((n) => n.type === 'elemental_forge') && (
+              <div className="border-t border-realm-border pt-4 mb-4">
+                <h3 className="font-game text-xs text-realm-gold uppercase tracking-wider mb-2">
+                  🛠️ Arcane Forge Gear Refinement
+                </h3>
+                <p className="text-[10px] text-realm-text-muted mb-3">
+                  Spend 5 Leyline Essence to refine your gear, gaining +10% to Weapon Attack or Armor Defense.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => leylineSystem.refineEquipment('weapon')}
+                    className="flex-1 btn-gold text-xs py-1.5"
+                  >
+                    Refine Weapon
+                  </button>
+                  <button
+                    onClick={() => leylineSystem.refineEquipment('armor')}
+                    className="flex-1 btn-secondary text-xs py-1.5"
+                  >
+                    Refine Armor
+                  </button>
+                </div>
+              </div>
+            )}
 
             <button className="btn-secondary w-full text-xs" onClick={() => setIsOpen(false)}>
               Close
