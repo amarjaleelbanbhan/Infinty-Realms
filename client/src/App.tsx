@@ -13,6 +13,7 @@ import { LeylineUI } from '@ui/LeylineUI';
 import { GuildUI } from '@ui/GuildUI';
 import { MarketplaceUI } from '@ui/MarketplaceUI';
 import { WorldJournalUI } from '@ui/WorldJournalUI';
+import { MerchantShopUI } from '@ui/MerchantShopUI';
 import { EventBanner } from '@ui/EventBanner';
 import { SkillUI } from '@ui/SkillUI';
 import { WorldMapUI } from '@ui/WorldMapUI';
@@ -67,6 +68,7 @@ export default function App() {
             <QuestLog />
             <Inventory />
             <Dialogue />
+            <MerchantShopUI />
             <PauseMenu />
             <MobileControls />
             <Chat />

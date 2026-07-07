@@ -17,6 +17,9 @@ interface UIStore {
   isQuestLogOpen: boolean;
   isDialogueOpen: boolean;
   isMapOpen: boolean;
+  isMerchantShopOpen: boolean;
+  merchantNpcId: string | null;
+  merchantBiome: string | null;
 
   // Dialogue
   dialogueNpc: Partial<NPC> | null;
@@ -42,6 +45,8 @@ interface UIStore {
   closeQuestLog: () => void;
   openDialogue: (npc: Partial<NPC>, text: string, options?: UIStore['dialogueOptions']) => void;
   closeDialogue: () => void;
+  openMerchantShop: (npcId: string, biome: string) => void;
+  closeMerchantShop: () => void;
   addToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
   setIsMobile: (mobile: boolean) => void;
@@ -55,6 +60,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isQuestLogOpen: false,
   isDialogueOpen: false,
   isMapOpen: false,
+  isMerchantShopOpen: false,
+  merchantNpcId: null,
+  merchantBiome: null,
   dialogueNpc: null,
   dialogueText: '',
   dialogueOptions: [],
@@ -75,6 +83,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
   openDialogue: (npc, text, options = []) =>
     set({ isDialogueOpen: true, dialogueNpc: npc, dialogueText: text, dialogueOptions: options }),
   closeDialogue: () => set({ isDialogueOpen: false, dialogueNpc: null, dialogueText: '', dialogueOptions: [] }),
+
+  openMerchantShop: (npcId, biome) => set({ isMerchantShopOpen: true, merchantNpcId: npcId, merchantBiome: biome }),
+  closeMerchantShop: () => set({ isMerchantShopOpen: false, merchantNpcId: null, merchantBiome: null }),
 
   addToast: (message, type = 'info') => {
     const id = crypto.randomUUID();

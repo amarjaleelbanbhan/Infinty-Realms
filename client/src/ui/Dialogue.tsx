@@ -33,6 +33,10 @@ export function Dialogue() {
     if (action === 'quest') {
       questSystem.generateQuest({ npcName: dialogueNpc?.name });
       addToast('Quest offered!', 'success');
+    } else if (action === 'trade') {
+      if (dialogueNpc?.id) {
+        useUIStore.getState().openMerchantShop(dialogueNpc.id, dialogueNpc.biome ?? 'plains');
+      }
     }
     closeDialogue();
     setTypedText('');

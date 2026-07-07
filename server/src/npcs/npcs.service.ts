@@ -97,6 +97,10 @@ export class NpcsService {
       { text: 'Farewell', action: 'close' },
     ];
 
+    if (npc.role === 'merchant') {
+      options.unshift({ text: 'Trade / View Shop', action: 'trade' });
+    }
+
     return {
       dialogue: dialogueText,
       options,
