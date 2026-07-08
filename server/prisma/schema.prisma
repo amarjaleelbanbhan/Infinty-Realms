@@ -171,3 +171,18 @@ model GuildWar {
   createdAt     DateTime @default(now())
   endsAt        DateTime
 }
+
+// ─── Player Housing ───────────────────────────────────────────
+
+model PlayerHouse {
+  id          String   @id @default(uuid())
+  ownerId     String   @unique
+  name        String   @default("My Cozy Shack")
+  level       Int      @default(1)
+  theme       String   @default("wood")
+  
+  itemsJson   String   @default("[]") // Store placed furniture coordinates
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

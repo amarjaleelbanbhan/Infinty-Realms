@@ -26,6 +26,7 @@ import { ArenaUI } from '@ui/ArenaUI';
 import { AscensionUI } from '@ui/AscensionUI';
 import { GodInterventionUI } from '@ui/GodInterventionUI';
 import { AuctionHouseUI } from '@ui/AuctionHouseUI';
+import { HousingUI } from '@ui/HousingUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -38,6 +39,7 @@ export default function App() {
   const [showSkills, setShowSkills] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showCreator, setShowCreator] = useState(false);
+  const [showHousing, setShowHousing] = useState(false);
 
   useEffect(() => {
     // Check mobile screen size
@@ -85,6 +87,12 @@ export default function App() {
 
             {/* Quick action buttons for Guild, Market, & Journal */}
             <div className="fixed top-4 left-[420px] z-20 flex gap-2">
+              <button
+                onClick={() => setShowHousing(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
+              >
+                🏡 Housing
+              </button>
               <button
                 onClick={() => setShowGuild(true)}
                 className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
@@ -148,6 +156,7 @@ export default function App() {
             </div>
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
+            {showHousing && <HousingUI onClose={() => setShowHousing(false)} />}
             {showMarket && <MarketplaceUI onClose={() => setShowMarket(false)} />}
             {showJournal && <WorldJournalUI onClose={() => setShowJournal(false)} />}
             {showSkills && <SkillUI onClose={() => setShowSkills(false)} />}

@@ -6,6 +6,7 @@ import { WorldScene } from './scenes/WorldScene';
 import { DungeonScene } from './scenes/DungeonScene';
 import { UIScene } from './scenes/UIScene';
 import { PauseScene } from './scenes/PauseScene';
+import { HousingScene } from './scenes/HousingScene';
 
 export function createPhaserGame(parent: HTMLElement): Phaser.Game {
   const config: Phaser.Types.Core.GameConfig = {
@@ -17,7 +18,7 @@ export function createPhaserGame(parent: HTMLElement): Phaser.Game {
     pixelArt: true,
     antialias: false,
     roundPixels: true,
-    scene: [BootScene, PreloadScene, MainMenuScene, WorldScene, DungeonScene, UIScene, PauseScene],
+    scene: [BootScene, PreloadScene, MainMenuScene, WorldScene, DungeonScene, UIScene, PauseScene, HousingScene],
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -1,6 +1,6 @@
-feat: implement Phase 16 Advanced Multi-Agent AI NPCs
+feat: implement Phase 17 Player Housing & Instances
 
-- Created `AiAgentService` to orchestrate interactions between NPCs and evaluate the global world state for dynamic events.
-- Added API endpoints in `AiController` to trigger NPC dialogue generation and world event evaluation.
-- Added a 5-minute cron interval in `AiAgentService` to automatically evaluate the world state.
-- Decoupled server from Vercel AI SDK to avoid workspace dependency issues during `typecheck`.
+- Added `PlayerHouse` model to Prisma schema for saving home layouts and settings.
+- Created `HousingScene` in Phaser for rendering player homes.
+- Implemented `HousingUI` for purchasing and entering instances.
+- Integrated `HousingUI` to `App.tsx` navigation.
