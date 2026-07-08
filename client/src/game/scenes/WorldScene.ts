@@ -641,6 +641,14 @@ export class WorldScene extends Phaser.Scene {
         (window as Window & { __joystickState?: null }).__joystickState = null;
       }
     });
+
+    // Wire up global action hooks for React UI
+    (window as Window & { __mobileAttack?: () => void }).__mobileAttack = () => {
+      this.playerAttack();
+    };
+    (window as Window & { __mobileInteract?: () => void }).__mobileInteract = () => {
+      this.interactWithNearest();
+    };
   }
 
   private setupMinimap() {
