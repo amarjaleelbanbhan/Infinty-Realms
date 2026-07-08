@@ -43,11 +43,25 @@ export class QuestsService {
     });
   }
 
-  async getPlayerQuests(playerId: string) {
+  async getPlayerQuests(playerId: string, options?: { worldSeed: string; biome: BiomeType; season: Season; playerLevel: number }) {
     const quests = await this.prisma.quest.findMany({
       where: { playerId },
       orderBy: { createdAt: 'desc' },
     });
+    if (quests.length === 0 && options) {
+      const newQuest = await this.generateAndSave({
+        worldSeed: options.worldSeed,
+        biome: options.biome,
+        season: options.season,
+        playerLevel: options.playerLevel,
+        playerId,
+      });
+      return [{
+        ...newQuest,
+        objectives: JSON.parse(newQuest.objectivesJson),
+        rewards: JSON.parse(newQuest.rewardsJson),
+      }];
+    }
 
     return quests.map((q: { objectivesJson: string; rewardsJson: string }) => ({
       ...q,

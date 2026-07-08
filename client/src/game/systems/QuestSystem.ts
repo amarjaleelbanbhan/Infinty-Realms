@@ -58,6 +58,40 @@ function generateMockQuest(biome: BiomeType, playerLevel: number): Partial<Quest
 }
 
 export class QuestSystem {
+  /** Fetch existing quests (and trigger auto-generation on server if empty) */
+  async syncQuests() {
+    const gameStore = useGameStore.getState();
+    const token = gameStore.playerToken;
+    const player = gameStore.player;
+    const world = gameStore.worldState;
+    if (!token || !player || !world) return;
+
+    try {
+      const biome: BiomeType = 'plains';
+      const query = new URLSearchParams({
+        worldSeed: world.seed ?? 'default',
+        biome,
+        season: world.season ?? 'spring',
+        playerLevel: (player.level ?? 1).toString(),
+      });
+      const res = await fetch(`/api/quests/my?${query.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json() as Quest[];
+        const store = useQuestStore.getState();
+        // Avoid duplicates
+        for (const q of data) {
+          if (!store.quests.find((existing) => existing.id === q.id)) {
+            store.addQuest(q);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[QuestSystem] Failed to sync quests:', e);
+    }
+  }
+
   /** Generate a new quest (tries server first, falls back to client mock) */
   async generateQuest(options?: { npcName?: string }): Promise<Quest> {
     const gameStore = useGameStore.getState();

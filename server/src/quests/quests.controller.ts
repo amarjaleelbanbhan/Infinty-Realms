@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { QuestsService } from './quests.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -38,8 +38,23 @@ export class QuestsController {
 
   @Get('my')
   @ApiOperation({ summary: 'Get all quests for current player' })
-  async myQuests(@Request() req: { user: { playerId: string } }) {
-    return this.quests.getPlayerQuests(req.user.playerId);
+  async myQuests(
+    @Request() req: { user: { playerId: string } },
+    @Query('worldSeed') worldSeed?: string,
+    @Query('biome') biome?: string,
+    @Query('season') season?: string,
+    @Query('playerLevel') playerLevel?: string,
+  ) {
+    let options = undefined;
+    if (worldSeed && biome && season && playerLevel) {
+      options = {
+        worldSeed,
+        biome: biome as BiomeType,
+        season: season as Season,
+        playerLevel: parseInt(playerLevel, 10) || 1,
+      };
+    }
+    return this.quests.getPlayerQuests(req.user.playerId, options);
   }
 
   @Patch(':id/status')

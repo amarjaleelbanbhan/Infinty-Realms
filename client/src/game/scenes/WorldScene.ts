@@ -201,9 +201,9 @@ export class WorldScene extends Phaser.Scene {
       },
     });
 
-    // ── Initial quest ──
+    // ── Initial quest sync ──
     this.time.delayedCall(3000, () => {
-      questSystem.generateQuest();
+      questSystem.syncQuests();
     });
 
     // ── Touch/mobile input ──
