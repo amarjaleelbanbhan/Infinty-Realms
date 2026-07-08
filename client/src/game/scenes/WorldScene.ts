@@ -178,6 +178,10 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setZoom(1.2);
 
+    // ── PostFX / Lighting ──
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.7);
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 0.9, 1.1);
+
     // ── Input ──
     this.setupInput();
 
