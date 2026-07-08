@@ -67,6 +67,67 @@ To create a award-winning RPG, we reject generic clones in favor of a **living s
 
 ---
 
+---
+
+### 🌾 Phase 6: Biome-Reactive Ecosystems & Farming
+
+#### 6.1 Ecosystem Balance & Depletion
+- **Mechanic**: Dynamic tracking of wildlife population and vegetation density per biome.
+- **Consequences**: Overhunting beasts or clear-cutting trees in a region temporarily reduces local spawn rates, causing soil erosion that halts essence generation.
+
+#### 6.2 Leyline-Infused Agriculture
+- **Mechanic**: Soil tilling and farming near active Leyline Nodes.
+- **Mutations**: Grow magical elemental plants that mutate depending on local biome elements (e.g. Emberbloom in Volcano areas, Frostberry in Snow areas) used for alchemy brewing.
+
+---
+
+### 🏰 Phase 7: Guild Citadels & Siege Defenses
+
+#### 7.1 Citadel Base Building
+- **Mechanic**: Guilds can claim sandbox zones and erect modular walls, gates, workshops, and energy hubs.
+- **Logistics**: Feed leyline currents directly into Guild Citadels to power defensive energy shields.
+
+#### 7.2 Siege Invasions
+- **Mechanic**: Emergent raid alerts where massive hordes of void monsters or outlaws march on Citadels.
+- **Tactics**: Construct defensive ballista turrets, lava traps, and oil cauldrons to survive.
+
+---
+
+### 🐾 Phase 8: Dynamic Pet & Mount Taming
+
+#### 8.1 Wildlife Taming
+- **Mechanic**: Trap wild beasts using runic snares.
+- **Breeding**: Breed mounts to mix stats, speeds, and carry weight slots.
+
+#### 8.2 Runic Mutations
+- **Mechanic**: Infuse pets with concentrated Leyline Essence.
+- **Mutations**: Pets gain elemental combat skills and glowing cosmetics (e.g., flame paws, frost shields) to fight alongside the player.
+
+---
+
+### 🔮 Phase 9: Legendary Relics & Spell Customization
+
+#### 9.1 Custom Spell Grimoire
+- **Mechanic**: Combine raw runes to craft bespoke active spells (e.g., lightning chain that heals players on bounce).
+- **Customization**: Tweak cast times, mana costs, and splash ranges.
+
+#### 9.2 Legendary Relic Forging
+- **Mechanic**: Recover shattered shards from dungeon boss chambers to re-forge ancient relics.
+- **Relic Passive**: Relics grant permanent global buffs (e.g., walk on water, immunity to acid storms).
+
+---
+
+### 🌌 Phase 10: Realm Ascension & Seasonal Reset
+
+#### 10.1 Ascension Trials
+- **Mechanic**: A massive end-game challenge dungeon testing automation, combat, and puzzle-solving.
+- **Ascension**: Ascending grants permanent celestial titles, character aura cosmetics, and rare resource multipliers.
+
+#### 10.2 Global Realm Seasons
+- **Mechanic**: A server-wide season cycle that alters global resource pools, unlocks unique challenges, and rotates leaderboards.
+
+---
+
 ## 📈 Award-Winning Quality Checklist
 Before declaring a phase complete, verify it meets the following standards:
 - [ ] **Aesthetics**: Sleek void theme colors, custom glassmorphic styling, and glowing particle effects on casts.
