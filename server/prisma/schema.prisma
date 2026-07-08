@@ -155,3 +155,19 @@ model GameSession {
   startedAt   DateTime @default(now())
   endedAt     DateTime?
 }
+
+// ─── Guild Wars ───────────────────────────────────────────────
+
+model GuildWar {
+  id            String   @id @default(uuid())
+  challengerId  String
+  defenderId    String
+  targetCityId  String
+  status        String   @default("active") // active, resolved
+  
+  challengerPoints Int @default(0)
+  defenderPoints   Int @default(0)
+  
+  createdAt     DateTime @default(now())
+  endsAt        DateTime
+}

@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useGuildStore } from '@stores/useGuildStore';
 import { useUIStore } from '@stores/useUIStore';
 
+import { GuildWarUI } from './GuildWarUI';
+
 export function GuildUI({ onClose }: { onClose: () => void }) {
   const { guild, createGuild, depositVault, leaveGuild } = useGuildStore();
+  const [activeTab, setActiveTab] = useState<'info' | 'warfare'>('info');
   const [nameInput, setNameInput] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [depositAmount, setDepositAmount] = useState(50);
@@ -27,7 +30,24 @@ export function GuildUI({ onClose }: { onClose: () => void }) {
 
         {guild ? (
           <div>
-            {/* Header info */}
+            <div className="flex gap-4 mb-4">
+              <button 
+                className={`px-3 py-1 text-sm font-game tracking-wider rounded ${activeTab === 'info' ? 'bg-realm-accent text-white' : 'bg-black/30 text-realm-text-muted'}`}
+                onClick={() => setActiveTab('info')}
+              >
+                Guild Info
+              </button>
+              <button 
+                className={`px-3 py-1 text-sm font-game tracking-wider rounded ${activeTab === 'warfare' ? 'bg-realm-hp/80 text-white' : 'bg-black/30 text-realm-text-muted'}`}
+                onClick={() => setActiveTab('warfare')}
+              >
+                Warfare
+              </button>
+            </div>
+
+            {activeTab === 'info' && (
+              <>
+                {/* Header info */}
             <div className="bg-realm-surface border border-realm-accent/40 rounded-xl p-4 mb-4 flex items-center justify-between">
               <div>
                 <span className="font-mono text-xs text-realm-gold font-bold bg-realm-gold/10 px-2 py-0.5 rounded border border-realm-gold/30 mr-2">
@@ -85,7 +105,12 @@ export function GuildUI({ onClose }: { onClose: () => void }) {
 
             <button onClick={leaveGuild} className="btn-secondary w-full text-xs text-realm-hp border-realm-hp/30 hover:bg-realm-hp/10">
               Leave Guild
-            </button>
+              </button>
+            </>)}
+
+            {activeTab === 'warfare' && (
+              <GuildWarUI guildId={guild.id} />
+            )}
           </div>
         ) : (
           <form onSubmit={handleCreate} className="space-y-4">

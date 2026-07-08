@@ -11,6 +11,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MultiplayerModule } from './multiplayer/multiplayer.module';
 import { NpcsModule } from './npcs/npcs.module';
 import { AuctionModule } from './auction/auction.module';
+import { GuildWarModule } from './guild-war/guild-war.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuctionModule } from './auction/auction.module';
     MultiplayerModule,
     NpcsModule,
     AuctionModule,
+    GuildWarModule,
   ],
   providers: [
     {

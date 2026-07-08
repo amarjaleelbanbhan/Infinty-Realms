@@ -1,6 +1,6 @@
-feat: implement Phase 13 Global Auction House
+feat: implement Phase 15 Asynchronous Guild Wars
 
-- Added `AuctionItem` model to Prisma schema for tracking listed items, seller, bids, and expiration.
-- Created `AuctionModule`, `AuctionController`, and `AuctionService` in the NestJS backend to handle listing items and buying out auctions.
-- Implemented `AuctionHouseUI` in the client with a "Browse" and "Sell" tab.
-- Integrated the Auction House UI into the main application, adding a button to the top action bar to open it.
+- Added `GuildWar` model to Prisma schema to track war challenger, defender, target city, and siege points.
+- Created `GuildWarModule`, `GuildWarController`, and `GuildWarService` in NestJS to handle declaring wars and contributing siege points.
+- Implemented `GuildWarUI` on the client, adding a "Warfare" tab inside the existing `GuildUI.tsx`.
+- Integrated active war fetching and point contribution for guild members.
