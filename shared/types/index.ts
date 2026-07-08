@@ -99,6 +99,8 @@ export interface Player {
   playtime: number;    // seconds
   worldSeed: string;
   guildId?: UUID;
+  ascensions: number;
+  godPerks: string[];
 }
 
 export interface InventorySlot {
@@ -239,6 +241,17 @@ export interface GhostDuelResult {
   goldWon: number;
   expWon: number;
 }
+
+// ─── Godhood (Phase 9) ────────────────────────────────────────
+
+export type GodInterventionType = 'healing_rain' | 'gold_blessing' | 'exp_surge';
+
+export const GOD_PERKS = [
+  { id: 'golem_speed', name: 'Alacrity of Stone', desc: 'Golems move 20% faster.' },
+  { id: 'offline_double', name: 'Eternal Vigil', desc: 'Offline rewards are doubled.' },
+  { id: 'leyline_power', name: 'Arcane Conduit', desc: 'Leyline nodes generate 50% more power.' },
+  { id: 'combat_god', name: 'Ares Blessing', desc: 'Base attack +50%.' },
+];
 
 // ─── Enemies ──────────────────────────────────────────────────
 

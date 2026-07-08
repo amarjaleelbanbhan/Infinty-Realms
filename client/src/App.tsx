@@ -23,6 +23,8 @@ import { EcosystemUI } from '@ui/EcosystemUI';
 import { CitadelBuilderUI } from '@ui/CitadelBuilderUI';
 import { OfflineProgressUI } from '@ui/OfflineProgressUI';
 import { ArenaUI } from '@ui/ArenaUI';
+import { AscensionUI } from '@ui/AscensionUI';
+import { GodInterventionUI } from '@ui/GodInterventionUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -107,6 +109,18 @@ export default function App() {
                 ⚔️ Arena
               </button>
               <button
+                onClick={() => window.dispatchEvent(new CustomEvent('ir:open_ascension'))}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1 shadow-[0_0_10px_rgba(255,215,0,0.5)]"
+              >
+                👑 Ascend
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('ir:open_intervention'))}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
+              >
+                🌌 God Spells
+              </button>
+              <button
                 onClick={() => setShowSkills(true)}
                 className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
               >
@@ -140,6 +154,8 @@ export default function App() {
             <CitadelBuilderUI />
             <OfflineProgressUI />
             <ArenaUI />
+            <AscensionUI />
+            <GodInterventionUI />
           </>
         )}
 

@@ -220,9 +220,58 @@ export class WorldScene extends Phaser.Scene {
     // ── Citadel Build Mode ──
     window.addEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);
     window.addEventListener('ir:siege_invasion', this.handleSiegeEvent);
+    window.addEventListener('ir:god_intervention_cast', this.handleGodIntervention);
 
     console.log(`[WorldScene] World ready! Cities: ${this.world.cities.length}`);
   }
+
+  private handleGodIntervention = ((e: CustomEvent) => {
+    const { type, casterName } = e.detail;
+    
+    // Broadcast if in multiplayer, but for now apply locally:
+    const cx = this.cameras.main.centerX + this.cameras.main.scrollX;
+    const cy = this.cameras.main.centerY + this.cameras.main.scrollY;
+
+    const effectText = this.add.text(cx, cy - 100, `${casterName} casts ${type.replace('_', ' ')}!`, {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '24px',
+      color: '#00ffff',
+      stroke: '#000000',
+      strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(100);
+
+    this.tweens.add({
+      targets: effectText,
+      y: cy - 150,
+      alpha: 0,
+      duration: 4000,
+      onComplete: () => effectText.destroy()
+    });
+
+    if (type === 'healing_rain') {
+      const stats = useGameStore.getState().player?.stats;
+      if (stats) this.combatSystem.healPlayer(stats.maxHp);
+      
+      // Visual rain (simplified)
+      for(let i=0; i<50; i++) {
+        const drop = this.add.circle(cx + (Math.random()-0.5)*800, cy - 400 + Math.random()*200, 2, 0x00ffff, 0.8);
+        drop.setDepth(99);
+        this.tweens.add({
+          targets: drop,
+          y: drop.y + 600,
+          duration: 1000 + Math.random()*500,
+          onComplete: () => drop.destroy()
+        });
+      }
+    } else if (type === 'gold_blessing') {
+      useGameStore.getState().addGold(500);
+      useUIStore.getState().addToast('+500 Gold from the Gods!', 'gold');
+    } else if (type === 'exp_surge') {
+      useGameStore.getState().addExperience(1000);
+      useUIStore.getState().addToast('+1000 EXP from the Gods!', 'success');
+    }
+
+  }) as EventListener;
 
   private handleSiegeEvent = ((e: CustomEvent) => {
     const { x, y } = e.detail;
@@ -1540,6 +1589,7 @@ export class WorldScene extends Phaser.Scene {
     
     window.removeEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);
     window.removeEventListener('ir:siege_invasion', this.handleSiegeEvent);
+    window.removeEventListener('ir:god_intervention_cast', this.handleGodIntervention);
   }
 }
 

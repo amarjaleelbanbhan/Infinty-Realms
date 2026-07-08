@@ -29,6 +29,8 @@ interface GameState {
   depleteEcosystem: (biome: string, amount: number) => void;
   regenerateEcosystems: () => void;
   setToken: (token: string) => void;
+  ascend: (perkId: string) => void;
+  castGodIntervention: (type: string) => void;
   reset: () => void;
 }
 
@@ -113,20 +115,22 @@ export const useGameStore = create<GameState>()(
           player: {
             id: playerId,
             name: finalName,
+            worldSeed,
             x: 128 * 32,
             y: 128 * 32,
-            stats: { ...DEFAULT_PLAYER_STATS },
+            stats: DEFAULT_PLAYER_STATS,
             level: 1,
             experience: 0,
-            gold: 50,
+            gold: 0,
             inventory: [],
             equipment: {},
-            skills: [],
+            skills: ['slash'],
             reputation: {},
+            titles: ['Novice'],
             questIds: [],
-            titles: [],
             playtime: 0,
-            worldSeed,
+            ascensions: 0,
+            godPerks: [],
           },
           worldState: {
             seed: worldSeed,
@@ -266,7 +270,37 @@ export const useGameStore = create<GameState>()(
           };
         }),
 
-      setToken: (token) => set({ playerToken: token }),
+      setToken: (token) => {
+        set({ playerToken: token });
+      },
+
+      ascend: (perkId) => {
+        const { player } = get();
+        if (!player) return;
+
+        const newSeed = `realm-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        
+        const newPlayer = {
+          ...player,
+          level: 1,
+          experience: 0,
+          gold: 0,
+          inventory: [],
+          equipment: {},
+          worldSeed: newSeed,
+          ascensions: (player.ascensions || 0) + 1,
+          godPerks: [...(player.godPerks || []), perkId],
+        };
+
+        set({ player: newPlayer });
+        window.dispatchEvent(new CustomEvent('ir:player_ascended', { detail: { newSeed } }));
+      },
+
+      castGodIntervention: (type) => {
+        const { player } = get();
+        if (!player) return;
+        window.dispatchEvent(new CustomEvent('ir:god_intervention_cast', { detail: { type, casterName: player.name } }));
+      },
 
       reset: () =>
         set({
