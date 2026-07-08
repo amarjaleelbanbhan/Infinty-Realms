@@ -59,13 +59,39 @@ export class PlayersService {
   }
 
   async saveState(playerId: string, partial: Partial<Player>) {
+    const currentPlayer = await this.prisma.player.findUnique({ where: { id: playerId } });
+    if (!currentPlayer) throw new NotFoundException('Player not found');
+
     const data: Record<string, unknown> = { updatedAt: new Date() };
     if (partial.stats) data.statsJson = JSON.stringify(partial.stats);
     if (partial.inventory) data.inventoryJson = JSON.stringify(partial.inventory);
     if (partial.equipment) data.equipmentJson = JSON.stringify(partial.equipment);
-    if (partial.gold !== undefined) data.gold = partial.gold;
-    if (partial.experience !== undefined) data.experience = partial.experience;
+
+    // Anti-Cheat: Validate Gold & XP Deltas
+    const timeSinceLastUpdate = (new Date().getTime() - currentPlayer.updatedAt.getTime()) / 1000;
+    
+    if (partial.gold !== undefined) {
+      const goldDelta = partial.gold - currentPlayer.gold;
+      // Allow max 100 gold per second (generous for boss kills)
+      if (goldDelta > 0 && goldDelta > timeSinceLastUpdate * 100) {
+        console.warn(`[AntiCheat] Player ${playerId} flagged for gold manipulation. Delta: ${goldDelta}, Time: ${timeSinceLastUpdate}s`);
+      } else {
+        data.gold = partial.gold;
+      }
+    }
+    
+    if (partial.experience !== undefined) {
+      const xpDelta = partial.experience - currentPlayer.experience;
+      // Allow max 500 xp per second
+      if (xpDelta > 0 && xpDelta > timeSinceLastUpdate * 500) {
+        console.warn(`[AntiCheat] Player ${playerId} flagged for xp manipulation. Delta: ${xpDelta}, Time: ${timeSinceLastUpdate}s`);
+      } else {
+        data.experience = partial.experience;
+      }
+    }
+
     if (partial.level !== undefined) data.level = partial.level;
+    if (partial.ascensions !== undefined) data.ascensions = partial.ascensions;
     if (partial.x !== undefined) data.posX = partial.x;
     if (partial.y !== undefined) data.posY = partial.y;
     if (partial.playtime !== undefined) data.playtime = partial.playtime;
@@ -77,7 +103,7 @@ export class PlayersService {
     id: string; name: string; worldSeed: string; posX: number; posY: number;
     statsJson: string; level: number; experience: number; gold: number;
     inventoryJson: string; equipmentJson: string; skillsJson: string;
-    reputationJson: string; titlesJson: string; playtime: number;
+    reputationJson: string; titlesJson: string; playtime: number; ascensions: number;
   }): Partial<Player> {
     return {
       id: p.id,
@@ -95,6 +121,7 @@ export class PlayersService {
       reputation: JSON.parse(p.reputationJson),
       titles: JSON.parse(p.titlesJson),
       playtime: p.playtime,
+      ascensions: p.ascensions,
     };
   }
 }

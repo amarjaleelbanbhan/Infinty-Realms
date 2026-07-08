@@ -28,9 +28,16 @@ export function HUD() {
             <span className="font-game text-sm text-white tracking-wide">
               {player.name}
             </span>
-            <span className="font-game text-xs text-realm-gold bg-realm-gold/10 px-2 py-0.5 rounded-full border border-realm-gold/30">
-              Lv.{level}
-            </span>
+            <div className="flex gap-1">
+              {player.ascensions ? (
+                <span className="font-game text-xs text-realm-accent bg-realm-accent/10 px-2 py-0.5 rounded-full border border-realm-accent/30" title="Ascension Level">
+                  ⭐{player.ascensions}
+                </span>
+              ) : null}
+              <span className="font-game text-xs text-realm-gold bg-realm-gold/10 px-2 py-0.5 rounded-full border border-realm-gold/30">
+                Lv.{level}
+              </span>
+            </div>
           </div>
 
           {/* HP bar */}

@@ -27,6 +27,7 @@ model Player {
   // Stats (stored as JSON string for SQLite)
   statsJson   String   @default("{\"hp\":100,\"maxHp\":100,\"mana\":50,\"maxMana\":50,\"attack\":10,\"defense\":5,\"speed\":150,\"luck\":5}")
   level       Int      @default(1)
+  ascensions  Int      @default(0) // Paragon / Prestige level
   experience  Int      @default(0)
   gold        Int      @default(50)
   
