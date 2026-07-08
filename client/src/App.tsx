@@ -19,6 +19,7 @@ import { EventBanner } from '@ui/EventBanner';
 import { SkillUI } from '@ui/SkillUI';
 import { WorldMapUI } from '@ui/WorldMapUI';
 import { KeybindPanel } from '@ui/KeybindPanel';
+import { EcosystemUI } from '@ui/EcosystemUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -125,6 +126,8 @@ export default function App() {
 
             {/* Keyboard controls legend */}
             <KeybindPanel />
+            
+            <EcosystemUI />
           </>
         )}
 

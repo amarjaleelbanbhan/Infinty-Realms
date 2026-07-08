@@ -20,6 +20,7 @@ interface UIStore {
   isMerchantShopOpen: boolean;
   merchantNpcId: string | null;
   merchantBiome: string | null;
+  currentBiome: string | null;
 
   // Dialogue
   dialogueNpc: Partial<NPC> | null;
@@ -51,6 +52,7 @@ interface UIStore {
   removeToast: (id: string) => void;
   setIsMobile: (mobile: boolean) => void;
   setJoystickActive: (active: boolean) => void;
+  setCurrentBiome: (biome: string | null) => void;
   togglePause: () => void;
 }
 
@@ -63,6 +65,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isMerchantShopOpen: false,
   merchantNpcId: null,
   merchantBiome: null,
+  currentBiome: null,
   dialogueNpc: null,
   dialogueText: '',
   dialogueOptions: [],
@@ -97,6 +100,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   setIsMobile: (mobile) => set({ isMobile: mobile }),
   setJoystickActive: (active) => set({ joystickActive: active }),
+  setCurrentBiome: (biome) => set({ currentBiome: biome }),
 
   togglePause: () =>
     set((s) => ({

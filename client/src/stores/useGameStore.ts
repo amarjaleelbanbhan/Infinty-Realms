@@ -26,6 +26,8 @@ interface GameState {
   removeFromInventory: (itemId: string, quantity: number) => boolean;
   setWorldState: (world: Partial<WorldState>) => void;
   updateSeason: (season: Season) => void;
+  depleteEcosystem: (biome: string, amount: number) => void;
+  regenerateEcosystems: () => void;
   setToken: (token: string) => void;
   reset: () => void;
 }
@@ -134,6 +136,10 @@ export const useGameStore = create<GameState>()(
             season: worldSeason,
             dayTime: worldDayTime,
             worldAge: worldAge,
+            biomeDepletion: {
+              ocean: 100, beach: 100, plains: 100, forest: 100,
+              desert: 100, snow: 100, volcano: 100, swamp: 100, dungeon: 100,
+            }
           },
         });
       },
@@ -228,6 +234,37 @@ export const useGameStore = create<GameState>()(
         set((s) => ({
           worldState: s.worldState ? { ...s.worldState, season } : null,
         })),
+
+      depleteEcosystem: (biome, amount) =>
+        set((s) => {
+          if (!s.worldState || !s.worldState.biomeDepletion) return {};
+          const current = s.worldState.biomeDepletion[biome as keyof typeof s.worldState.biomeDepletion] ?? 100;
+          return {
+            worldState: {
+              ...s.worldState,
+              biomeDepletion: {
+                ...s.worldState.biomeDepletion,
+                [biome]: Math.max(0, current - amount)
+              }
+            }
+          };
+        }),
+
+      regenerateEcosystems: () =>
+        set((s) => {
+          if (!s.worldState || !s.worldState.biomeDepletion) return {};
+          const updated = { ...s.worldState.biomeDepletion };
+          for (const key of Object.keys(updated)) {
+            const b = key as keyof typeof updated;
+            updated[b] = Math.min(100, updated[b] + 1);
+          }
+          return {
+            worldState: {
+              ...s.worldState,
+              biomeDepletion: updated
+            }
+          };
+        }),
 
       setToken: (token) => set({ playerToken: token }),
 

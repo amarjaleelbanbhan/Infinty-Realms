@@ -63,6 +63,7 @@ export interface WorldState {
   season: Season;
   dayTime: number;     // 0–24
   worldAge: number;    // days elapsed
+  biomeDepletion: Record<BiomeType, number>; // 0 (barren) to 100 (healthy)
 }
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -113,7 +114,7 @@ export interface Equipment {
 
 // ─── Items ────────────────────────────────────────────────────
 
-export type ItemType = 'weapon' | 'armor' | 'helmet' | 'accessory' | 'consumable' | 'quest' | 'material';
+export type ItemType = 'weapon' | 'armor' | 'helmet' | 'accessory' | 'consumable' | 'quest' | 'material' | 'seed' | 'crop';
 
 export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
@@ -128,6 +129,19 @@ export interface Item {
   stats?: Partial<PlayerStats>;
   effect?: string;     // consumable effect key
   questId?: UUID;
+  cropBiome?: BiomeType; // For seeds and crops
+}
+
+// ─── Agriculture ──────────────────────────────────────────────
+
+export interface FarmPlot {
+  id: UUID;
+  x: number;
+  y: number;
+  plantedAt: number;   // Timestamp
+  biome: BiomeType;
+  cropType: string;
+  ready: boolean;
 }
 
 // ─── NPCs ─────────────────────────────────────────────────────

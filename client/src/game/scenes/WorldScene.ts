@@ -13,7 +13,8 @@ import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
 import { socketManager } from '@game/systems/SocketManager';
 import { leylineSystem } from '@game/systems/LeylineSystem';
-import type { BiomeType } from '@shared/types';
+import { farmingSystem } from '@game/systems/FarmingSystem';
+import type { BiomeType, FarmPlot } from '@shared/types';
 
 const TILE_SIZE = 32;
 
@@ -79,6 +80,7 @@ export class WorldScene extends Phaser.Scene {
   private leylineGraphics!: Phaser.GameObjects.Graphics;
   private nodeSprites = new Map<string, Phaser.GameObjects.Container>();
   private golemCaravans = new Map<string, Phaser.GameObjects.Container>();
+  private farmPlotSprites = new Map<string, Phaser.GameObjects.Container>();
   private handleJoinedBound = this.handleRemotePlayerJoined.bind(this);
   private handleMovedBound = this.handleRemotePlayerMoved.bind(this);
   private handleAttackedBound = this.handleRemotePlayerAttacked.bind(this);
@@ -288,6 +290,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private spawnNearbyEnemies(cx: number, cy: number) {
+    const tx = Math.floor(cx / TILE_SIZE);
+    const ty = Math.floor(cy / TILE_SIZE);
+    const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
+    
+    const depletion = useGameStore.getState().worldState?.biomeDepletion?.[biome] ?? 100;
+    if (depletion < 50) return; // Ecosystem too depleted for enemy spawns
+
     const enemyTypes = [
       { type: 'goblin', hp: 30, speed: 90, attack: 8, defense: 2, exp: 20, gold: 5 },
       { type: 'orc', hp: 60, speed: 60, attack: 15, defense: 5, exp: 40, gold: 10 },
@@ -423,8 +432,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private spawnNearbyItems(cx: number, cy: number) {
+    const tx = Math.floor(cx / TILE_SIZE);
+    const ty = Math.floor(cy / TILE_SIZE);
+    const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
+    
+    const depletion = useGameStore.getState().worldState?.biomeDepletion?.[biome] ?? 100;
+    if (depletion < 20) return; // Soil erosion: no item or essence generation
+
     const itemTypes = ['gold', 'potion', 'gem', 'scroll'];
-    const count = 5 + Math.floor(Math.random() * 8);
+    let count = 5 + Math.floor(Math.random() * 8);
+    if (depletion < 50) count = Math.max(1, Math.floor(count / 3)); // Scarcity
 
     for (let i = 0; i < count; i++) {
       const type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
@@ -584,6 +601,7 @@ export class WorldScene extends Phaser.Scene {
     this.checkNPCInteraction();
     this.checkDungeonEntry();
     this.updateLeylineRendering();
+    this.updateFarmingRendering();
     this.updateCooldowns(delta);
 
     // Update minimap every 30 frames
@@ -593,6 +611,13 @@ export class WorldScene extends Phaser.Scene {
 
     // Sync player position to store
     useGameStore.getState().updatePlayerPosition(this.player.x, this.player.y);
+
+    const tx = Math.floor(this.player.x / TILE_SIZE);
+    const ty = Math.floor(this.player.y / TILE_SIZE);
+    const currentBiome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
+    if (useUIStore.getState().currentBiome !== currentBiome) {
+      useUIStore.getState().setCurrentBiome(currentBiome);
+    }
 
     // Broadcast position to server if active room is set and player has moved
     if (socketManager.getRoomCode()) {
@@ -812,6 +837,11 @@ export class WorldScene extends Phaser.Scene {
 
   private killEnemy(enemy: EnemySprite) {
     enemy.enemyData.state = 'dead';
+
+    const tx = Math.floor(enemy.x / TILE_SIZE);
+    const ty = Math.floor(enemy.y / TILE_SIZE);
+    const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
+    useGameStore.getState().depleteEcosystem(biome, 1);
 
     // Death animation
     this.tweens.add({
@@ -1070,6 +1100,29 @@ export class WorldScene extends Phaser.Scene {
       }
 
       ui.openDialogue(npcInfo, dialogue, options);
+      return;
+    }
+
+    // Check Farm Plots
+    for (const plot of farmingSystem.getPlots()) {
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, plot.x, plot.y);
+      if (dist < this.INTERACT_RANGE) {
+        farmingSystem.harvestPlot(plot.id);
+        return;
+      }
+    }
+
+    // Check Leyline Nodes for Planting
+    for (const node of leylineSystem.getNodes()) {
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, node.x, node.y);
+      if (dist < this.INTERACT_RANGE) {
+        const tx = Math.floor(node.x / TILE_SIZE);
+        const ty = Math.floor(node.y / TILE_SIZE);
+        const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
+        
+        farmingSystem.plantSeed(node.x + (Math.random() * 40 - 20), node.y + (Math.random() * 40 - 20), biome);
+        return;
+      }
     }
   }
 
@@ -1281,6 +1334,63 @@ export class WorldScene extends Phaser.Scene {
               });
             }
           }
+        }
+      }
+    }
+  }
+
+  private updateFarmingRendering() {
+    const plots = farmingSystem.getPlots();
+
+    // Remove deleted
+    for (const [id, sprite] of this.farmPlotSprites.entries()) {
+      if (!plots.find((p) => p.id === id)) {
+        sprite.destroy();
+        this.farmPlotSprites.delete(id);
+      }
+    }
+
+    // Add / Update
+    for (const plot of plots) {
+      let container = this.farmPlotSprites.get(plot.id);
+      if (!container) {
+        const soil = this.add.ellipse(0, 8, 20, 10, 0x3d2817, 1);
+        
+        const cropIcon = plot.ready ? '🌱' : '🌿';
+        const textIcon = this.add.text(0, 0, cropIcon, { fontSize: '16px' }).setOrigin(0.5);
+
+        if (!plot.ready) {
+          textIcon.setScale(0.5);
+          textIcon.setAlpha(0.5);
+          
+          this.tweens.add({
+            targets: textIcon,
+            scaleX: 1,
+            scaleY: 1,
+            alpha: 1,
+            duration: 30_000,
+            ease: 'Linear',
+          });
+        }
+
+        container = this.add.container(plot.x, plot.y, [soil, textIcon]);
+        container.setDepth(15);
+        this.farmPlotSprites.set(plot.id, container);
+        this.entityLayer.add(container);
+      } else {
+        const textIcon = container.list[1] as Phaser.GameObjects.Text;
+        if (plot.ready && textIcon.text !== '✨') {
+          textIcon.setText('✨'); // Ready indicator
+          textIcon.setAlpha(1);
+          textIcon.setScale(1);
+          
+          this.tweens.add({
+            targets: textIcon,
+            y: -5,
+            duration: 1000,
+            yoyo: true,
+            repeat: -1
+          });
         }
       }
     }
