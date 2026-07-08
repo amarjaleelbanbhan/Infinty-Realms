@@ -47,6 +47,33 @@ model Player {
   lastSeenAt  DateTime @default(now())
 }
 
+// ─── Multiplayer Lobby ────────────────────────────────────────
+
+model GameRoom {
+  id           String   @id
+  hostPlayerId String
+  playerIdsJson String @default("[]")
+  maxPlayers   Int      @default(4)
+  isPublic     Boolean  @default(true)
+  worldSeed    String
+  createdAt    DateTime @default(now())
+}
+
+// ─── Auction House ────────────────────────────────────────────
+
+model AuctionItem {
+  id           String   @id @default(uuid())
+  sellerId     String
+  sellerName   String
+  itemJson     String   // The full Item object serialized
+  buyoutPrice  Int
+  currentBid   Int      @default(0)
+  highestBidderId String?
+  status       String   @default("active") // active, sold, expired
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+}
+
 // ─── World ────────────────────────────────────────────────────
 
 model WorldState {

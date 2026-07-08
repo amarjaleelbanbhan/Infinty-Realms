@@ -10,6 +10,7 @@ import { AiModule } from './ai/ai.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MultiplayerModule } from './multiplayer/multiplayer.module';
 import { NpcsModule } from './npcs/npcs.module';
+import { AuctionModule } from './auction/auction.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NpcsModule } from './npcs/npcs.module';
     AiModule,
     MultiplayerModule,
     NpcsModule,
+    AuctionModule,
   ],
   providers: [
     {

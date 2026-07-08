@@ -1,0 +1,6 @@
+feat: implement Phase 13 Global Auction House
+
+- Added `AuctionItem` model to Prisma schema for tracking listed items, seller, bids, and expiration.
+- Created `AuctionModule`, `AuctionController`, and `AuctionService` in the NestJS backend to handle listing items and buying out auctions.
+- Implemented `AuctionHouseUI` in the client with a "Browse" and "Sell" tab.
+- Integrated the Auction House UI into the main application, adding a button to the top action bar to open it.

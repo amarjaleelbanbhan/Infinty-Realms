@@ -18,6 +18,7 @@ interface UIStore {
   isDialogueOpen: boolean;
   isMapOpen: boolean;
   isMerchantShopOpen: boolean;
+  isAuctionHouseOpen: boolean;
   merchantNpcId: string | null;
   merchantBiome: string | null;
   currentBiome: string | null;
@@ -48,6 +49,8 @@ interface UIStore {
   closeDialogue: () => void;
   openMerchantShop: (npcId: string, biome: string) => void;
   closeMerchantShop: () => void;
+  openAuctionHouse: () => void;
+  closeAuctionHouse: () => void;
   addToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
   setIsMobile: (mobile: boolean) => void;
@@ -63,6 +66,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isDialogueOpen: false,
   isMapOpen: false,
   isMerchantShopOpen: false,
+  isAuctionHouseOpen: false,
   merchantNpcId: null,
   merchantBiome: null,
   currentBiome: null,
@@ -89,6 +93,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   openMerchantShop: (npcId, biome) => set({ isMerchantShopOpen: true, merchantNpcId: npcId, merchantBiome: biome }),
   closeMerchantShop: () => set({ isMerchantShopOpen: false, merchantNpcId: null, merchantBiome: null }),
+
+  openAuctionHouse: () => set({ isAuctionHouseOpen: true, isInventoryOpen: false, isQuestLogOpen: false }),
+  closeAuctionHouse: () => set({ isAuctionHouseOpen: false }),
 
   addToast: (message, type = 'info') => {
     const id = crypto.randomUUID();

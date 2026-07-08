@@ -25,6 +25,7 @@ import { OfflineProgressUI } from '@ui/OfflineProgressUI';
 import { ArenaUI } from '@ui/ArenaUI';
 import { AscensionUI } from '@ui/AscensionUI';
 import { GodInterventionUI } from '@ui/GodInterventionUI';
+import { AuctionHouseUI } from '@ui/AuctionHouseUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -97,6 +98,12 @@ export default function App() {
                 🏪 Bazaar
               </button>
               <button
+                onClick={() => useUIStore.getState().openAuctionHouse()}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
+              >
+                🏛️ Auction
+              </button>
+              <button
                 onClick={() => setShowJournal(true)}
                 className="glass px-3 py-1.5 text-xs font-mono text-realm-xp border border-realm-xp/40 hover:bg-realm-xp/10 transition-colors flex items-center gap-1"
               >
@@ -156,6 +163,7 @@ export default function App() {
             <ArenaUI />
             <AscensionUI />
             <GodInterventionUI />
+            <AuctionHouseUI />
           </>
         )}
 
