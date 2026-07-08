@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { Player } from '@infinity-realms/shared/types';
+import type { Player, OfflineReport } from '@infinity-realms/shared/types';
 
 @Injectable()
 export class PlayersService {
@@ -9,7 +9,46 @@ export class PlayersService {
   async findById(id: string) {
     const p = await this.prisma.player.findUnique({ where: { id } });
     if (!p) throw new NotFoundException('Player not found');
-    return this.deserialize(p);
+    
+    // Calculate Offline Progress
+    let offlineReport: OfflineReport | null = null;
+    const now = new Date();
+    const timeOfflineMs = now.getTime() - p.lastSeenAt.getTime();
+    
+    if (timeOfflineMs > 60000) { // More than 1 minute offline
+      const minutesOffline = Math.floor(timeOfflineMs / 60000);
+      const goldEarned = minutesOffline * (p.level || 1);
+      const expEarned = minutesOffline * (p.level || 1) * 2;
+      
+      offlineReport = {
+        timeOfflineMs,
+        goldEarned,
+        expEarned,
+        essenceEarned: Math.floor(minutesOffline / 10),
+        itemsGathered: []
+      };
+      
+      await this.prisma.player.update({
+        where: { id },
+        data: {
+          gold: p.gold + goldEarned,
+          experience: p.experience + expEarned,
+          lastSeenAt: now
+        }
+      });
+      p.gold += goldEarned;
+      p.experience += expEarned;
+    } else {
+      await this.prisma.player.update({
+        where: { id },
+        data: { lastSeenAt: now }
+      });
+    }
+
+    return {
+      player: this.deserialize(p),
+      offlineReport
+    };
   }
 
   async savePosition(playerId: string, x: number, y: number) {

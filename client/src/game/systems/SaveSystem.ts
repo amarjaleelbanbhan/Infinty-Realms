@@ -107,6 +107,36 @@ export class SaveSystem {
     const gameStore = useGameStore.getState();
     const questStore = useQuestStore.getState();
 
+    // Calculate Offline Progress
+    const now = Date.now();
+    const timeOfflineMs = now - save.savedAt;
+    
+    // Minimum 1 minute offline to trigger progress
+    if (timeOfflineMs > 60_000) {
+      const minutesOffline = Math.floor(timeOfflineMs / 60_000);
+      const level = save.player.level || 1;
+      
+      const goldEarned = minutesOffline * level;
+      const expEarned = minutesOffline * level * 2;
+      const essenceEarned = Math.floor(minutesOffline / 10);
+
+      save.player.gold = (save.player.gold || 0) + goldEarned;
+      save.player.experience = (save.player.experience || 0) + expEarned;
+
+      // Dispatch event to show Offline Progress UI
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('ir:offline_progress', {
+          detail: {
+            timeOfflineMs,
+            goldEarned,
+            expEarned,
+            essenceEarned,
+            itemsGathered: []
+          }
+        }));
+      }, 1000);
+    }
+
     gameStore.setPlayer(save.player);
     gameStore.setWorldState(save.world);
     gameStore.startSession(save.player.name);

@@ -21,6 +21,8 @@ import { WorldMapUI } from '@ui/WorldMapUI';
 import { KeybindPanel } from '@ui/KeybindPanel';
 import { EcosystemUI } from '@ui/EcosystemUI';
 import { CitadelBuilderUI } from '@ui/CitadelBuilderUI';
+import { OfflineProgressUI } from '@ui/OfflineProgressUI';
+import { ArenaUI } from '@ui/ArenaUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -99,6 +101,12 @@ export default function App() {
                 📖 Chronicle
               </button>
               <button
+                onClick={() => window.dispatchEvent(new CustomEvent('ir:open_arena'))}
+                className="glass px-3 py-1.5 text-xs font-mono text-red-400 border border-red-400/40 hover:bg-red-400/10 transition-colors flex items-center gap-1"
+              >
+                ⚔️ Arena
+              </button>
+              <button
                 onClick={() => setShowSkills(true)}
                 className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
               >
@@ -130,6 +138,8 @@ export default function App() {
             
             <EcosystemUI />
             <CitadelBuilderUI />
+            <OfflineProgressUI />
+            <ArenaUI />
           </>
         )}
 

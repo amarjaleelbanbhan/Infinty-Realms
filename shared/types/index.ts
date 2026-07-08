@@ -223,6 +223,23 @@ export interface CitadelBuilding {
   powered: boolean;
 }
 
+// ─── Offline & Async PVP (Phase 8) ────────────────────────────
+
+export interface OfflineReport {
+  timeOfflineMs: number;
+  goldEarned: number;
+  expEarned: number;
+  essenceEarned: number;
+  itemsGathered: { id: string, name: string, quantity: number }[];
+}
+
+export interface GhostDuelResult {
+  winnerId: UUID;
+  log: string[];
+  goldWon: number;
+  expWon: number;
+}
+
 // ─── Enemies ──────────────────────────────────────────────────
 
 export type EnemyType =
