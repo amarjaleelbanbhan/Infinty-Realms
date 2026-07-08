@@ -1,6 +1,6 @@
-feat: implement Phase 15 Asynchronous Guild Wars
+feat: implement Phase 16 Advanced Multi-Agent AI NPCs
 
-- Added `GuildWar` model to Prisma schema to track war challenger, defender, target city, and siege points.
-- Created `GuildWarModule`, `GuildWarController`, and `GuildWarService` in NestJS to handle declaring wars and contributing siege points.
-- Implemented `GuildWarUI` on the client, adding a "Warfare" tab inside the existing `GuildUI.tsx`.
-- Integrated active war fetching and point contribution for guild members.
+- Created `AiAgentService` to orchestrate interactions between NPCs and evaluate the global world state for dynamic events.
+- Added API endpoints in `AiController` to trigger NPC dialogue generation and world event evaluation.
+- Added a 5-minute cron interval in `AiAgentService` to automatically evaluate the world state.
+- Decoupled server from Vercel AI SDK to avoid workspace dependency issues during `typecheck`.
