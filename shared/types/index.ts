@@ -425,6 +425,12 @@ export interface QuestGenerationRequest {
   playerLevel: number;
   nearbyNpcName?: string;
   recentEvents?: string[];
+  prompt?: string;
+}
+
+export interface ItemGenerationRequest {
+  prompt: string;
+  creatorLevel: number;
 }
 
 export interface NPCGenerationRequest {

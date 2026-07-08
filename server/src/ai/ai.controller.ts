@@ -2,7 +2,7 @@ import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { QuestGenerationRequest, NPCGenerationRequest, EventGenerationRequest } from '@infinity-realms/shared/types';
+import type { QuestGenerationRequest, NPCGenerationRequest, EventGenerationRequest, ItemGenerationRequest } from '@infinity-realms/shared/types';
 
 @ApiTags('ai')
 @Controller('ai')
@@ -27,5 +27,11 @@ export class AiController {
   @ApiOperation({ summary: 'Generate a world event via AI' })
   generateEvent(@Body() req: EventGenerationRequest) {
     return this.ai.generateWorldEvent(req);
+  }
+
+  @Post('item')
+  @ApiOperation({ summary: 'Generate a custom item via AI' })
+  generateItem(@Body() req: ItemGenerationRequest) {
+    return this.ai.generateItem(req);
   }
 }

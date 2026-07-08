@@ -123,7 +123,16 @@ export function generateQuest(req: QuestGenerationRequest, callId: string): Part
   const prefix = pick(QUEST_PREFIXES, rng);
   const noun = pick(QUEST_NOUNS, rng);
   const suffix = pick(QUEST_SUFFIXES, rng);
-  const title = type === 'mystery' ? `Mystery of the ${noun}` : `${prefix} ${noun} ${suffix}`;
+  
+  let title = type === 'mystery' ? `Mystery of the ${noun}` : `${prefix} ${noun} ${suffix}`;
+  let description = pick(hookPool, rng);
+
+  if (req.prompt) {
+    const cleanPrompt = req.prompt.trim();
+    const words = cleanPrompt.split(/\s+/);
+    title = words.slice(0, 4).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    description = `Fulfill the quest challenge: "${cleanPrompt}".`;
+  }
 
   const expBase = Math.floor(50 + req.playerLevel * 30 * (0.8 + rng() * 0.4));
   const goldBase = Math.floor(20 + req.playerLevel * 15 * (0.8 + rng() * 0.4));
@@ -140,7 +149,7 @@ export function generateQuest(req: QuestGenerationRequest, callId: string): Part
 
   return {
     title,
-    description: pick(hookPool, rng),
+    description,
     type,
     lore: pick(lorePool, rng),
     aiGenerated: false,
@@ -289,5 +298,59 @@ export function generateEvent(req: EventGenerationRequest, callId: string): Part
     participants: [],
     startsAt: Date.now(),
     endsAt: Date.now() + template.duration * 1000,
+  };
+}
+
+export function generateItem(req: any, callId: string): any {
+  const seed = `${req.prompt}-${callId}`;
+  const rng = seededRandom(seed);
+
+  const cleanPrompt = req.prompt.trim();
+  const words = cleanPrompt.split(/\s+/);
+  const name = words.slice(0, 3).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+  const type = pick(['weapon', 'armor', 'helmet', 'accessory'] as string[], rng);
+  const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'] as const;
+  const rarity = pick([...rarities] as string[], rng);
+
+  const icons: Record<string, string> = {
+    weapon: '🗡️',
+    armor: '👕',
+    helmet: '🪖',
+    accessory: '📿',
+  };
+
+  const baseValues: Record<string, number> = {
+    common: 10,
+    uncommon: 30,
+    rare: 80,
+    epic: 200,
+    legendary: 600,
+  };
+
+  const statMultipliers: Record<string, number> = {
+    common: 1,
+    uncommon: 1.5,
+    rare: 2.2,
+    epic: 3.5,
+    legendary: 6,
+  };
+
+  const finalValue = Math.round((baseValues as Record<string, number>)[rarity] * (1 + rng() * 0.3));
+  const mult = (statMultipliers as Record<string, number>)[rarity];
+
+  return {
+    id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    name: name || 'Mysterious Artifact',
+    description: `A custom item created from: "${cleanPrompt}".`,
+    type,
+    rarity,
+    icon: icons[type] ?? '❓',
+    value: finalValue,
+    stats: {
+      attack: type === 'weapon' ? Math.round(10 * mult) : 0,
+      defense: (type === 'armor' || type === 'helmet') ? Math.round(5 * mult) : 0,
+      hp: type === 'accessory' ? Math.round(30 * mult) : 0,
+    },
   };
 }

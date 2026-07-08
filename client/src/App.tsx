@@ -14,6 +14,7 @@ import { GuildUI } from '@ui/GuildUI';
 import { MarketplaceUI } from '@ui/MarketplaceUI';
 import { WorldJournalUI } from '@ui/WorldJournalUI';
 import { MerchantShopUI } from '@ui/MerchantShopUI';
+import { CreatorPanel } from '@ui/CreatorPanel';
 import { EventBanner } from '@ui/EventBanner';
 import { SkillUI } from '@ui/SkillUI';
 import { WorldMapUI } from '@ui/WorldMapUI';
@@ -29,6 +30,7 @@ export default function App() {
   const [showJournal, setShowJournal] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showCreator, setShowCreator] = useState(false);
 
   useEffect(() => {
     // Check mobile screen size
@@ -106,6 +108,12 @@ export default function App() {
               >
                 🗺️ Map
               </button>
+              <button
+                onClick={() => setShowCreator(true)}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
+              >
+                ✨ Architect
+              </button>
             </div>
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
@@ -113,6 +121,7 @@ export default function App() {
             {showJournal && <WorldJournalUI onClose={() => setShowJournal(false)} />}
             {showSkills && <SkillUI onClose={() => setShowSkills(false)} />}
             {showMap && <WorldMapUI onClose={() => setShowMap(false)} />}
+            {showCreator && <CreatorPanel onClose={() => setShowCreator(false)} />}
 
             {/* Keyboard controls legend */}
             <KeybindPanel />

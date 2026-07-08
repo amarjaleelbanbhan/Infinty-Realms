@@ -7,12 +7,19 @@ import type {
   QuestGenerationRequest,
   NPCGenerationRequest,
   EventGenerationRequest,
+  ItemGenerationRequest,
   Quest,
   NPC,
   WorldEvent,
+  Item,
 } from '@infinity-realms/shared/types';
 
-import { generateQuest as mockQuest, generateNPC as mockNPC, generateEvent as mockEvent } from './providers/mock';
+import {
+  generateQuest as mockQuest,
+  generateNPC as mockNPC,
+  generateEvent as mockEvent,
+  generateItem as mockItem,
+} from './providers/mock';
 
 type AIProvider = 'mock' | 'ollama' | 'openai';
 
@@ -99,6 +106,30 @@ export async function generateWorldEvent(req: EventGenerationRequest): Promise<P
   }
 
   return mockEvent(req, callId);
+}
+
+export async function generateItem(req: ItemGenerationRequest): Promise<Partial<Item>> {
+  const callId = nextCallId();
+
+  if (PROVIDER === 'mock') {
+    return mockItem(req, callId);
+  }
+
+  try {
+    if (PROVIDER === 'ollama') {
+      const { generateItemOllama } = (await import('./providers/ollama')) as any;
+      return (await generateItemOllama(req)) as Partial<Item>;
+    }
+    if (PROVIDER === 'openai') {
+      const { generateItemOpenAI } = (await import('./providers/openai')) as any;
+      return (await generateItemOpenAI(req)) as Partial<Item>;
+    }
+  } catch (err) {
+    console.warn(`[AI] ${PROVIDER} item generation failed, falling back to mock:`, err);
+    return mockItem(req, callId);
+  }
+
+  return mockItem(req, callId);
 }
 
 export { PROVIDER as activeProvider };
