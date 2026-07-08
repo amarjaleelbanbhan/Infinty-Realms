@@ -507,6 +507,14 @@ export interface EventGenerationRequest {
   currentPlayerCount: number;
 }
 
+export interface DialogueGenerationRequest {
+  npcName: string;
+  npcRole: NPCRole;
+  personality: string;
+  playerMessage: string;
+  memory: string[];
+}
+
 // ─── Save State ───────────────────────────────────────────────
 
 export interface SaveState {

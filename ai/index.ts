@@ -12,6 +12,7 @@ import type {
   NPC,
   WorldEvent,
   Item,
+  DialogueGenerationRequest,
 } from '@infinity-realms/shared/types';
 
 import {
@@ -19,6 +20,7 @@ import {
   generateNPC as mockNPC,
   generateEvent as mockEvent,
   generateItem as mockItem,
+  generateDialogue as mockDialogue,
 } from './providers/mock';
 
 type AIProvider = 'mock' | 'ollama' | 'openai';
@@ -130,6 +132,19 @@ export async function generateItem(req: ItemGenerationRequest): Promise<Partial<
   }
 
   return mockItem(req, callId);
+}
+
+// ─── Dialogue Generation ───────────────────────────────────────
+
+export async function generateDialogue(req: DialogueGenerationRequest): Promise<string> {
+  const callId = nextCallId();
+
+  if (PROVIDER === 'mock') {
+    return mockDialogue(req, callId);
+  }
+
+  // Placeholder for ollama/openai until implemented
+  return mockDialogue(req, callId);
 }
 
 export { PROVIDER as activeProvider };

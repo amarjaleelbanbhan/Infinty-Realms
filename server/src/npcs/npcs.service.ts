@@ -54,6 +54,7 @@ export class NpcsService {
     worldSeed: string;
     playerLevel: number;
     playerName: string;
+    playerMessage?: string;
   }) {
     const npc = await this.getOrCreate(dto);
     const memory = JSON.parse(npc.memoryJson) as string[];
@@ -63,19 +64,30 @@ export class NpcsService {
     let newMemoryLog = `Spoke with ${dto.playerName} (Lv.${dto.playerLevel}).`;
 
     try {
-      const aiNpc = await this.ai.generateNPC({
-        role: npc.role as any,
-        biome: npc.biome as any,
-        worldAge: 15,
-      });
+      if (dto.playerMessage) {
+        dialogueText = await this.ai.generateDialogue({
+          npcName: npc.name,
+          npcRole: npc.role as any,
+          personality: npc.personality,
+          playerMessage: dto.playerMessage,
+          memory,
+        });
+        newMemoryLog = `Responded to ${dto.playerName}'s query: "${dto.playerMessage.slice(0, 30)}"`;
+      } else {
+        const aiNpc = await this.ai.generateNPC({
+          role: npc.role as any,
+          biome: npc.biome as any,
+          worldAge: 15,
+        });
 
-      if (aiNpc.dialogueKeys && aiNpc.dialogueKeys.length > 0) {
-        dialogueText = aiNpc.dialogueKeys[0];
-      }
+        if (aiNpc.dialogueKeys && aiNpc.dialogueKeys.length > 0) {
+          dialogueText = aiNpc.dialogueKeys[0];
+        }
 
-      if (memory.length > 0) {
-        dialogueText = `Greetings, ${dto.playerName}! I recall our previous conversation. ${dialogueText}`;
-        newMemoryLog = `Met with ${dto.playerName} again.`;
+        if (memory.length > 0) {
+          dialogueText = `Greetings, ${dto.playerName}! I recall our previous conversation. ${dialogueText}`;
+          newMemoryLog = `Met with ${dto.playerName} again.`;
+        }
       }
     } catch {
       // Fallback

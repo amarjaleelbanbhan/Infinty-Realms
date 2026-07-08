@@ -4,9 +4,12 @@ import { useGameStore } from '@stores/useGameStore';
 import { questSystem } from '@game/systems/QuestSystem';
 
 export function Dialogue() {
-  const { isDialogueOpen, closeDialogue, dialogueNpc, dialogueText, dialogueOptions, addToast } = useUIStore();
+  const { isDialogueOpen, closeDialogue, dialogueNpc, dialogueText, dialogueOptions, addToast, openDialogue } = useUIStore();
+  const { playerToken, player } = useGameStore();
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
 
   // Type out the text character by character
   const startTyping = (text: string) => {
@@ -37,9 +40,49 @@ export function Dialogue() {
       if (dialogueNpc?.id) {
         useUIStore.getState().openMerchantShop(dialogueNpc.id, dialogueNpc.biome ?? 'plains');
       }
+    } else if (action === 'close') {
+      closeDialogue();
     }
-    closeDialogue();
     setTypedText('');
+  };
+
+  const handleChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !dialogueNpc || !playerToken || !player) return;
+
+    setIsWaiting(true);
+    setChatInput('');
+    setTypedText('');
+
+    try {
+      const res = await fetch('/api/npcs/interact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${playerToken}`,
+        },
+        body: JSON.stringify({
+          npcId: dialogueNpc.id,
+          name: dialogueNpc.name,
+          role: dialogueNpc.role,
+          biome: dialogueNpc.biome,
+          worldSeed: player.worldSeed,
+          playerLevel: player.level,
+          playerName: player.name,
+          playerMessage: chatInput,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        openDialogue(dialogueNpc, data.dialogue, data.options);
+        setIsTyping(false); // reset typing to trigger startTyping effect
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsWaiting(false);
+    }
   };
 
   const roleIcon: Record<string, string> = {
@@ -85,13 +128,35 @@ export function Dialogue() {
           </div>
         )}
 
-        {!isTyping && dialogueOptions.length === 0 && (
+        {!isTyping && !isWaiting && dialogueOptions.length === 0 && (
           <button
             className="btn-secondary text-xs py-2 px-4 mt-4"
             onClick={() => { closeDialogue(); setTypedText(''); }}
           >
             Farewell
           </button>
+        )}
+
+        {/* Freeform Chat */}
+        {!isTyping && !isWaiting && (
+          <form onSubmit={handleChatSubmit} className="mt-4 flex gap-2 border-t border-realm-border/50 pt-4">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder={`Say something to ${dialogueNpc?.name}...`}
+              className="flex-1 bg-black/50 border border-realm-border rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-realm-accent"
+            />
+            <button type="submit" className="btn-primary text-xs px-4">
+              Speak
+            </button>
+          </form>
+        )}
+        
+        {isWaiting && (
+          <div className="mt-4 text-xs text-realm-gold animate-pulse text-center">
+            {dialogueNpc?.name} is thinking...
+          </div>
         )}
 
         {/* Skip typing */}

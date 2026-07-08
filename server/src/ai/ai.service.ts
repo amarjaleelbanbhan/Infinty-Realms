@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { QuestGenerationRequest, NPCGenerationRequest, EventGenerationRequest, ItemGenerationRequest } from '@infinity-realms/shared/types';
-import { generateQuest, generateNPC, generateWorldEvent, generateItem } from '@infinity-realms/ai';
+import type { QuestGenerationRequest, NPCGenerationRequest, EventGenerationRequest, ItemGenerationRequest, DialogueGenerationRequest } from '@infinity-realms/shared/types';
+import { generateQuest, generateNPC, generateWorldEvent, generateItem, generateDialogue } from '@infinity-realms/ai';
 
 @Injectable()
 export class AiService {
@@ -18,5 +18,9 @@ export class AiService {
 
   generateItem(req: ItemGenerationRequest) {
     return generateItem(req);
+  }
+
+  generateDialogue(req: DialogueGenerationRequest) {
+    return generateDialogue(req);
   }
 }

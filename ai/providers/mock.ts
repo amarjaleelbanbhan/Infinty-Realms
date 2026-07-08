@@ -13,6 +13,7 @@ import type {
   QuestType,
   NPCPersonality,
   WorldEventType,
+  DialogueGenerationRequest,
 } from '@infinity-realms/shared/types';
 
 // Seeded PRNG for consistent results per seed
@@ -353,4 +354,17 @@ export function generateItem(req: any, callId: string): any {
       hp: type === 'accessory' ? Math.round(30 * mult) : 0,
     },
   };
+}
+
+// ─── Dialogue Generation ────────────────────────────────────────
+
+export async function generateDialogue(req: DialogueGenerationRequest, callId: string): Promise<string> {
+  const responses = [
+    `I hear what you're saying, traveler. Let me think on that.`,
+    `Fascinating! I've never considered it quite like that before.`,
+    `Hmm, "${req.playerMessage}"? You are full of surprises.`,
+    `Indeed. But have you checked the local leyline nodes recently?`,
+    `I see... Well, if you say so. Is there anything else you need?`,
+  ];
+  return responses[Math.floor(Math.random() * responses.length)];
 }

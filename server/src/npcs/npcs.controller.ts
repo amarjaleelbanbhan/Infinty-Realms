@@ -12,6 +12,7 @@ class InteractNpcDto {
   @IsString() worldSeed!: string;
   @IsNumber() playerLevel!: number;
   @IsString() playerName!: string;
+  playerMessage?: string;
 }
 
 @ApiTags('npcs')
