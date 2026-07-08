@@ -1,21 +1,46 @@
-name: Deploy
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Generate Prisma Client
+      run: npm run prisma:generate --workspace=server
+      
+    - name: Typecheck Shared
+      run: npm run typecheck --workspace=shared
+      
+    - name: Typecheck AI
+      run: npm run typecheck --workspace=ai
+      
+    - name: Typecheck Server
+      run: npm run typecheck --workspace=server
+      
+    - name: Typecheck Client
+      run: npm run typecheck --workspace=client
+      
+    - name: Build All Workspaces
+      run: npm run build
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Build project
-        run: |
-          npm install
-          npm run build
