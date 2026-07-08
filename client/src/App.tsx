@@ -20,6 +20,7 @@ import { SkillUI } from '@ui/SkillUI';
 import { WorldMapUI } from '@ui/WorldMapUI';
 import { KeybindPanel } from '@ui/KeybindPanel';
 import { EcosystemUI } from '@ui/EcosystemUI';
+import { CitadelBuilderUI } from '@ui/CitadelBuilderUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -128,6 +129,7 @@ export default function App() {
             <KeybindPanel />
             
             <EcosystemUI />
+            <CitadelBuilderUI />
           </>
         )}
 

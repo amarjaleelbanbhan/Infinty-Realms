@@ -14,7 +14,8 @@ import { useSkillStore } from '@game/systems/SkillSystem';
 import { socketManager } from '@game/systems/SocketManager';
 import { leylineSystem } from '@game/systems/LeylineSystem';
 import { farmingSystem } from '@game/systems/FarmingSystem';
-import type { BiomeType, FarmPlot } from '@shared/types';
+import { citadelSystem } from '@game/systems/CitadelSystem';
+import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
 
@@ -81,6 +82,11 @@ export class WorldScene extends Phaser.Scene {
   private nodeSprites = new Map<string, Phaser.GameObjects.Container>();
   private golemCaravans = new Map<string, Phaser.GameObjects.Container>();
   private farmPlotSprites = new Map<string, Phaser.GameObjects.Container>();
+  private citadelSprites = new Map<string, Phaser.GameObjects.Container>();
+  
+  private buildModeActive = false;
+  private buildModeType: CitadelStructureType = 'wall';
+  private buildModeGuildId = '';
   private handleJoinedBound = this.handleRemotePlayerJoined.bind(this);
   private handleMovedBound = this.handleRemotePlayerMoved.bind(this);
   private handleAttackedBound = this.handleRemotePlayerAttacked.bind(this);
@@ -211,8 +217,46 @@ export class WorldScene extends Phaser.Scene {
     // ── Depth sort on update ──
     this.events.on('update', this.depthSort, this);
 
+    // ── Citadel Build Mode ──
+    window.addEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);
+    window.addEventListener('ir:siege_invasion', this.handleSiegeEvent);
+
     console.log(`[WorldScene] World ready! Cities: ${this.world.cities.length}`);
   }
+
+  private handleSiegeEvent = ((e: CustomEvent) => {
+    const { x, y } = e.detail;
+    // Spawn a horde of 10-15 enemies in a circle around the citadel
+    const numEnemies = 10 + Math.floor(Math.random() * 6);
+    const radius = 400; // Spawn outside the citadel
+
+    for (let i = 0; i < numEnemies; i++) {
+      const angle = (Math.PI * 2 * i) / numEnemies;
+      const spawnX = x + Math.cos(angle) * radius;
+      const spawnY = y + Math.sin(angle) * radius;
+      
+      const types = ['goblin', 'orc', 'demon', 'wolf'];
+      const enemyType = types[Math.floor(Math.random() * types.length)];
+      
+      const conf = {
+        type: enemyType,
+        hp: 150,
+        speed: 90,
+        attack: 20,
+        defense: 10,
+        exp: 25,
+        gold: 15
+      };
+
+      this.spawnEnemy(conf, spawnX, spawnY);
+    }
+  }) as EventListener;
+
+  private handleBuildModeEvent = ((e: CustomEvent) => {
+    this.buildModeActive = e.detail.active;
+    if (e.detail.selectedType) this.buildModeType = e.detail.selectedType;
+    if (e.detail.guildId) this.buildModeGuildId = e.detail.guildId;
+  }) as EventListener;
 
   private drawWorldTiles() {
     const g = this.tileGraphics;
@@ -500,6 +544,15 @@ export class WorldScene extends Phaser.Scene {
       this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE),
       this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR),
     ];
+
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // Citadel Building
+      if (this.buildModeActive && pointer.rightButtonDown()) {
+        const worldX = this.cameras.main.scrollX + pointer.x;
+        const worldY = this.cameras.main.scrollY + pointer.y;
+        citadelSystem.placeBuilding(worldX, worldY, this.buildModeType, this.buildModeGuildId);
+      }
+    });
   }
 
   private setupTouchInput() {
@@ -602,6 +655,7 @@ export class WorldScene extends Phaser.Scene {
     this.checkDungeonEntry();
     this.updateLeylineRendering();
     this.updateFarmingRendering();
+    this.updateCitadelRendering();
     this.updateCooldowns(delta);
 
     // Update minimap every 30 frames
@@ -889,15 +943,39 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private updateEnemies(dt: number) {
-    const px = this.player.x;
-    const py = this.player.y;
+    let px = this.player.x;
+    let py = this.player.y;
+    
+    // Check Citadel Sieges
+    const buildings = citadelSystem.getBuildings();
 
     for (const enemy of this.enemies) {
       if (enemy.enemyData.state === 'dead') continue;
 
+      let targetX = px;
+      let targetY = py;
+      let targetBuilding: any = null;
+
+      // Find closest building
+      let closestDist = Infinity;
+      for (const b of buildings) {
+        const dsq = (b.x - enemy.x)**2 + (b.y - enemy.y)**2;
+        if (dsq < closestDist) {
+          closestDist = dsq;
+          targetBuilding = b;
+        }
+      }
+
+      // If building is closer than player (or if in a siege), attack building
+      const distToPlayerSq = (px - enemy.x)**2 + (py - enemy.y)**2;
+      if (targetBuilding && closestDist < distToPlayerSq && closestDist < 40000) { // 200px range
+        targetX = targetBuilding.x;
+        targetY = targetBuilding.y;
+      }
+
       const ed = enemy.enemyData;
-      const dx = px - enemy.x;
-      const dy = py - enemy.y;
+      const dx = targetX - enemy.x;
+      const dy = targetY - enemy.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       ed.attackCooldown = Math.max(0, ed.attackCooldown - dt * 1000);
@@ -950,7 +1028,13 @@ export class WorldScene extends Phaser.Scene {
           } else if (ed.attackCooldown <= 0) {
             // Attack player
             ed.attackCooldown = 1200;
-            if (!this.playerInvincible) {
+            
+            if (targetX !== px && targetBuilding) {
+              // Attacking building
+              citadelSystem.damageBuilding(targetBuilding.id, ed.attack);
+              this.combatSystem.showDamageNumber(targetX, targetY, ed.attack, false);
+            } else if (!this.playerInvincible) {
+              // Attacking player
               const damage = Math.max(1, ed.attack - (useGameStore.getState().player?.stats?.defense ?? 0) * 0.5);
               this.combatSystem.damagePlayer(Math.round(damage));
               this.combatSystem.showDamageNumber(px, py, Math.round(damage), false);
@@ -1396,6 +1480,47 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  private updateCitadelRendering() {
+    citadelSystem.updatePower(leylineSystem.getNodes());
+    const buildings = citadelSystem.getBuildings();
+
+    for (const [id, sprite] of this.citadelSprites.entries()) {
+      if (!buildings.find((b) => b.id === id)) {
+        sprite.destroy();
+        this.citadelSprites.delete(id);
+      }
+    }
+
+    for (const b of buildings) {
+      let container = this.citadelSprites.get(b.id);
+      if (!container) {
+        let visual: Phaser.GameObjects.GameObject;
+        const shadow = this.add.ellipse(0, 12, 24, 8, 0x000000, 0.4);
+
+        if (b.type === 'wall') visual = this.add.rectangle(0, 0, 32, 32, 0x555555);
+        else if (b.type === 'gate') visual = this.add.rectangle(0, 0, 32, 32, 0x664422);
+        else if (b.type === 'turret') visual = this.add.triangle(0, 0, 0, 32, 16, 0, 32, 32, 0x777777);
+        else if (b.type === 'energy_hub') visual = this.add.circle(0, 0, 16, 0xff00ff);
+        else if (b.type === 'shield') visual = this.add.circle(0, 0, 32, 0x00ffff, 0.3);
+        else visual = this.add.rectangle(0, 0, 32, 32, 0xff0000);
+
+        container = this.add.container(b.x + 16, b.y + 16, [shadow, visual]);
+        container.setDepth(15);
+        this.citadelSprites.set(b.id, container);
+        this.entityLayer.add(container);
+      } else {
+        // Update power state visuals if shield or turret
+        if (b.type === 'shield') {
+          const circle = container.list[1] as Phaser.GameObjects.Arc;
+          circle.setFillStyle(0x00ffff, b.powered ? 0.6 : 0.1);
+        } else if (b.type === 'turret') {
+          const tri = container.list[1] as Phaser.GameObjects.Triangle;
+          tri.setFillStyle(b.powered ? 0x00ffaa : 0x777777, 1);
+        }
+      }
+    }
+  }
+
   shutdown() {
     saveSystem.stopAutoSave();
     saveSystem.save();
@@ -1412,6 +1537,9 @@ export class WorldScene extends Phaser.Scene {
       remote.destroy();
     }
     this.remotePlayers.clear();
+    
+    window.removeEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);
+    window.removeEventListener('ir:siege_invasion', this.handleSiegeEvent);
   }
 }
 

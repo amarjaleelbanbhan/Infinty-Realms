@@ -98,6 +98,7 @@ export interface Player {
   titles: string[];
   playtime: number;    // seconds
   worldSeed: string;
+  guildId?: UUID;
 }
 
 export interface InventorySlot {
@@ -205,6 +206,21 @@ export interface LeylineNode {
   accumulatedEssence: number;
   lastHarvestAt: number;
   connectedNodeIds?: UUID[];
+}
+
+// ─── Citadel & Sieges (Phase 7) ───────────────────────────────
+
+export type CitadelStructureType = 'wall' | 'gate' | 'turret' | 'energy_hub' | 'shield';
+
+export interface CitadelBuilding {
+  id: UUID;
+  guildId: UUID;
+  type: CitadelStructureType;
+  x: number;
+  y: number;
+  hp: number;
+  maxHp: number;
+  powered: boolean;
 }
 
 // ─── Enemies ──────────────────────────────────────────────────
