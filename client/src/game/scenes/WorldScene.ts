@@ -402,11 +402,14 @@ export class WorldScene extends Phaser.Scene {
   private spawnPlayer(x: number, y: number) {
     const body = this.add.image(0, 0, 'player');
 
-    const shadow = this.add.ellipse(0, 12, 16, 6, 0x000000, 0.3);
+    const shadow = this.add.ellipse(0, 14, 20, 8, 0x000000, 0.4);
+    // Add a glowing aura beneath the player for a premium look
+    const aura = this.add.ellipse(0, 10, 30, 15, 0x6c63ff, 0.15);
+    aura.setBlendMode(Phaser.BlendModes.ADD);
 
     this.playerMountSprite = this.add.text(0, 10, '', { fontSize: '24px' }).setOrigin(0.5);
 
-    this.player = this.add.container(x, y, [shadow, this.playerMountSprite, body]);
+    this.player = this.add.container(x, y, [aura, shadow, this.playerMountSprite, body]);
     this.player.setDepth(20);
     this.playerBody = body;
     this.entityLayer.add(this.player);

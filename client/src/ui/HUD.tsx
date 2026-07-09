@@ -22,7 +22,7 @@ export function HUD() {
     <>
       {/* ── Top-left: Player stats ── */}
       <div className="absolute top-4 left-4 z-10 select-none pointer-events-none">
-        <div className="glass-dark px-4 py-3 min-w-[200px]">
+        <div className="glass p-5 min-w-[240px] rounded-2xl">
           {/* Name + level */}
           <div className="flex items-center justify-between mb-3">
             <span className="font-game text-sm text-white tracking-wide">
@@ -93,7 +93,7 @@ export function HUD() {
 
       {/* ── Bottom-left: Hotbar ── */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-        <div className="flex items-center gap-3 glass px-4 py-2 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border-realm-border/50">
+        <div className="flex items-center gap-4 glass px-6 py-3 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-white/10">
           {['⚔️', '🛡️', '🧪', '🐎', '💎'].map((icon, i) => (
             <button
               key={i}
@@ -102,7 +102,7 @@ export function HUD() {
                   import('@game/systems/MountSystem').then(m => m.MountSystem.toggleMount());
                 }
               }}
-              className="w-14 h-14 bg-realm-surface/50 flex items-center justify-center text-2xl rounded-xl border border-realm-border hover:border-realm-accent hover:bg-realm-accent/20 transition-all duration-200 active:scale-95 hover:shadow-[0_0_15px_rgba(108,99,255,0.5)]"
+              className="w-16 h-16 bg-white/5 flex items-center justify-center text-3xl rounded-full border border-white/10 hover:border-realm-accent hover:bg-realm-accent/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(108,99,255,0.4)] active:scale-95"
               data-tooltip={['Attack', 'Block', 'Heal', 'Mount', 'Gem'][i]}
             >
               {icon}
@@ -113,8 +113,8 @@ export function HUD() {
 
       {/* ── Top-right: Active quest ── */}
       {activeQuest && (
-        <div className="absolute top-4 right-4 z-10 pointer-events-none select-none" style={{ marginRight: '100px' }}>
-          <div className="glass-dark px-4 py-3 max-w-[220px]">
+        <div className="absolute top-24 right-6 z-10 pointer-events-none select-none">
+          <div className="glass px-4 py-3 max-w-[240px] rounded-2xl shadow-lg border-white/10">
             <div className="text-xs font-mono text-realm-accent mb-1 uppercase tracking-wider">Active Quest</div>
             <div className="font-game text-sm text-white mb-2">{activeQuest.title}</div>
             {activeQuest.objectives.slice(0, 2).map((obj, i) => (

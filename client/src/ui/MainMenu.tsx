@@ -58,64 +58,66 @@ export function MainMenu({ onStart }: MainMenuProps) {
       {/* Particle overlay — handled by Phaser, this is just the React menu */}
 
       {screen === 'main' && (
-        <div className="flex flex-col items-center gap-8 animate-slide-up">
+        <div className="flex flex-col items-center gap-10 animate-slide-up bg-black/40 p-12 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl">
           {/* Title */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-2">
             <h1 className="font-game text-6xl md:text-8xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white to-realm-accent mb-4 animate-pulse"
-              style={{ filter: 'drop-shadow(0 0 40px rgba(108,99,255,0.8))' }}>
+              style={{ filter: 'drop-shadow(0 0 30px rgba(108,99,255,0.6))' }}>
               INFINITY REALMS
             </h1>
-            <p className="font-ui text-realm-text-muted tracking-[0.2em] text-sm uppercase font-bold">
+            <p className="font-ui text-realm-accent-light tracking-[0.25em] text-sm uppercase font-semibold">
               Every session is different. Every decision changes your story.
             </p>
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-col gap-4 w-72">
+          <div className="flex flex-col gap-5 w-80">
             <button
-              className="btn-gold text-base py-3 shadow-[0_0_30px_rgba(255,215,0,0.4)] hover:scale-105"
+              className="btn-gold text-lg py-4 shadow-[0_0_40px_rgba(255,215,0,0.5)] hover:scale-105 transition-transform duration-300 rounded-xl"
               onClick={() => setScreen('new')}
             >
-              ✨ New Adventure
+              ✨ NEW ADVENTURE
             </button>
 
             {saveMeta && (
-              <button className="btn-primary text-sm" onClick={handleContinue}>
-                ▶️ Continue
-                <span className="text-xs opacity-70 ml-2">
-                  {saveMeta.playerName} Lv.{saveMeta.level}
+              <button className="btn-primary text-base py-3 rounded-xl shadow-lg hover:shadow-realm-accent/50 transition-all duration-300" onClick={handleContinue}>
+                ▶️ CONTINUE
+                <span className="text-xs text-white/80 ml-2 tracking-widest font-mono">
+                  {saveMeta.playerName} LV.{saveMeta.level}
                 </span>
               </button>
             )}
 
             <button
-              className="btn-secondary text-sm"
+              className="btn-secondary text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent"
               onClick={() => setShowMultiplayer(true)}
             >
-              👥 Multiplayer Realm
+              👥 MULTIPLAYER REALM
             </button>
 
-            <button
-              className="btn-secondary text-sm"
-              onClick={() => setShowSettings(true)}
-            >
-              ⚙️ Settings
-            </button>
+            <div className="flex gap-4">
+              <button
+                className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent"
+                onClick={() => setShowSettings(true)}
+              >
+                ⚙️ Settings
+              </button>
 
-            <button
-              className="btn-secondary text-sm"
-              onClick={() => setShowCreator(true)}
-            >
-              🎨 Creator Tools
-            </button>
+              <button
+                className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent"
+                onClick={() => setShowCreator(true)}
+              >
+                🎨 CREATOR TOOLS
+              </button>
+            </div>
 
             <a
               href="https://github.com/amarjaleelbanbhan/Infinty-Realms"
               target="_blank"
               rel="noreferrer"
-              className="btn-secondary text-sm text-center"
+              className="btn-secondary text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent mt-2 text-center"
             >
-              ⭐ GitHub
+              ⭐ GITHUB
             </a>
           </div>
 

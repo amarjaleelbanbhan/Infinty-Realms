@@ -16,6 +16,7 @@ import { WorldJournalUI } from '@ui/WorldJournalUI';
 import { MerchantShopUI } from '@ui/MerchantShopUI';
 import { CreatorPanel } from '@ui/CreatorPanel';
 import { EventBanner } from '@ui/EventBanner';
+import { ActionMenu } from '@ui/ActionMenu';
 import { SkillUI } from '@ui/SkillUI';
 import { SkillTree } from '@ui/SkillTree';
 import { WorldMapUI } from '@ui/WorldMapUI';
@@ -91,87 +92,16 @@ export default function App() {
             <CraftingUI />
             <AuctionHouseUI />
 
-            {/* Quick action buttons for Guild, Market, & Journal */}
-            <div className="fixed top-4 left-[420px] z-20 flex gap-2">
-              <button
-                onClick={() => setShowShop(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
-              >
-                💎 Premium Shop
-              </button>
-              <button
-                onClick={() => setShowHousing(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
-              >
-                🏡 Housing
-              </button>
-              <button
-                onClick={() => setShowGuild(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
-              >
-                🏰 Guild
-              </button>
-              <button
-                onClick={() => setShowMarket(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
-              >
-                🏪 Bazaar
-              </button>
-              <button
-                onClick={() => useUIStore.getState().openAuctionHouse()}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
-              >
-                🏛️ Auction
-              </button>
-              <button
-                onClick={() => setShowJournal(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-xp border border-realm-xp/40 hover:bg-realm-xp/10 transition-colors flex items-center gap-1"
-              >
-                📖 Chronicle
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('ir:open_arena'))}
-                className="glass px-3 py-1.5 text-xs font-mono text-red-400 border border-red-400/40 hover:bg-red-400/10 transition-colors flex items-center gap-1"
-              >
-                ⚔️ Arena
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('ir:open_ascension'))}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1 shadow-[0_0_10px_rgba(255,215,0,0.5)]"
-              >
-                👑 Ascend
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('ir:open_intervention'))}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
-              >
-                🌌 God Spells
-              </button>
-              <button
-                onClick={() => useUIStore.getState().openSkillTree()}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1 shadow-[0_0_10px_rgba(108,99,255,0.5)]"
-              >
-                🌟 Skills
-              </button>
-              <button
-                onClick={() => setShowSkills(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
-              >
-                🔮 Spells
-              </button>
-              <button
-                onClick={() => setShowMap(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1"
-              >
-                🗺️ Map
-              </button>
-              <button
-                onClick={() => setShowCreator(true)}
-                className="glass px-3 py-1.5 text-xs font-mono text-realm-accent border border-realm-accent/40 hover:bg-realm-accent/10 transition-colors flex items-center gap-1"
-              >
-                ✨ Architect
-              </button>
-            </div>
+            <ActionMenu 
+              onOpenShop={() => setShowShop(true)}
+              onOpenHousing={() => setShowHousing(true)}
+              onOpenGuild={() => setShowGuild(true)}
+              onOpenMarket={() => setShowMarket(true)}
+              onOpenJournal={() => setShowJournal(true)}
+              onOpenSpells={() => setShowSkills(true)}
+              onOpenMap={() => setShowMap(true)}
+              onOpenCreator={() => setShowCreator(true)}
+            />
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
             {showHousing && <HousingUI onClose={() => setShowHousing(false)} />}

@@ -33,60 +33,6 @@ export class MainMenuScene extends Phaser.Scene {
     // ── Floating realm particles ──
     this.createAmbientParticles(width, height);
 
-    // ── Title ──
-    this.title = this.add.text(width / 2, height * 0.35, 'INFINITY REALMS', {
-      fontFamily: 'Cinzel, serif',
-      fontSize: Math.min(64, width * 0.09) + 'px',
-      color: '#ffffff',
-      stroke: '#6c63ff',
-      strokeThickness: 2,
-      shadow: { offsetX: 0, offsetY: 0, color: '#6c63ff', blur: 30, fill: true },
-    }).setOrigin(0.5).setAlpha(0);
-
-    this.tweens.add({
-      targets: this.title,
-      alpha: 1,
-      y: height * 0.32,
-      duration: 1500,
-      ease: 'Power2',
-    });
-
-    // ── Subtitle (lore tagline) ──
-    this.subtitle = this.add.text(width / 2, height * 0.44, 'You are a Leyline Seeker — shape the world or let it consume you.', {
-      fontFamily: 'Cinzel, serif',
-      fontSize: Math.min(15, width * 0.022) + 'px',
-      color: '#a89fff',
-    }).setOrigin(0.5).setAlpha(0);
-
-    this.tweens.add({
-      targets: this.subtitle,
-      alpha: 1,
-      duration: 1200,
-      delay: 600,
-      ease: 'Power2',
-    });
-
-    // ── Lore hook ──
-    const loreText = this.add.text(
-      width / 2,
-      height * 0.50,
-      'A living world breathes around you.\nEvery seed. Every choice. Every leyline node you claim echoes across the realm.',
-      {
-        fontFamily: 'Inter, sans-serif',
-        fontSize: Math.min(13, width * 0.018) + 'px',
-        color: '#5a6480',
-        align: 'center',
-      }
-    ).setOrigin(0.5).setAlpha(0);
-
-    this.tweens.add({
-      targets: loreText,
-      alpha: 1,
-      duration: 1000,
-      delay: 900,
-      ease: 'Power2',
-    });
-
     // ── Version tag ──
     this.add.text(width - 12, height - 12, 'v0.1.0 Alpha', {
       fontFamily: 'JetBrains Mono, monospace',
