@@ -68,19 +68,20 @@ export function Inventory() {
             {filledSlots.map((slot, i) => (
               <div
                 key={i}
-                className={`inventory-slot ${slot ? 'occupied' : 'empty'} ${slot ? rarityBorder[slot.item.rarity] ?? 'border-gray-500' : ''}`}
+                className={`inventory-slot ${slot ? 'occupied hover:scale-110 hover:shadow-[0_0_15px_currentColor]' : 'empty'} ${slot ? rarityBorder[slot.item.rarity] ?? 'border-gray-500' : ''}`}
+                style={slot ? { color: `var(--color-${slot.item.rarity === 'legendary' ? 'gold' : slot.item.rarity === 'epic' ? 'accent' : 'text'})` } : {}}
                 data-tooltip={slot ? `${slot.item.name} x${slot.quantity}` : undefined}
               >
                 {slot ? (
                   <>
-                    <span className="text-lg">
+                    <span className="text-2xl drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">
                       {slot.item.type === 'weapon' ? '⚔️'
                         : slot.item.type === 'consumable' ? '🧪'
                         : slot.item.type === 'material' ? '💎'
                         : '📦'}
                     </span>
                     {slot.quantity > 1 && (
-                      <span className="absolute bottom-0.5 right-0.5 text-xs font-mono text-white/80">
+                      <span className="absolute bottom-0 right-1 text-xs font-mono text-white drop-shadow-[0_1px_2px_black] font-bold">
                         {slot.quantity}
                       </span>
                     )}

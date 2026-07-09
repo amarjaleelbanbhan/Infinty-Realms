@@ -13,6 +13,7 @@ interface GameState {
 
   // World
   worldState: Partial<WorldState> | null;
+  currentWeather: string;
 
   // Actions
   setLoaded: (loaded: boolean) => void;
@@ -25,6 +26,7 @@ interface GameState {
   addToInventory: (item: Item, quantity: number) => void;
   removeFromInventory: (itemId: string, quantity: number) => boolean;
   setWorldState: (world: Partial<WorldState>) => void;
+  setCurrentWeather: (weather: string) => void;
   updateSeason: (season: Season) => void;
   depleteEcosystem: (biome: string, amount: number) => void;
   regenerateEcosystems: () => void;
@@ -49,6 +51,7 @@ export const useGameStore = create<GameState>()(
       playerToken: null,
       player: null,
       worldState: null,
+      currentWeather: 'clear',
 
       setLoaded: (loaded) => set({ isLoaded: loaded }),
 
@@ -233,6 +236,8 @@ export const useGameStore = create<GameState>()(
       },
 
       setWorldState: (world) => set({ worldState: world }),
+      
+      setCurrentWeather: (weather) => set({ currentWeather: weather }),
 
       updateSeason: (season) =>
         set((s) => ({

@@ -6,6 +6,6 @@ import { MultiplayerController } from './multiplayer.controller';
 @Module({
   controllers: [MultiplayerController],
   providers: [GameGateway, RoomService],
-  exports: [RoomService],
+  exports: [GameGateway, RoomService],
 })
 export class MultiplayerModule {}

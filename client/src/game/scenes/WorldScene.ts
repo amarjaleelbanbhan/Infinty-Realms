@@ -16,6 +16,7 @@ import { socketManager } from '@game/systems/SocketManager';
 import { leylineSystem } from '@game/systems/LeylineSystem';
 import { farmingSystem } from '@game/systems/FarmingSystem';
 import { citadelSystem } from '@game/systems/CitadelSystem';
+import { MountSystem } from '@game/systems/MountSystem';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -60,6 +61,7 @@ export class WorldScene extends Phaser.Scene {
   private playerAttackCooldown = 0;
   private playerDirection: 'up' | 'down' | 'left' | 'right' = 'down';
   private playerInvincible = false;
+  private playerMountSprite?: Phaser.GameObjects.Text;
 
   private enemies: EnemySprite[] = [];
   private npcs: NPCSprite[] = [];
@@ -402,10 +404,30 @@ export class WorldScene extends Phaser.Scene {
 
     const shadow = this.add.ellipse(0, 12, 16, 6, 0x000000, 0.3);
 
-    this.player = this.add.container(x, y, [shadow, body]);
+    this.playerMountSprite = this.add.text(0, 10, '', { fontSize: '24px' }).setOrigin(0.5);
+
+    this.player = this.add.container(x, y, [shadow, this.playerMountSprite, body]);
     this.player.setDepth(20);
     this.playerBody = body;
     this.entityLayer.add(this.player);
+    this.updateMountVisual();
+  }
+
+  private updateMountVisual() {
+    const playerStore = useGameStore.getState().player;
+    if (!playerStore?.isMounted || !this.playerMountSprite) {
+      if (this.playerMountSprite) this.playerMountSprite.setText('');
+      this.playerBody.y = 0; // Reset player position
+      return;
+    }
+
+    let mountIcon = '🐴';
+    if (playerStore.mount === 'Wolf') mountIcon = '🐺';
+    if (playerStore.mount === 'Drake') mountIcon = '🐉';
+    if (playerStore.mount === 'VoidBeast') mountIcon = '🦇';
+
+    this.playerMountSprite.setText(mountIcon);
+    this.playerBody.y = -10; // Lift player onto mount
   }
 
   private spawnNearbyEnemies(cx: number, cy: number) {
@@ -790,7 +812,11 @@ export class WorldScene extends Phaser.Scene {
 
   private handlePlayerInput(dt: number) {
     const gameStore = useGameStore.getState();
-    const speed = (gameStore.player?.stats?.speed ?? 150);
+    let speed = (gameStore.player?.stats?.speed ?? 150);
+    
+    if (gameStore.player?.isMounted) {
+      speed *= MountSystem.getMountSpeedMultiplier(gameStore.player.mount);
+    }
 
     let vx = 0, vy = 0;
     const sprintMult = this.isSprinting ? 1.7 : 1.0;
@@ -1737,6 +1763,14 @@ export class WorldScene extends Phaser.Scene {
     for (const remote of this.remotePlayers.values()) {
       remote.destroy();
     }
+    this.events.on('shutdown', () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('ir:mount_summoned', this.updateMountVisual.bind(this));
+      window.removeEventListener('ir:mount_dismissed', this.updateMountVisual.bind(this));
+    });
+
+    window.addEventListener('ir:mount_summoned', this.updateMountVisual.bind(this));
+    window.addEventListener('ir:mount_dismissed', this.updateMountVisual.bind(this));
     this.remotePlayers.clear();
     
     window.removeEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);

@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { SocketGateway } from '../world/socket.gateway';
+import { GameGateway } from '../multiplayer/game.gateway';
 import { AiService } from '../ai/ai.service';
 
 @Injectable()
@@ -7,7 +7,7 @@ export class SeasonService implements OnModuleInit {
   private currentSeason = 'Standard';
 
   constructor(
-    private socketGateway: SocketGateway,
+    private gameGateway: GameGateway,
     private ai: AiService
   ) {}
 
@@ -34,7 +34,7 @@ export class SeasonService implements OnModuleInit {
           memory: []
         });
 
-        this.socketGateway.server.emit('systemMessage', {
+        this.gameGateway.server.emit('systemMessage', {
           sender: 'Realm Announcer',
           text: lore || `A new season begins: ${this.currentSeason}!`
         });

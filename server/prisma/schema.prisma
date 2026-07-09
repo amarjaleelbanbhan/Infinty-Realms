@@ -161,6 +161,17 @@ model GameSession {
 
 // ─── Guild Wars ───────────────────────────────────────────────
 
+model Guild {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  tag         String   @unique
+  leaderId    String
+  level       Int      @default(1)
+  experience  Int      @default(0)
+  bankJson    String   @default("[]")
+  createdAt   DateTime @default(now())
+}
+
 model GuildWar {
   id            String   @id @default(uuid())
   challengerId  String

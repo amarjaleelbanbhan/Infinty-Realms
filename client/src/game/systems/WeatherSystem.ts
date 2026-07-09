@@ -27,6 +27,8 @@ export const WEATHER_MODIFIERS: Record<WeatherType, { description: string; statB
   blizzard: { description: 'Freezing gale slows movement speed.', statBonus: '-10% Speed, +40% Frost' },
 };
 
+import { useGameStore } from '@stores/useGameStore';
+
 export class WeatherSystem {
   private scene: Phaser.Scene;
   private particles: Phaser.GameObjects.Graphics[] = [];
@@ -43,6 +45,7 @@ export class WeatherSystem {
   setWeather(type: WeatherType) {
     this.currentWeather = type;
     this.updateOverlay(type);
+    useGameStore.getState().setCurrentWeather(type);
     console.log(`[Weather] Changed to ${type}`);
   }
 

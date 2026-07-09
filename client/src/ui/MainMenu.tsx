@@ -58,22 +58,22 @@ export function MainMenu({ onStart }: MainMenuProps) {
       {/* Particle overlay — handled by Phaser, this is just the React menu */}
 
       {screen === 'main' && (
-        <div className="flex flex-col items-center gap-6 animate-fade-in">
+        <div className="flex flex-col items-center gap-8 animate-slide-up">
           {/* Title */}
-          <div className="text-center mb-4">
-            <h1 className="font-game text-5xl md:text-7xl font-black tracking-widest text-white mb-2"
-              style={{ textShadow: '0 0 40px rgba(108,99,255,0.6), 0 0 80px rgba(108,99,255,0.3)' }}>
+          <div className="text-center mb-6">
+            <h1 className="font-game text-6xl md:text-8xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white to-realm-accent mb-4 animate-pulse"
+              style={{ filter: 'drop-shadow(0 0 40px rgba(108,99,255,0.8))' }}>
               INFINITY REALMS
             </h1>
-            <p className="font-ui text-realm-text-muted tracking-widest text-sm">
+            <p className="font-ui text-realm-text-muted tracking-[0.2em] text-sm uppercase font-bold">
               Every session is different. Every decision changes your story.
             </p>
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-col gap-3 w-64">
+          <div className="flex flex-col gap-4 w-72">
             <button
-              className="btn-gold text-sm"
+              className="btn-gold text-base py-3 shadow-[0_0_30px_rgba(255,215,0,0.4)] hover:scale-105"
               onClick={() => setScreen('new')}
             >
               ✨ New Adventure
@@ -128,11 +128,11 @@ export function MainMenu({ onStart }: MainMenuProps) {
 
       {screen === 'new' && (
         <div className="glass p-8 w-full max-w-sm mx-4 animate-slide-up">
-          <h2 className="font-game text-2xl text-white mb-6 text-center">Your Hero</h2>
+          <h2 className="font-game text-3xl text-transparent bg-clip-text bg-gradient-to-r from-white to-realm-accent mb-6 text-center animate-pulse glow-accent" style={{ textShadow: '0 0 10px rgba(108, 99, 255, 0.5)' }}>Your Hero</h2>
 
           {/* Name input */}
           <div className="mb-6">
-            <label className="block font-ui text-xs text-realm-text-muted mb-2 uppercase tracking-widest">
+            <label className="block font-ui text-xs text-realm-text-muted mb-2 uppercase tracking-widest font-bold">
               Hero Name
             </label>
             <input
@@ -141,17 +141,17 @@ export function MainMenu({ onStart }: MainMenuProps) {
               onChange={(e) => setPlayerName(e.target.value.slice(0, 20))}
               placeholder="Enter your name..."
               maxLength={20}
-              className="w-full bg-realm-bg border border-realm-border rounded-lg px-4 py-3 text-white font-ui text-sm focus:outline-none focus:border-realm-accent transition-colors"
+              className="w-full bg-realm-bg/50 border-2 border-realm-border rounded-lg px-4 py-3 text-white font-ui text-sm focus:outline-none focus:border-realm-accent transition-all duration-300 focus:shadow-[0_0_15px_rgba(108,99,255,0.4)]"
               onKeyDown={(e) => e.key === 'Enter' && setScreen('class')}
             />
           </div>
 
           <div className="flex gap-3">
-            <button className="btn-secondary flex-1 text-sm" onClick={() => setScreen('main')}>
+            <button className="btn-secondary flex-1 text-sm font-bold" onClick={() => setScreen('main')}>
               ← Back
             </button>
             <button
-              className="btn-primary flex-1 text-sm"
+              className="btn-primary flex-1 text-sm shadow-[0_0_20px_rgba(108,99,255,0.5)]"
               onClick={() => setScreen('class')}
             >
               Next →

@@ -101,6 +101,22 @@ export interface Player {
   guildId?: UUID;
   ascensions: number;
   godPerks: string[];
+  subclass?: SubclassType;
+  mount?: MountType;
+  isMounted?: boolean;
+}
+
+export type SubclassType = 'Necromancer' | 'Paladin' | 'Elementalist' | 'Berserker' | 'Assassin';
+export type MountType = 'Horse' | 'Drake' | 'VoidBeast' | 'Wolf';
+
+export interface SkillNode {
+  id: string;
+  name: string;
+  description: string;
+  tier: number;
+  cost: number; // Skill points required
+  prerequisites: string[]; // IDs of required nodes
+  icon: string;
 }
 
 export interface InventorySlot {
@@ -168,7 +184,10 @@ export type NPCRole =
   | 'blacksmith'
   | 'mage'
   | 'healer'
-  | 'thief';
+  | 'thief'
+  | 'lorebook'
+  | 'moderator'
+  | 'narrator';
 
 export interface NPC {
   id: UUID;

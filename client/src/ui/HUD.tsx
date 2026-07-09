@@ -92,13 +92,18 @@ export function HUD() {
       </div>
 
       {/* ── Bottom-left: Hotbar ── */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-        <div className="flex items-center gap-2">
-          {['⚔️', '🛡️', '🧪', '📜', '💎'].map((icon, i) => (
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+        <div className="flex items-center gap-3 glass px-4 py-2 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border-realm-border/50">
+          {['⚔️', '🛡️', '🧪', '🐎', '💎'].map((icon, i) => (
             <button
               key={i}
-              className="w-12 h-12 glass flex items-center justify-center text-xl rounded-xl border border-realm-border hover:border-realm-accent transition-all duration-150 active:scale-95"
-              data-tooltip={['Attack', 'Block', 'Heal', 'Quest Item', 'Gem'][i]}
+              onClick={() => {
+                if (icon === '🐎') {
+                  import('@game/systems/MountSystem').then(m => m.MountSystem.toggleMount());
+                }
+              }}
+              className="w-14 h-14 bg-realm-surface/50 flex items-center justify-center text-2xl rounded-xl border border-realm-border hover:border-realm-accent hover:bg-realm-accent/20 transition-all duration-200 active:scale-95 hover:shadow-[0_0_15px_rgba(108,99,255,0.5)]"
+              data-tooltip={['Attack', 'Block', 'Heal', 'Mount', 'Gem'][i]}
             >
               {icon}
             </button>

@@ -100,7 +100,21 @@ export const useSkillStore = create<SkillStore>((set, get) => ({
       gameStore.updatePlayerStats({ hp: newHp });
       uiStore.addToast(`+${skill.value} HP Healed!`, 'success');
     } else {
-      uiStore.addToast(`Cast ${skill.name}!`, 'info');
+      let finalDamage = skill.value;
+      const weather = gameStore.currentWeather;
+      let weatherMsg = '';
+
+      if (skill.id === 'fireball' && weather === 'rain') {
+        finalDamage *= 0.8;
+        weatherMsg = ' (Dampened by rain)';
+      } else if (skill.id === 'frost_nova' && (weather === 'snow' || weather === 'blizzard')) {
+        finalDamage *= 1.3;
+        weatherMsg = ' (Empowered by cold)';
+      }
+
+      finalDamage = Math.round(finalDamage);
+      uiStore.addToast(`Cast ${skill.name}! Deals ${finalDamage} dmg${weatherMsg}`, 'info');
+      // In a real flow, this would dispatch an event to WorldScene to spawn a projectile
     }
 
     // Set cooldown

@@ -107,25 +107,33 @@ html, body {
 
 /* ─── Glass Card ─────────────────────────────────────────────── */
 .glass {
-  background: rgba(15, 15, 42, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(124, 107, 255, 0.22);
-  border-radius: 12px;
+  background: rgba(15, 15, 42, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(124, 107, 255, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(124, 107, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.glass:hover {
+  border-color: rgba(124, 107, 255, 0.8);
+  box-shadow: 0 8px 40px rgba(124, 107, 255, 0.2), inset 0 0 30px rgba(124, 107, 255, 0.2);
 }
 
 .glass-dark {
-  background: rgba(7, 7, 26, 0.94);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(37, 37, 80, 0.7);
-  border-radius: 12px;
+  background: rgba(7, 7, 26, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(37, 37, 80, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
 }
 
 /* ─── Glow Effects ───────────────────────────────────────────── */
-.glow-accent { box-shadow: 0 0 20px rgba(108, 99, 255, 0.3); }
-.glow-gold   { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-.glow-hp     { box-shadow: 0 0 15px rgba(232, 93, 93, 0.4); }
+.glow-accent { box-shadow: 0 0 30px rgba(108, 99, 255, 0.6), inset 0 0 10px rgba(108, 99, 255, 0.4); }
+.glow-gold   { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.4); }
+.glow-hp     { box-shadow: 0 0 25px rgba(232, 93, 93, 0.6), inset 0 0 10px rgba(232, 93, 93, 0.4); }
 
 /* ─── Buttons ────────────────────────────────────────────────── */
 .btn-primary {
@@ -138,13 +146,15 @@ html, body {
   color: white;
   font-family: var(--font-game);
   font-size: 0.875rem;
-  letter-spacing: 0.1em;
-  border: none;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
 }
 
 .btn-primary::after {

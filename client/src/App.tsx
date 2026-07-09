@@ -17,6 +17,7 @@ import { MerchantShopUI } from '@ui/MerchantShopUI';
 import { CreatorPanel } from '@ui/CreatorPanel';
 import { EventBanner } from '@ui/EventBanner';
 import { SkillUI } from '@ui/SkillUI';
+import { SkillTree } from '@ui/SkillTree';
 import { WorldMapUI } from '@ui/WorldMapUI';
 import { KeybindPanel } from '@ui/KeybindPanel';
 import { EcosystemUI } from '@ui/EcosystemUI';
@@ -147,6 +148,12 @@ export default function App() {
                 🌌 God Spells
               </button>
               <button
+                onClick={() => useUIStore.getState().openSkillTree()}
+                className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1 shadow-[0_0_10px_rgba(108,99,255,0.5)]"
+              >
+                🌟 Skills
+              </button>
+              <button
                 onClick={() => setShowSkills(true)}
                 className="glass px-3 py-1.5 text-xs font-mono text-realm-mana border border-realm-mana/40 hover:bg-realm-mana/10 transition-colors flex items-center gap-1"
               >
@@ -185,6 +192,7 @@ export default function App() {
             <AscensionUI />
             <GodInterventionUI />
             <AuctionHouseUI />
+            <SkillTree />
           </>
         )}
 
