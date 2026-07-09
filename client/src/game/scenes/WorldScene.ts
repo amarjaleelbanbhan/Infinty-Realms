@@ -8,6 +8,7 @@ import { CombatSystem } from '@game/systems/CombatSystem';
 import { WeatherSystem } from '@game/systems/WeatherSystem';
 import { saveSystem } from '@game/systems/SaveSystem';
 import { questSystem } from '@game/systems/QuestSystem';
+import { soundSystem } from '@game/systems/SoundSystem';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
@@ -68,6 +69,7 @@ export class WorldScene extends Phaser.Scene {
   private wasd!: { up: Phaser.Input.Keyboard.Key; left: Phaser.Input.Keyboard.Key; down: Phaser.Input.Keyboard.Key; right: Phaser.Input.Keyboard.Key; };
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private eKey!: Phaser.Input.Keyboard.Key;
+  private cKey!: Phaser.Input.Keyboard.Key;
   private iKey!: Phaser.Input.Keyboard.Key;
   private qKey!: Phaser.Input.Keyboard.Key;
   private mKey!: Phaser.Input.Keyboard.Key;  // World map
@@ -192,6 +194,26 @@ export class WorldScene extends Phaser.Scene {
     const weather = this.weatherSystem.getRandomWeather('plains');
     this.weatherSystem.createOverlay(width, height);
     this.weatherSystem.setWeather(weather);
+
+    leylineSystem.onOverload = () => {
+      if (this.weatherSystem.getCurrentWeather() !== 'storm') {
+        this.weatherSystem.setWeather('storm');
+        useUIStore.getState().addToast('Arcane Storm! The Leylines are overloading!', 'error');
+        
+        // Spawn an empowered void monster near the player as a consequence
+        const px = this.player.x;
+        const py = this.player.y;
+        const voidMonster = this.spawnEnemy({ type: 'orc', hp: 300, speed: 80, attack: 20, defense: 10, exp: 50, gold: 100 }, px + 100, py + 100);
+        voidMonster.enemyData.maxHp *= 3;
+        voidMonster.enemyData.hp = voidMonster.enemyData.maxHp;
+        voidMonster.enemyData.attack *= 2;
+        voidMonster.setScale(1.5);
+        (voidMonster.list[1] as Phaser.GameObjects.Image).setTint(0x7c6bff); // Purple tint for void
+      }
+    };
+
+    // ── Audio ──
+    soundSystem.playAmbientDrone();
 
     // ── Auto-save ──
     saveSystem.startAutoSave();
@@ -446,6 +468,8 @@ export class WorldScene extends Phaser.Scene {
     this.updateEnemyHPBar(container);
     this.enemies.push(container);
     this.entityLayer.add(container);
+    
+    return container;
   }
 
   private spawnNearbyNPCs(cx: number, cy: number) {
@@ -585,6 +609,7 @@ export class WorldScene extends Phaser.Scene {
     };
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.eKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.cKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
     this.iKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
     this.qKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
     this.mKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
@@ -652,6 +677,24 @@ export class WorldScene extends Phaser.Scene {
     };
     (window as Window & { __mobileInteract?: () => void }).__mobileInteract = () => {
       this.interactWithNearest();
+    };
+    (window as Window & { __spectatorMode?: () => void }).__spectatorMode = () => {
+      this.cameras.main.stopFollow();
+      this.tweens.add({
+        targets: this.cameras.main,
+        zoom: 0.5,
+        duration: 2000,
+        ease: 'Sine.easeInOut'
+      });
+      // Slowly pan across the map
+      this.tweens.add({
+        targets: this.cameras.main,
+        scrollX: this.world.width * 32,
+        scrollY: this.world.height * 32,
+        duration: 60000,
+        ease: 'Linear'
+      });
+      useUIStore.getState().setScreen('none'); // Hide UI
     };
   }
 
@@ -769,6 +812,23 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
+    // Gamepad support
+    const pad = this.input.gamepad?.pad1;
+    if (pad && pad.axes.length >= 2) {
+      const xAxis = pad.axes[0].getValue();
+      const yAxis = pad.axes[1].getValue();
+      
+      if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
+        vx = xAxis * speed * sprintMult;
+        vy = yAxis * speed * sprintMult;
+        if (Math.abs(vx) > Math.abs(vy)) {
+          this.playerDirection = vx > 0 ? 'right' : 'left';
+        } else {
+          this.playerDirection = vy > 0 ? 'down' : 'up';
+        }
+      }
+    }
+
     // Diagonal normalise
     if (vx !== 0 && vy !== 0) {
       vx *= 0.707;
@@ -793,12 +853,12 @@ export class WorldScene extends Phaser.Scene {
     else if (vx > 0) this.playerBody.setFlipX(false);
 
     // Attack
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) || (pad && pad.A)) {
       this.playerAttack();
     }
 
     // Interact
-    if (Phaser.Input.Keyboard.JustDown(this.eKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.eKey) || (pad && pad.B)) {
       this.interactWithNearest();
     }
 
@@ -810,6 +870,11 @@ export class WorldScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.qKey)) {
       const ui = useUIStore.getState();
       ui.isQuestLogOpen ? ui.closeQuestLog() : ui.openQuestLog();
+    }
+    // C — Crafting
+    if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
+      const ui = useUIStore.getState();
+      ui.isCraftingOpen ? ui.closeCrafting() : ui.openCrafting();
     }
     // M — World map
     if (Phaser.Input.Keyboard.JustDown(this.mKey)) {
@@ -876,6 +941,31 @@ export class WorldScene extends Phaser.Scene {
       yoyo: true,
     });
 
+    // Slash animation arc
+    const slash = this.add.graphics();
+    slash.lineStyle(4, 0xffffff, 1);
+    slash.beginPath();
+    slash.arc(0, 0, 30, -Math.PI / 4, Math.PI / 4);
+    slash.strokePath();
+    slash.setDepth(100);
+    slash.setPosition(this.player.x, this.player.y);
+    
+    // Rotate slash based on direction
+    const angles = { right: 0, down: Math.PI/2, left: Math.PI, up: -Math.PI/2 };
+    slash.setRotation(angles[this.playerDirection]);
+
+    this.tweens.add({
+      targets: slash,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      alpha: 0,
+      duration: 200,
+      ease: 'Power2',
+      onComplete: () => slash.destroy()
+    });
+    
+    soundSystem.playSlash();
+
     if (socketManager.getRoomCode()) {
       socketManager.sendAttack(this.playerDirection);
     }
@@ -894,7 +984,11 @@ export class WorldScene extends Phaser.Scene {
 
         enemy.enemyData.hp -= damage;
         this.combatSystem.showDamageNumber(enemy.x, enemy.y, damage, isCrit);
+        if (isCrit) {
+          this.cameras.main.shake(100, 0.01);
+        }
         this.updateEnemyHPBar(enemy);
+        soundSystem.playHit();
 
         // Hit flash
         const bodyImg = enemy.list[1] as Phaser.GameObjects.Image;
@@ -920,6 +1014,23 @@ export class WorldScene extends Phaser.Scene {
     if (!playerStats) return;
 
     const spellRange = this.ATTACK_RANGE * 1.5;
+    
+    // Spell particle effect
+    const particles = this.add.particles(this.player.x, this.player.y, 'item-gem', {
+      speed: { min: 50, max: 200 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.5, end: 0 },
+      tint: 0xff00ff,
+      blendMode: 'ADD',
+      lifespan: 400,
+      quantity: 15,
+      emitting: false
+    });
+    particles.setDepth(99);
+    particles.explode();
+    
+    soundSystem.playSpell();
+
     const hitbox = this.combatSystem.getMeleeHitbox(this.player.x, this.player.y, this.playerDirection, spellRange);
 
     for (const enemy of this.enemies) {
@@ -1144,6 +1255,7 @@ export class WorldScene extends Phaser.Scene {
             item.destroy();
           },
         });
+        soundSystem.playCoin();
 
         // Apply effect
         switch (type) {
@@ -1214,6 +1326,10 @@ export class WorldScene extends Phaser.Scene {
         { text: 'Tell me about your quests', action: 'quest' },
         { text: 'Farewell', action: 'close' },
       ];
+
+      if (nearestNPC.npcData.role === 'merchant') {
+        options.unshift({ text: 'Show me your wares', action: 'shop' });
+      }
 
       if (token && gameStore.player) {
         try {
@@ -1361,6 +1477,30 @@ export class WorldScene extends Phaser.Scene {
         body.setTint(0xa0a0ff);
       }
     });
+
+    // PvP damage check
+    if (!this.playerInvincible) {
+      const dx = this.player.x - remote.x;
+      const dy = this.player.y - remote.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < this.INTERACT_RANGE) {
+        // Player takes PvP damage
+        this.combatSystem.damagePlayer(10);
+        this.combatSystem.showDamageNumber(this.player.x, this.player.y, 10, false);
+        this.playerInvincible = true;
+        this.tweens.add({
+          targets: this.player,
+          alpha: { from: 1, to: 0.4 },
+          duration: 100,
+          yoyo: true,
+          repeat: 3,
+          onComplete: () => {
+            this.player.setAlpha(1);
+            this.playerInvincible = false;
+          },
+        });
+      }
+    }
   }
 
   private handleRemotePlayerLeft(data: { playerId: string }) {

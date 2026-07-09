@@ -35,6 +35,7 @@ export function createPhaserGame(parent: HTMLElement): Phaser.Game {
     },
     input: {
       activePointers: 3, // Support multi-touch
+      gamepad: true,
     },
   };
 

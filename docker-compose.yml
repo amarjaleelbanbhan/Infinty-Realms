@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: infinity
+      POSTGRES_PASSWORD: infinitypassword
+      POSTGRES_DB: infinity_realms
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.server
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://infinity:infinitypassword@db:5432/infinity_realms?schema=public
+      - REDIS_URL=redis://redis:6379
+      - AI_PROVIDER=openai
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  pgdata:
+  redisdata:

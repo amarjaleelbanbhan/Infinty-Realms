@@ -28,6 +28,7 @@ import { GodInterventionUI } from '@ui/GodInterventionUI';
 import { AuctionHouseUI } from '@ui/AuctionHouseUI';
 import { HousingUI } from '@ui/HousingUI';
 import { CosmeticShopUI } from '@ui/CosmeticShopUI';
+import { CraftingUI } from '@ui/CraftingUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -86,6 +87,8 @@ export default function App() {
             <MobileControls />
             <Chat />
             <LeylineUI />
+            <CraftingUI />
+            <AuctionHouseUI />
 
             {/* Quick action buttons for Guild, Market, & Journal */}
             <div className="fixed top-4 left-[420px] z-20 flex gap-2">

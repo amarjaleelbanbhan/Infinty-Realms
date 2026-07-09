@@ -143,7 +143,20 @@ export async function generateDialogue(req: DialogueGenerationRequest): Promise<
     return mockDialogue(req, callId);
   }
 
-  // Placeholder for ollama/openai until implemented
+  try {
+    if (PROVIDER === 'ollama') {
+      // Placeholder for ollama until implemented
+      return mockDialogue(req, callId);
+    }
+    if (PROVIDER === 'openai') {
+      const { generateDialogueOpenAI } = await import('./providers/openai');
+      return await generateDialogueOpenAI(req);
+    }
+  } catch (err) {
+    console.warn(`[AI] ${PROVIDER} dialogue generation failed, falling back to mock:`, err);
+    return mockDialogue(req, callId);
+  }
+
   return mockDialogue(req, callId);
 }
 

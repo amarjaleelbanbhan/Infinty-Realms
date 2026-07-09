@@ -30,10 +30,15 @@ Current world context: ${currentContext}.
 Generate a short 3-turn dialogue where they negotiate, argue, or share a rumor. Output only the dialogue.`;
 
     try {
-      // MOCK FOR NOW: avoiding dependency on Vercel AI SDK in server workspace
-      const text = `${npc1Type}: I've heard the leyline flows are weak today.\n${npc2Type}: Bah, it's just a temporary surge. Don't panic.\n${npc1Type}: If you say so... but I'm keeping my gold safe.`;
-      this.logger.log(`Generated Agent Interaction:\n${text}`);
-      return text;
+      const dialogueText = await this.aiService.generateDialogue({ 
+        npcName: npc1Type,
+        npcRole: 'merchant',
+        personality: 'neutral',
+        playerMessage: `Discuss this context: ${currentContext}`,
+        memory: []
+      });
+      this.logger.log(`Generated Agent Interaction:\n${dialogueText}`);
+      return dialogueText;
     } catch (e) {
       this.logger.error('Failed to simulate NPC interaction', e);
       return 'Agents are currently unresponsive.';
@@ -44,13 +49,18 @@ Generate a short 3-turn dialogue where they negotiate, argue, or share a rumor. 
    * Evaluates if the world needs a dynamic global event (e.g. market crash, siege).
    */
   async evaluateWorldState(worldSeed: string): Promise<string> {
-    const prompt = `You are the AI Dungeon Master for the world seed "${worldSeed}".
-Based on the current peace time, suggest ONE dynamic event that should happen next (e.g., Goblin Raid, Market Crash, Leyline Surge). Respond with just the event name.`;
-
     try {
-      const text = 'Goblin Raid';
-      return text.trim();
+      const eventResponse = await this.aiService.generateWorldEvent({ 
+        worldSeed: worldSeed,
+        season: 'spring',
+        worldAge: 0,
+        currentPlayerCount: 1
+      });
+      const eventName = eventResponse.title || 'None';
+      this.logger.log(`Evaluated World State Event: ${eventName}`);
+      return eventName;
     } catch (e) {
+      this.logger.error('Failed to evaluate world state', e);
       return 'None';
     }
   }

@@ -30,6 +30,7 @@ export const WEATHER_MODIFIERS: Record<WeatherType, { description: string; statB
 export class WeatherSystem {
   private scene: Phaser.Scene;
   private particles: Phaser.GameObjects.Graphics[] = [];
+  private particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
   private overlay: Phaser.GameObjects.Rectangle | null = null;
   private currentWeather: WeatherType = 'clear';
   private weatherTimer = 0;
@@ -62,6 +63,7 @@ export class WeatherSystem {
 
   private updateOverlay(type: WeatherType) {
     const effect = WEATHER_EFFECTS[type];
+    
     if (this.overlay) {
       this.scene.tweens.add({
         targets: this.overlay,
@@ -69,6 +71,29 @@ export class WeatherSystem {
         duration: 3000,
         ease: 'Linear',
       });
+    }
+
+    if (this.particleEmitter) {
+      this.particleEmitter.stop();
+      this.particleEmitter.destroy();
+      this.particleEmitter = null;
+    }
+
+    if (effect.particleCount > 0) {
+      const isSnow = type === 'snow' || type === 'blizzard';
+      this.particleEmitter = this.scene.add.particles(0, 0, 'particle', {
+        x: { min: 0, max: this.scene.cameras.main.width },
+        y: -50,
+        lifespan: isSnow ? 4000 : 2000,
+        speedY: isSnow ? { min: 50, max: 150 } : { min: 400, max: 600 },
+        speedX: isSnow ? { min: -50, max: 50 } : { min: -20, max: 20 },
+        scale: { start: isSnow ? 1.5 : 1, end: isSnow ? 0.5 : 1 },
+        quantity: isSnow ? 2 : 5, // Per frame emission rate
+        tint: effect.particleColor,
+        blendMode: 'ADD',
+      });
+      this.particleEmitter.setScrollFactor(0); // Attach to camera visually
+      this.particleEmitter.setDepth(49);
     }
   }
 

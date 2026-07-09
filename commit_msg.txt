@@ -1,6 +1,0 @@
-feat: implement Phase 19 and 20 - Endgame Progression & Anti-Cheat
-
-- Added `ascensions` field to Prisma `Player` schema to store Paragon/Prestige ranks.
-- Updated HUD to display Ascension ranks alongside Player Level.
-- Refactored `PlayersService.saveState` to support syncing ascensions.
-- Implemented basic Anti-Cheat in `PlayersService.saveState` to validate `gold` and `experience` deltas against timestamps.

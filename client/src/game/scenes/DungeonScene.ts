@@ -92,6 +92,9 @@ export class DungeonScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setZoom(1.2);
 
+    // PostFX / Lighting
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.8); // Darker vignette for dungeon
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 0.8, 1.2);
     // Overlaps
     this.physics.add.overlap(this.player, this.keys, this.collectKey as any, undefined, this);
     this.physics.add.overlap(this.player, this.chests, this.interactChest as any, undefined, this);

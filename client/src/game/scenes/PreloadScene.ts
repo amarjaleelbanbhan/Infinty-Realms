@@ -426,5 +426,12 @@ export class PreloadScene extends Phaser.Scene {
     x.fillTriangle(10, 2, 18, 16, 2, 16);
     x.generateTexture('icon-xp', 20, 20);
     x.destroy();
+
+    // Particle
+    const p = this.make.graphics({ x: 0, y: 0 });
+    p.fillStyle(0xffffff, 1);
+    p.fillCircle(2, 2, 2);
+    p.generateTexture('particle', 4, 4);
+    p.destroy();
   }
 }

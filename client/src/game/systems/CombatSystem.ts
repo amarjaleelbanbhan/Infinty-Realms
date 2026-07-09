@@ -89,6 +89,31 @@ export class CombatSystem {
       ease: 'Power2',
       onComplete: () => dmgText.destroy(),
     });
+
+    if (isCrit && !isHeal) {
+      this.shakeCamera(150, 0.015);
+      this.hitStop(50);
+    }
+  }
+
+  /** Shake camera for juicy impact */
+  shakeCamera(duration = 100, intensity = 0.01) {
+    this.scene.cameras.main.shake(duration, intensity);
+  }
+
+  /** Brief time slow/pause for hit impact */
+  hitStop(duration = 50) {
+    // A simple hit stop by setting timeScale
+    this.scene.time.timeScale = 0.1;
+    if (this.scene.physics && this.scene.physics.world) {
+      this.scene.physics.world.isPaused = true;
+    }
+    this.scene.time.delayedCall(duration * 0.1, () => {
+      this.scene.time.timeScale = 1.0;
+      if (this.scene.physics && this.scene.physics.world) {
+        this.scene.physics.world.isPaused = false;
+      }
+    });
   }
 
   /** Check if two rectangles overlap (attack hitbox check) */

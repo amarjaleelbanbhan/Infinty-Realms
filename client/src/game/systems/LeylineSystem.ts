@@ -34,11 +34,21 @@ export class LeylineSystem {
 
   private tick() {
     const now = Date.now();
+    let totalEssence = 0;
+    
     for (const node of this.nodes) {
       const elapsedMins = (now - node.lastHarvestAt) / 60_000;
       node.accumulatedEssence = Math.floor(elapsedMins * node.ratePerMin);
+      totalEssence += node.accumulatedEssence;
+    }
+
+    // Trigger overload if total unharvested essence in the network exceeds 100
+    if (totalEssence > 100 && this.onOverload) {
+      this.onOverload();
     }
   }
+
+  public onOverload: (() => void) | null = null;
 
   placeNode(x: number, y: number, type: LeylineNodeType, biome: BiomeType): LeylineNode | null {
     const player = useGameStore.getState().player;

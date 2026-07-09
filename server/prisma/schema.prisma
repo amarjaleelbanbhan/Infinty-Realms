@@ -28,6 +28,8 @@ model Player {
   statsJson   String   @default("{\"hp\":100,\"maxHp\":100,\"mana\":50,\"maxMana\":50,\"attack\":10,\"defense\":5,\"speed\":150,\"luck\":5}")
   level       Int      @default(1)
   ascensions  Int      @default(0) // Paragon / Prestige level
+  isAdmin     Boolean  @default(false)
+  isBot       Boolean  @default(false)
   experience  Int      @default(0)
   gold        Int      @default(50)
   
@@ -40,8 +42,8 @@ model Player {
   playtime    Int      @default(0)
   
   // Relations
-  quests      Quest[]
-  sessions    GameSession[]
+  quests        Quest[]
+  sessions      GameSession[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -186,4 +188,15 @@ model PlayerHouse {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ─── Custom Dungeons ──────────────────────────────────────────
+
+model CustomDungeon {
+  id          String   @id @default(uuid())
+  authorId    String
+  name        String
+  layoutJson  String
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }

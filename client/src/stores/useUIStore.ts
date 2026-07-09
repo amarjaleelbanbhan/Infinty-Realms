@@ -10,7 +10,7 @@ interface Toast {
 
 interface UIStore {
   // Screen state
-  currentScreen: 'menu' | 'loading' | 'game' | 'pause';
+  currentScreen: 'menu' | 'loading' | 'game' | 'pause' | 'none' | 'settings';
 
   // Panel visibility
   isInventoryOpen: boolean;
@@ -19,6 +19,7 @@ interface UIStore {
   isMapOpen: boolean;
   isMerchantShopOpen: boolean;
   isAuctionHouseOpen: boolean;
+  isCraftingOpen: boolean;
   merchantNpcId: string | null;
   merchantBiome: string | null;
   currentBiome: string | null;
@@ -51,6 +52,8 @@ interface UIStore {
   closeMerchantShop: () => void;
   openAuctionHouse: () => void;
   closeAuctionHouse: () => void;
+  openCrafting: () => void;
+  closeCrafting: () => void;
   addToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
   setIsMobile: (mobile: boolean) => void;
@@ -67,6 +70,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isMapOpen: false,
   isMerchantShopOpen: false,
   isAuctionHouseOpen: false,
+  isCraftingOpen: false,
   merchantNpcId: null,
   merchantBiome: null,
   currentBiome: null,
@@ -96,6 +100,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   openAuctionHouse: () => set({ isAuctionHouseOpen: true, isInventoryOpen: false, isQuestLogOpen: false }),
   closeAuctionHouse: () => set({ isAuctionHouseOpen: false }),
+
+  openCrafting: () => set({ isCraftingOpen: true }),
+  closeCrafting: () => set({ isCraftingOpen: false }),
 
   addToast: (message, type = 'info') => {
     const id = crypto.randomUUID();

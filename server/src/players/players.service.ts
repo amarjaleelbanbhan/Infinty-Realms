@@ -124,4 +124,24 @@ export class PlayersService {
       ascensions: p.ascensions,
     };
   }
+
+  async getLeaderboard() {
+    const players = await this.prisma.player.findMany({
+      take: 10,
+      orderBy: [
+        { ascensions: 'desc' },
+        { level: 'desc' },
+        { experience: 'desc' },
+      ],
+      select: {
+        id: true,
+        name: true,
+        level: true,
+        ascensions: true,
+        gold: true,
+        playtime: true,
+      }
+    });
+    return players;
+  }
 }
