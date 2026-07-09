@@ -35,10 +35,10 @@ export function Chat() {
   };
 
   return (
-    <div className="absolute bottom-4 left-4 z-20 pointer-events-auto w-80">
-      <div className={`glass-dark rounded-xl transition-all duration-300 ${isExpanded ? 'h-64' : 'h-32'} flex flex-col`}>
+    <div className="absolute bottom-4 left-4 z-20 pointer-events-auto w-[320px]">
+      <div className={`glass rounded-2xl transition-all duration-300 ${isExpanded ? 'h-72' : 'h-32'} flex flex-col shadow-2xl`}>
         {/* Header Tabs */}
-        <div className="flex items-center justify-between border-b border-realm-border px-3 py-1.5 text-xs">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-xs">
           <div className="flex gap-2 font-mono">
             {(['world', 'local', 'party'] as const).map((ch) => (
               <button
@@ -70,15 +70,15 @@ export function Chat() {
         </div>
 
         {/* Input Bar */}
-        <form onSubmit={handleSend} className="p-2 border-t border-realm-border flex gap-2">
+        <form onSubmit={handleSend} className="p-3 border-t border-white/10 flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={`Chat in ${activeChannel}...`}
-            className="flex-1 bg-realm-bg border border-realm-border rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-realm-accent"
+            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-realm-accent placeholder:text-white/30"
           />
-          <button type="submit" className="btn-primary text-xs py-1 px-3">
+          <button type="submit" className="btn-primary text-xs py-1.5 px-4 rounded-xl">
             Send
           </button>
         </form>

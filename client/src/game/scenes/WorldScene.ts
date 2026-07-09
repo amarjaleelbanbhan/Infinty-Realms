@@ -183,8 +183,9 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setZoom(1.2);
 
     // ── PostFX / Lighting ──
-    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.7);
-    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 0.9, 1.1);
+    // Dark Fantasy atmosphere: strong dark vignette, glowing magical bloom
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.85); // Stronger vignette for mood
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.2, 1.5); // Softer, more diffuse glow
 
     // ── Input ──
     this.setupInput();
@@ -342,16 +343,30 @@ export class WorldScene extends Phaser.Scene {
       for (let x = 0; x < this.world.width; x++) {
         const tile = this.world.tiles[y][x];
         const { base } = BIOME_TILE_COLOR[tile.biome];
-
+        
+        // Base tile
         g.fillStyle(base, 1);
         g.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        
+        // Darker grid lines for tactical/structured feel
+        g.fillStyle(0x000000, 0.15);
+        g.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, 1);
+        g.fillRect(x * TILE_SIZE, y * TILE_SIZE, 1, TILE_SIZE);
 
-        // Subtle variation
-        if (Math.random() < 0.15) {
-          g.fillStyle(base, 0.4);
-          const varX = x * TILE_SIZE + Math.random() * 24;
-          const varY = y * TILE_SIZE + Math.random() * 24;
-          g.fillRect(varX, varY, 4 + Math.random() * 6, 2);
+        // Texture variations (grass blades / dirt rocks)
+        for (let i = 0; i < 3; i++) {
+          if (Math.random() < 0.4) {
+            g.fillStyle(0x000000, 0.1 + Math.random() * 0.1);
+            const varX = x * TILE_SIZE + 4 + Math.random() * (TILE_SIZE - 8);
+            const varY = y * TILE_SIZE + 4 + Math.random() * (TILE_SIZE - 8);
+            g.fillRect(varX, varY, 2 + Math.random() * 4, 2 + Math.random() * 2);
+          }
+          if (Math.random() < 0.3) {
+            g.fillStyle(0xffffff, 0.05 + Math.random() * 0.05); // Highlight
+            const varX = x * TILE_SIZE + 4 + Math.random() * (TILE_SIZE - 8);
+            const varY = y * TILE_SIZE + 4 + Math.random() * (TILE_SIZE - 8);
+            g.fillRect(varX, varY, 2, 4 + Math.random() * 4);
+          }
         }
       }
     }
@@ -1013,19 +1028,22 @@ export class WorldScene extends Phaser.Scene {
 
         enemy.enemyData.hp -= damage;
         this.combatSystem.showDamageNumber(enemy.x, enemy.y, damage, isCrit);
+        
+        // Dynamic Camera Shake
         if (isCrit) {
-          this.cameras.main.shake(100, 0.01);
+          this.cameras.main.shake(200, 0.015);
+        } else {
+          this.cameras.main.shake(100, 0.005);
         }
+        
         this.updateEnemyHPBar(enemy);
         soundSystem.playHit();
 
         // Hit flash
         const bodyImg = enemy.list[1] as Phaser.GameObjects.Image;
-        this.tweens.add({
-          targets: bodyImg,
-          tint: { from: 0xffffff, to: 0xffffff },
-          duration: 80,
-          yoyo: true,
+        bodyImg.setTintFill(0xffffff); // Flash solid white
+        this.time.delayedCall(80, () => {
+          bodyImg.clearTint();
         });
 
         if (enemy.enemyData.hp <= 0) {
@@ -1239,6 +1257,7 @@ export class WorldScene extends Phaser.Scene {
               const damage = Math.max(1, ed.attack - (useGameStore.getState().player?.stats?.defense ?? 0) * 0.5);
               this.combatSystem.damagePlayer(Math.round(damage));
               this.combatSystem.showDamageNumber(px, py, Math.round(damage), false);
+              this.cameras.main.shake(150, 0.015); // Player hit shake
 
               // Brief invincibility
               this.playerInvincible = true;

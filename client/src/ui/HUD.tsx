@@ -1,6 +1,7 @@
 import { useGameStore } from '@stores/useGameStore';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
+import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle } from 'lucide-react';
 
 export function HUD() {
   const { player } = useGameStore();
@@ -43,7 +44,7 @@ export function HUD() {
           {/* HP bar */}
           <div className="mb-2">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-mono text-realm-hp">❤️ HP</span>
+              <span className="text-xs font-mono text-realm-hp flex items-center gap-1"><Heart className="w-3 h-3" /> HP</span>
               <span className="text-xs font-mono text-white/70">{hp}/{maxHp}</span>
             </div>
             <div className="bar-track">
@@ -57,7 +58,7 @@ export function HUD() {
           {/* Mana bar */}
           <div className="mb-2">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-mono text-realm-mana">💧 MP</span>
+              <span className="text-xs font-mono text-realm-mana flex items-center gap-1"><Droplet className="w-3 h-3" /> MP</span>
               <span className="text-xs font-mono text-white/70">{mana}/{maxMana}</span>
             </div>
             <div className="bar-track">
@@ -71,7 +72,7 @@ export function HUD() {
           {/* XP bar */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-mono text-realm-xp">⭐ XP</span>
+              <span className="text-xs font-mono text-realm-xp flex items-center gap-1"><Star className="w-3 h-3" /> XP</span>
               <span className="text-xs font-mono text-white/70">{experience ?? 0}/{xpToLevel}</span>
             </div>
             <div className="bar-track">
@@ -84,7 +85,7 @@ export function HUD() {
 
           {/* Gold */}
           <div className="mt-3 pt-3 border-t border-realm-border flex items-center gap-2">
-            <span className="text-realm-gold text-sm">💰</span>
+            <Coins className="w-4 h-4 text-realm-gold" />
             <span className="font-mono text-sm text-realm-gold">{gold ?? 0}</span>
             <span className="text-xs text-realm-text-muted">gold</span>
           </div>
@@ -94,18 +95,18 @@ export function HUD() {
       {/* ── Bottom-left: Hotbar ── */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
         <div className="flex items-center gap-4 glass px-6 py-3 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-white/10">
-          {['⚔️', '🛡️', '🧪', '🐎', '💎'].map((icon, i) => (
+          {[Sword, Shield, FlaskConical, Navigation, Gem].map((Icon, i) => (
             <button
               key={i}
               onClick={() => {
-                if (icon === '🐎') {
+                if (i === 3) {
                   import('@game/systems/MountSystem').then(m => m.MountSystem.toggleMount());
                 }
               }}
-              className="w-16 h-16 bg-white/5 flex items-center justify-center text-3xl rounded-full border border-white/10 hover:border-realm-accent hover:bg-realm-accent/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(108,99,255,0.4)] active:scale-95"
+              className="w-14 h-14 bg-white/5 flex items-center justify-center text-white/80 rounded-full border border-white/10 hover:border-realm-accent hover:text-realm-accent hover:bg-realm-accent/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(108,99,255,0.4)] active:scale-95"
               data-tooltip={['Attack', 'Block', 'Heal', 'Mount', 'Gem'][i]}
             >
-              {icon}
+              <Icon className="w-6 h-6" />
             </button>
           ))}
         </div>
@@ -118,8 +119,8 @@ export function HUD() {
             <div className="text-xs font-mono text-realm-accent mb-1 uppercase tracking-wider">Active Quest</div>
             <div className="font-game text-sm text-white mb-2">{activeQuest.title}</div>
             {activeQuest.objectives.slice(0, 2).map((obj, i) => (
-              <div key={i} className={`text-xs font-ui ${obj.current >= obj.quantity ? 'quest-objective-done text-realm-xp' : 'text-realm-text-muted'} flex items-center gap-1`}>
-                <span>{obj.current >= obj.quantity ? '✅' : '○'}</span>
+              <div key={i} className={`text-xs font-ui ${obj.current >= obj.quantity ? 'quest-objective-done text-realm-xp' : 'text-realm-text-muted'} flex items-center gap-2 mb-1`}>
+                {obj.current >= obj.quantity ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
                 <span>{obj.description} ({obj.current}/{obj.quantity})</span>
               </div>
             ))}

@@ -30,19 +30,19 @@ export function OfflineProgressUI() {
         </p>
 
         <div className="space-y-4 mb-8">
-          <div className="flex justify-between items-center p-3 bg-black/40 rounded border border-realm-border">
-            <span className="flex items-center gap-2"><span className="text-xl">💰</span> Gold Earned</span>
-            <span className="font-mono text-realm-gold font-bold">+{report.goldEarned}</span>
+          <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
+            <span className="flex items-center gap-3"><span className="text-2xl">💰</span> Gold Earned</span>
+            <span className="font-mono text-realm-gold font-bold text-lg">+{report.goldEarned}</span>
           </div>
           
-          <div className="flex justify-between items-center p-3 bg-black/40 rounded border border-realm-border">
-            <span className="flex items-center gap-2"><span className="text-xl">✨</span> Exp Earned</span>
-            <span className="font-mono text-realm-xp font-bold">+{report.expEarned}</span>
+          <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
+            <span className="flex items-center gap-3"><span className="text-2xl">✨</span> Exp Earned</span>
+            <span className="font-mono text-realm-xp font-bold text-lg">+{report.expEarned}</span>
           </div>
 
-          <div className="flex justify-between items-center p-3 bg-black/40 rounded border border-realm-border">
-            <span className="flex items-center gap-2"><span className="text-xl">🔮</span> Essence Gathered</span>
-            <span className="font-mono text-realm-mana font-bold">+{report.essenceEarned}</span>
+          <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
+            <span className="flex items-center gap-3"><span className="text-2xl">🔮</span> Essence Gathered</span>
+            <span className="font-mono text-realm-mana font-bold text-lg">+{report.essenceEarned}</span>
           </div>
         </div>
 
