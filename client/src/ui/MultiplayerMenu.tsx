@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { socketManager } from '@game/systems/SocketManager';
 import { useUIStore } from '@stores/useUIStore';
+import { Users, Crown } from 'lucide-react';
 
 interface PublicLobby {
   id: string;
@@ -69,7 +70,7 @@ export function MultiplayerMenu({ onClose }: { onClose: () => void }) {
         className="modal-content glass p-6 w-full max-w-md mx-4 text-center flex flex-col max-h-[85vh] animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-game text-xl text-white mb-4">👥 Multiplayer Realm Lobby</h2>
+        <h2 className="font-game text-xl text-white mb-4 flex items-center justify-center gap-2"><Users className="w-5 h-5 text-realm-accent" /> Multiplayer Realm Lobby</h2>
 
         {createdCode ? (
           <div className="bg-realm-surface border border-realm-accent/40 rounded-xl p-4 mb-6">
@@ -99,9 +100,9 @@ export function MultiplayerMenu({ onClose }: { onClose: () => void }) {
               <button
                 onClick={handleCreateRoom}
                 disabled={loading}
-                className="btn-gold w-full text-xs py-2"
+                className="btn-gold w-full text-xs py-2 flex items-center justify-center gap-2"
               >
-                👑 Host Room
+                <Crown className="w-4 h-4" /> Host Room
               </button>
             </div>
 

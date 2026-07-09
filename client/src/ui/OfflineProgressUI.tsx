@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { OfflineReport } from '@shared/types';
 import { useUIStore } from '@stores/useUIStore';
+import { Coins, Star, Sparkles } from 'lucide-react';
 
 export function OfflineProgressUI() {
   const [report, setReport] = useState<OfflineReport | null>(null);
@@ -31,17 +32,17 @@ export function OfflineProgressUI() {
 
         <div className="space-y-4 mb-8">
           <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
-            <span className="flex items-center gap-3"><span className="text-2xl">💰</span> Gold Earned</span>
+            <span className="flex items-center gap-3"><Coins className="w-6 h-6 text-realm-gold" /> Gold Earned</span>
             <span className="font-mono text-realm-gold font-bold text-lg">+{report.goldEarned}</span>
           </div>
           
           <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
-            <span className="flex items-center gap-3"><span className="text-2xl">✨</span> Exp Earned</span>
+            <span className="flex items-center gap-3"><Star className="w-6 h-6 text-realm-xp" /> Exp Earned</span>
             <span className="font-mono text-realm-xp font-bold text-lg">+{report.expEarned}</span>
           </div>
 
           <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
-            <span className="flex items-center gap-3"><span className="text-2xl">🔮</span> Essence Gathered</span>
+            <span className="flex items-center gap-3"><Sparkles className="w-6 h-6 text-realm-mana" /> Essence Gathered</span>
             <span className="font-mono text-realm-mana font-bold text-lg">+{report.essenceEarned}</span>
           </div>
         </div>

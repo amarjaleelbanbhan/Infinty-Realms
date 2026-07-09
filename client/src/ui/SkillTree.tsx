@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import type { SkillNode, SubclassType } from '@shared/types';
+import { Sparkles, Snowflake, Flame, Zap, Stars, X } from 'lucide-react';
 
 const MOCK_SKILLS: SkillNode[] = [
   { id: 's1', name: 'Arcane Strike', description: 'Deals basic magic damage.', tier: 1, cost: 1, prerequisites: [], icon: '🔮' },
@@ -26,10 +27,14 @@ export function SkillTree() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-realm-border bg-realm-surface/50">
           <div>
-            <h2 className="font-game text-2xl text-white tracking-widest animate-pulse">🌟 Constellation</h2>
+            <h2 className="font-game text-2xl text-white tracking-widest animate-pulse flex items-center gap-3">
+              <Stars className="w-6 h-6 text-realm-accent" /> Constellation
+            </h2>
             <p className="text-sm font-ui text-realm-text-muted mt-1">Unlock your true potential.</p>
           </div>
-          <button onClick={closeSkillTree} className="text-realm-text-muted hover:text-white text-xl">✕</button>
+          <button onClick={closeSkillTree} className="text-white/50 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         {/* Content */}
@@ -93,12 +98,16 @@ export function SkillTree() {
 function SkillNodeUI({ node, unlocked }: { node: SkillNode, unlocked: boolean }) {
   return (
     <div 
-      className={`relative rounded-full w-16 h-16 flex items-center justify-center text-3xl cursor-pointer transition-all duration-300 group
+      className={`relative rounded-full w-16 h-16 flex items-center justify-center cursor-pointer transition-all duration-300 group
         ${unlocked 
-          ? 'bg-realm-accent/20 border-2 border-realm-accent shadow-[0_0_20px_rgba(108,99,255,0.6)]' 
-          : 'bg-realm-surface border border-realm-border hover:border-white/50 opacity-60'}`}
+          ? 'bg-realm-accent/20 border-2 border-realm-accent shadow-[0_0_20px_rgba(108,99,255,0.6)] text-white' 
+          : 'bg-realm-surface border border-realm-border hover:border-white/50 text-white/40'}`}
     >
-      {node.icon}
+      {node.icon === '🔮' && <Sparkles className="w-8 h-8" />}
+      {node.icon === '❄️' && <Snowflake className="w-8 h-8" />}
+      {node.icon === '🔥' && <Flame className="w-8 h-8" />}
+      {node.icon === '☄️' && <Zap className="w-8 h-8" />}
+      {!['🔮', '❄️', '🔥', '☄️'].includes(node.icon) && <span>{node.icon}</span>}
       
       {/* Tooltip */}
       <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-48 bg-realm-card border border-realm-border rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">

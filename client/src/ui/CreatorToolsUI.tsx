@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useUIStore } from '@stores/useUIStore';
+import { Palette, Clipboard, Wrench, X } from 'lucide-react';
 
 export function CreatorToolsUI({ onClose }: { onClose: () => void }) {
   const { addToast } = useUIStore();
@@ -31,8 +32,8 @@ export function CreatorToolsUI({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-realm-border pb-3 mb-4">
-          <h2 className="font-game text-xl text-white">🎨 Creator & Modding Tools</h2>
-          <button onClick={onClose} className="text-realm-text-muted hover:text-white">✕</button>
+          <h2 className="font-game text-xl text-white flex items-center gap-2"><Palette className="w-5 h-5 text-realm-accent" /> Creator & Modding Tools</h2>
+          <button onClick={onClose} className="text-realm-text-muted hover:text-white"><X className="w-5 h-5" /></button>
         </div>
 
         <p className="text-xs text-realm-text-muted font-ui mb-4">
@@ -47,13 +48,13 @@ export function CreatorToolsUI({ onClose }: { onClose: () => void }) {
             </pre>
             <div className="flex gap-2">
               <button
-                className="btn-gold flex-1 text-xs py-2"
+                className="btn-gold flex-1 text-xs py-2 flex items-center justify-center gap-2"
                 onClick={() => {
                   navigator.clipboard.writeText(exportedJson);
                   addToast('Blueprint JSON copied to clipboard!', 'success');
                 }}
               >
-                📋 Copy Blueprint JSON
+                <Clipboard className="w-4 h-4" /> Copy Blueprint JSON
               </button>
               <button className="btn-secondary text-xs py-2 px-4" onClick={() => setExportedJson(null)}>
                 New
@@ -85,8 +86,8 @@ export function CreatorToolsUI({ onClose }: { onClose: () => void }) {
               />
             </div>
 
-            <button type="submit" className="btn-primary w-full text-sm py-2.5">
-              🛠️ Generate Quest Blueprint
+            <button type="submit" className="btn-primary w-full text-sm py-2.5 flex items-center justify-center gap-2">
+              <Wrench className="w-4 h-4" /> Generate Quest Blueprint
             </button>
           </form>
         )}

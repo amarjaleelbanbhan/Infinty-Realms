@@ -1,6 +1,7 @@
 import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
 import { questSystem } from '@game/systems/QuestSystem';
+import { BookOpen, Zap, ClipboardList, CheckCircle2, Circle, X, Bot, Coins, Sword, Backpack, Shield, Map, Package, Search, Skull } from 'lucide-react';
 
 export function QuestLog() {
   const { isQuestLogOpen, closeQuestLog, addToast } = useUIStore();
@@ -35,13 +36,15 @@ export function QuestLog() {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-realm-border">
-          <h2 className="font-game text-xl text-white">📜 Quest Log</h2>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="font-game text-2xl text-white flex items-center gap-3">
+            <BookOpen className="w-6 h-6 text-realm-accent" /> Quest Log
+          </h2>
           <button
             onClick={closeQuestLog}
-            className="text-realm-text-muted hover:text-white transition-colors text-xl"
+            className="text-white/50 hover:text-white transition-colors"
           >
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
@@ -49,8 +52,8 @@ export function QuestLog() {
           {/* Active */}
           {activeQuests.length > 0 && (
             <div>
-              <h3 className="font-game text-sm text-realm-gold uppercase tracking-wider mb-2">
-                ⚡ Active ({activeQuests.length})
+              <h3 className="font-game text-sm text-realm-gold uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Zap className="w-4 h-4" /> Active ({activeQuests.length})
               </h3>
               <div className="space-y-2">
                 {activeQuests.map((q) => (
@@ -63,8 +66,8 @@ export function QuestLog() {
           {/* Available */}
           {availableQuests.length > 0 && (
             <div>
-              <h3 className="font-game text-sm text-realm-accent-light uppercase tracking-wider mb-2">
-                📋 Available ({availableQuests.length})
+              <h3 className="font-game text-sm text-realm-accent-light uppercase tracking-wider mb-3 flex items-center gap-2">
+                <ClipboardList className="w-4 h-4" /> Available ({availableQuests.length})
               </h3>
               <div className="space-y-2">
                 {availableQuests.map((q) => (
@@ -84,8 +87,8 @@ export function QuestLog() {
           {/* Completed */}
           {completedQuests.length > 0 && (
             <div>
-              <h3 className="font-game text-sm text-realm-xp uppercase tracking-wider mb-2">
-                ✅ Completed ({completedQuests.length})
+              <h3 className="font-game text-sm text-realm-xp uppercase tracking-wider mb-3 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" /> Completed ({completedQuests.length})
               </h3>
               <div className="space-y-2">
                 {completedQuests.slice(0, 5).map((q) => (
@@ -96,17 +99,17 @@ export function QuestLog() {
           )}
 
           {quests.length === 0 && (
-            <div className="text-center py-8 text-realm-text-muted">
-              <p className="text-4xl mb-3">📜</p>
+            <div className="text-center py-10 text-white/40 flex flex-col items-center gap-4">
+              <BookOpen className="w-12 h-12" strokeWidth={1} />
               <p className="font-ui text-sm">No quests yet. Talk to an NPC or generate one!</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-realm-border">
-          <button className="btn-primary w-full text-sm" onClick={handleGenerateQuest}>
-            🤖 Generate AI Quest
+        <div className="p-5 border-t border-white/10">
+          <button className="btn-primary w-full text-sm flex items-center justify-center gap-2" onClick={handleGenerateQuest}>
+            <Bot className="w-4 h-4" /> Generate AI Quest
           </button>
         </div>
       </div>
@@ -123,15 +126,24 @@ function QuestCard({
   statusColor: Record<string, string>;
   onAccept?: () => void;
 }) {
-  const typeIcon: Record<string, string> = {
-    kill: '⚔️', collect: '🎒', escort: '🛡️', explore: '🗺️', deliver: '📦', mystery: '🔍', boss: '💀',
+  const TypeIcon = ({ type }: { type: string }) => {
+    switch(type) {
+      case 'kill': return <Sword className="w-4 h-4" />;
+      case 'collect': return <Backpack className="w-4 h-4" />;
+      case 'escort': return <Shield className="w-4 h-4" />;
+      case 'explore': return <Map className="w-4 h-4" />;
+      case 'deliver': return <Package className="w-4 h-4" />;
+      case 'mystery': return <Search className="w-4 h-4" />;
+      case 'boss': return <Skull className="w-4 h-4" />;
+      default: return <ClipboardList className="w-4 h-4" />;
+    }
   };
 
   return (
-    <div className="bg-realm-surface rounded-xl p-4 border border-realm-border hover:border-realm-accent/50 transition-all">
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{typeIcon[quest.type] ?? '📋'}</span>
+    <div className="bg-white/5 rounded-2xl p-5 border border-white/10 hover:border-realm-accent/50 transition-all shadow-sm">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-3">
+          <span className="text-white/70 bg-white/5 p-2 rounded-lg"><TypeIcon type={quest.type} /></span>
           <span className="font-game text-sm text-white">{quest.title}</span>
         </div>
         <span className={`text-xs font-mono capitalize ${statusColor[quest.status]}`}>
@@ -146,20 +158,20 @@ function QuestCard({
       )}
 
       {/* Objectives */}
-      <div className="space-y-1 mb-3">
+      <div className="space-y-2 mb-4">
         {quest.objectives.map((obj, i) => (
-          <div key={i} className={`text-xs flex items-center gap-1 ${obj.current >= obj.quantity ? 'quest-objective-done text-realm-xp' : 'text-realm-text-muted'}`}>
-            <span>{obj.current >= obj.quantity ? '✅' : '○'}</span>
+          <div key={i} className={`text-xs flex items-center gap-2 ${obj.current >= obj.quantity ? 'quest-objective-done text-realm-xp' : 'text-white/60'}`}>
+            {obj.current >= obj.quantity ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
             <span>{obj.description} ({obj.current}/{obj.quantity})</span>
           </div>
         ))}
       </div>
 
       {/* Rewards */}
-      <div className="flex items-center gap-3 text-xs font-mono">
-        <span className="text-realm-xp">+{quest.rewards.experience} XP</span>
-        <span className="text-realm-gold">+{quest.rewards.gold} 💰</span>
-        {quest.aiGenerated && <span className="text-realm-accent">🤖 AI</span>}
+      <div className="flex items-center gap-4 text-xs font-mono pt-3 border-t border-white/5">
+        <span className="text-realm-xp flex items-center gap-1">+{quest.rewards.experience} XP</span>
+        <span className="text-realm-gold flex items-center gap-1">+{quest.rewards.gold} <Coins className="w-3 h-3" /></span>
+        {quest.aiGenerated && <span className="text-realm-accent flex items-center gap-1 ml-auto"><Bot className="w-3 h-3" /> AI</span>}
       </div>
 
       {onAccept && (

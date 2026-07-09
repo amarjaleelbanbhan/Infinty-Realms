@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGuildStore } from '@stores/useGuildStore';
 import { useUIStore } from '@stores/useUIStore';
+import { Castle, Coins, Sparkles, X } from 'lucide-react';
 
 import { GuildWarUI } from './GuildWarUI';
 
@@ -23,9 +24,11 @@ export function GuildUI({ onClose }: { onClose: () => void }) {
         className="modal-content glass p-6 w-full max-w-md mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-realm-border pb-3 mb-4">
-          <h2 className="font-game text-xl text-white">🏰 Guild Hall</h2>
-          <button onClick={onClose} className="text-realm-text-muted hover:text-white">✕</button>
+        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+          <h2 className="font-game text-2xl text-white flex items-center gap-3"><Castle className="w-6 h-6 text-realm-accent" /> Guild Hall</h2>
+          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         {guild ? (
@@ -57,7 +60,7 @@ export function GuildUI({ onClose }: { onClose: () => void }) {
                 <div className="text-xs text-realm-text-muted mt-1">Level {guild.level} Guild</div>
               </div>
               <div className="text-right font-mono text-xs">
-                <div className="text-realm-gold font-bold">💰 {guild.vaultGold}g</div>
+                <div className="text-realm-gold font-bold flex items-center justify-end gap-1"><Coins className="w-3 h-3" /> {guild.vaultGold}g</div>
                 <div className="text-realm-text-muted">Vault</div>
               </div>
             </div>
@@ -67,8 +70,8 @@ export function GuildUI({ onClose }: { onClose: () => void }) {
               <h3 className="font-game text-xs text-realm-text-muted uppercase tracking-wider mb-2">Guild Perks</h3>
               <div className="flex flex-wrap gap-2">
                 {guild.perks.map((p, i) => (
-                  <span key={i} className="bg-realm-bg border border-realm-xp/30 text-realm-xp font-mono text-xs px-2.5 py-1 rounded-full">
-                    ✨ {p}
+                  <span key={i} className="bg-realm-bg border border-realm-xp/30 text-realm-xp font-mono text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> {p}
                   </span>
                 ))}
               </div>

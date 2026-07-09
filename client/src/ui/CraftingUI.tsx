@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
+import { X, Hammer } from 'lucide-react';
 
 export function CraftingUI() {
   const { isCraftingOpen, closeCrafting, addToast } = useUIStore();
@@ -26,10 +27,10 @@ export function CraftingUI() {
           onClick={closeCrafting}
           className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
         >
-          ✕
+          <X className="w-6 h-6" />
         </button>
-        <h2 className="text-2xl font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-[#ffb347] to-[#ffcc33] mb-6 drop-shadow-md">
-          Advanced Crafting
+        <h2 className="text-2xl font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-[#ffb347] to-[#ffcc33] mb-6 drop-shadow-md flex items-center gap-2">
+          <Hammer className="w-6 h-6 text-[#ffb347]" /> Advanced Crafting
         </h2>
 
         <div className="space-y-4">

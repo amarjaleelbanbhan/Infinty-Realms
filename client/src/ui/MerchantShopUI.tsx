@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
 import type { Item } from '@shared/types';
+import { Store, X, Leaf, Hourglass, Snowflake, Hexagon } from 'lucide-react';
 
 interface ShopItem {
   id: string;
@@ -13,11 +14,21 @@ interface ShopItem {
 }
 
 const MERCHANDISE: ShopItem[] = [
-  { id: 'iron-ore', name: 'Iron Ore', baseValue: 10, icon: '🪨', cheapBiomes: ['volcano'], expensiveBiomes: ['desert', 'snow'] },
-  { id: 'herbals', name: 'Mystic Herbs', baseValue: 12, icon: '🌿', cheapBiomes: ['forest', 'swamp'], expensiveBiomes: ['snow', 'desert'] },
-  { id: 'sand-glass', name: 'Sand Glass', baseValue: 8, icon: '⏳', cheapBiomes: ['desert'], expensiveBiomes: ['snow', 'forest'] },
-  { id: 'ice-crystal', name: 'Ice Crystal', baseValue: 15, icon: '❄️', cheapBiomes: ['snow'], expensiveBiomes: ['volcano', 'desert'] },
+  { id: 'iron-ore', name: 'Iron Ore', baseValue: 10, icon: 'hexagon', cheapBiomes: ['volcano'], expensiveBiomes: ['desert', 'snow'] },
+  { id: 'herbals', name: 'Mystic Herbs', baseValue: 12, icon: 'leaf', cheapBiomes: ['forest', 'swamp'], expensiveBiomes: ['snow', 'desert'] },
+  { id: 'sand-glass', name: 'Sand Glass', baseValue: 8, icon: 'hourglass', cheapBiomes: ['desert'], expensiveBiomes: ['snow', 'forest'] },
+  { id: 'ice-crystal', name: 'Ice Crystal', baseValue: 15, icon: 'snowflake', cheapBiomes: ['snow'], expensiveBiomes: ['volcano', 'desert'] },
 ];
+
+const renderIcon = (iconName: string) => {
+  switch (iconName) {
+    case 'hexagon': return <Hexagon className="w-6 h-6 text-realm-text-muted" />;
+    case 'leaf': return <Leaf className="w-6 h-6 text-green-400" />;
+    case 'hourglass': return <Hourglass className="w-6 h-6 text-yellow-400" />;
+    case 'snowflake': return <Snowflake className="w-6 h-6 text-blue-400" />;
+    default: return null;
+  }
+};
 
 export function MerchantShopUI() {
   const { isMerchantShopOpen, merchantBiome, closeMerchantShop, addToast } = useUIStore();
@@ -105,10 +116,10 @@ export function MerchantShopUI() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-realm-border pb-3 mb-4">
           <div>
-            <h2 className="font-game text-xl text-white">🏪 Regional Trade Bazaar</h2>
-            <p className="text-[10px] text-realm-text-muted capitalize">Current Location Biome: {currentBiome}</p>
+            <h2 className="font-game text-xl text-white flex items-center gap-2"><Store className="w-5 h-5 text-realm-accent" /> Regional Trade Bazaar</h2>
+            <p className="text-[10px] text-realm-text-muted capitalize mt-1">Current Location Biome: {currentBiome}</p>
           </div>
-          <button onClick={closeMerchantShop} className="text-realm-text-muted hover:text-white">✕</button>
+          <button onClick={closeMerchantShop} className="text-realm-text-muted hover:text-white"><X className="w-5 h-5" /></button>
         </div>
 
         <p className="text-xs text-realm-text-muted font-ui mb-4">
@@ -135,7 +146,9 @@ export function MerchantShopUI() {
               >
                 {/* Details */}
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{item.icon}</span>
+                  <div className="w-8 h-8 rounded bg-black/40 border border-realm-border flex items-center justify-center">
+                    {renderIcon(item.icon)}
+                  </div>
                   <div>
                     <h3 className="font-game text-xs text-white">{item.name}</h3>
                     <div className="flex gap-2 text-[10px] mt-0.5">

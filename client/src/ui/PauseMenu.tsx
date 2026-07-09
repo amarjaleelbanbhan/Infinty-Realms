@@ -1,6 +1,7 @@
 import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
 import { saveSystem } from '@game/systems/SaveSystem';
+import { Play, Save, Settings, Home } from 'lucide-react';
 
 export function PauseMenu() {
   const { currentScreen, togglePause, setScreen } = useUIStore();
@@ -31,20 +32,20 @@ export function PauseMenu() {
         <p className="font-ui text-sm text-realm-text-muted mb-6">Your adventure awaits...</p>
 
         <div className="flex flex-col gap-3">
-          <button className="btn-primary text-sm" onClick={togglePause}>
-            ▶️ Resume
+          <button className="btn-primary text-sm flex items-center justify-center gap-2" onClick={togglePause}>
+            <Play className="w-4 h-4" /> Resume
           </button>
-          <button className="btn-secondary text-sm" onClick={handleSave}>
-            💾 Save Game
+          <button className="btn-secondary text-sm flex items-center justify-center gap-2" onClick={handleSave}>
+            <Save className="w-4 h-4" /> Save Game
           </button>
-          <button className="btn-secondary text-sm">
-            ⚙️ Settings
+          <button className="btn-secondary text-sm flex items-center justify-center gap-2">
+            <Settings className="w-4 h-4" /> Settings
           </button>
           <button
-            className="btn-secondary text-sm text-realm-hp border-realm-hp/30 hover:bg-realm-hp/10"
+            className="btn-secondary text-sm text-realm-hp border-realm-hp/30 hover:bg-realm-hp/10 flex items-center justify-center gap-2"
             onClick={handleQuitToMenu}
           >
-            🏠 Quit to Menu
+            <Home className="w-4 h-4" /> Quit to Menu
           </button>
         </div>
       </div>

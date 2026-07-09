@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useUIStore } from '@stores/useUIStore';
+import { Settings, X, Music, Volume2 } from 'lucide-react';
 
 export function SettingsUI({ onClose }: { onClose: () => void }) {
   const { musicVolume, sfxVolume, addToast } = useUIStore();
@@ -18,8 +19,8 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-realm-border pb-3 mb-4">
-          <h2 className="font-game text-xl text-white">⚙️ Game Settings</h2>
-          <button onClick={onClose} className="text-realm-text-muted hover:text-white">✕</button>
+          <h2 className="font-game text-xl text-white flex items-center gap-2"><Settings className="w-5 h-5 text-realm-accent" /> Game Settings</h2>
+          <button onClick={onClose} className="text-realm-text-muted hover:text-white"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="space-y-4 mb-6 text-xs font-ui">
@@ -55,7 +56,7 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
           {/* Audio sliders */}
           <div>
             <div className="flex justify-between text-realm-text-muted mb-1 font-mono uppercase">
-              <span>🎵 Music Volume</span>
+              <span className="flex items-center gap-2"><Music className="w-4 h-4" /> Music Volume</span>
               <span>{Math.round(musicVolume * 100)}%</span>
             </div>
             <input
@@ -71,7 +72,7 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
 
           <div>
             <div className="flex justify-between text-realm-text-muted mb-1 font-mono uppercase">
-              <span>🔊 SFX Volume</span>
+              <span className="flex items-center gap-2"><Volume2 className="w-4 h-4" /> SFX Volume</span>
               <span>{Math.round(sfxVolume * 100)}%</span>
             </div>
             <input

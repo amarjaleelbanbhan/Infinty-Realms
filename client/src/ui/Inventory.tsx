@@ -1,6 +1,7 @@
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import type { InventorySlot, ItemRarity } from '@shared/types';
+import { Backpack, Coins, Sword, Shield, HardHat, Gem, FlaskConical, PackageOpen, X } from 'lucide-react';
 
 export function Inventory() {
   const { isInventoryOpen, closeInventory } = useUIStore();
@@ -30,29 +31,34 @@ export function Inventory() {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-realm-border">
-          <h2 className="font-game text-xl text-white">🎒 Inventory</h2>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="font-game text-2xl text-white flex items-center gap-3">
+            <Backpack className="w-6 h-6 text-realm-accent" /> Inventory
+          </h2>
           <div className="flex items-center gap-4">
-            <span className="font-mono text-sm text-realm-gold">💰 {player?.gold ?? 0}</span>
-            <button onClick={closeInventory} className="text-realm-text-muted hover:text-white">✕</button>
+            <span className="font-mono text-sm text-realm-gold flex items-center gap-2">
+              <Coins className="w-4 h-4" /> {player?.gold ?? 0}
+            </span>
+            <button onClick={closeInventory} className="text-white/50 hover:text-white transition-colors">
+              <X className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
         {/* Equipment slots */}
-        <div className="p-4 border-b border-realm-border">
-          <h3 className="font-game text-xs text-realm-text-muted uppercase tracking-wider mb-3">Equipment</h3>
-          <div className="flex gap-3">
+        <div className="p-6 border-b border-white/10">
+          <h3 className="font-game text-xs text-white/50 uppercase tracking-wider mb-4">Equipment</h3>
+          <div className="flex gap-4">
             {['weapon', 'armor', 'helmet', 'accessory'].map((slot) => {
               const equipped = (player?.equipment as Record<string, import('@shared/types').Item | undefined>)?.[slot];
+              const Icon = slot === 'weapon' ? Sword : slot === 'armor' ? Shield : slot === 'helmet' ? HardHat : Gem;
               return (
                 <div
                   key={slot}
-                  className="flex-1 aspect-square rounded-lg border border-dashed border-realm-border bg-realm-bg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-realm-accent transition-colors"
+                  className="flex-1 aspect-square rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-realm-accent hover:bg-realm-accent/10 transition-all shadow-inner"
                 >
-                  <span className="text-xl">
-                    {slot === 'weapon' ? '⚔️' : slot === 'armor' ? '🛡️' : slot === 'helmet' ? '⛑️' : '💍'}
-                  </span>
-                  <span className="text-xs text-realm-text-muted capitalize">{slot}</span>
+                  <Icon className="w-8 h-8 text-white/40" strokeWidth={1.5} />
+                  <span className="text-[10px] text-white/50 capitalize font-mono">{slot}</span>
                 </div>
               );
             })}
@@ -74,14 +80,14 @@ export function Inventory() {
               >
                 {slot ? (
                   <>
-                    <span className="text-2xl drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">
-                      {slot.item.type === 'weapon' ? '⚔️'
-                        : slot.item.type === 'consumable' ? '🧪'
-                        : slot.item.type === 'material' ? '💎'
-                        : '📦'}
+                    <span className="flex items-center justify-center w-full h-full drop-shadow-[0_0_10px_currentColor]">
+                      {slot.item.type === 'weapon' ? <Sword className="w-6 h-6" />
+                        : slot.item.type === 'consumable' ? <FlaskConical className="w-6 h-6" />
+                        : slot.item.type === 'material' ? <Gem className="w-6 h-6" />
+                        : <PackageOpen className="w-6 h-6" />}
                     </span>
                     {slot.quantity > 1 && (
-                      <span className="absolute bottom-0 right-1 text-xs font-mono text-white drop-shadow-[0_1px_2px_black] font-bold">
+                      <span className="absolute bottom-1 right-2 text-[10px] font-mono text-white drop-shadow-[0_1px_2px_black] font-bold">
                         {slot.quantity}
                       </span>
                     )}

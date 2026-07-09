@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
 import { startWorld } from '@game/PhaserGame';
 import { saveSystem } from '@game/systems/SaveSystem';
+import { Sparkles, Play, Users, Settings, Palette, Star, Globe, Bot, Infinity as InfinityIcon, Sword, Wand2, Crosshair, Target } from 'lucide-react';
 
 import { MultiplayerMenu } from './MultiplayerMenu';
 import { SettingsUI } from './SettingsUI';
@@ -12,10 +13,10 @@ interface MainMenuProps {
 }
 
 const HERO_CLASSES = [
-  { id: 'warrior', name: 'Warrior', icon: '⚔️', desc: 'Mighty strength, iron will', bonus: '+Attack +HP' },
-  { id: 'mage', name: 'Mage', icon: '🔮', desc: 'Ancient knowledge, arcane power', bonus: '+Mana +Speed' },
-  { id: 'rogue', name: 'Rogue', icon: '🗡️', desc: 'Swift shadows, deadly precision', bonus: '+Speed +Luck' },
-  { id: 'ranger', name: 'Ranger', icon: '🏹', desc: 'Nature\'s child, far-seeing eye', bonus: '+Defense +Luck' },
+  { id: 'warrior', name: 'Warrior', icon: Sword, desc: 'Mighty strength, iron will', bonus: '+Attack +HP' },
+  { id: 'mage', name: 'Mage', icon: Wand2, desc: 'Ancient knowledge, arcane power', bonus: '+Mana +Speed' },
+  { id: 'rogue', name: 'Rogue', icon: Crosshair, desc: 'Swift shadows, deadly precision', bonus: '+Speed +Luck' },
+  { id: 'ranger', name: 'Ranger', icon: Target, desc: 'Nature\'s child, far-seeing eye', bonus: '+Defense +Luck' },
 ];
 
 export function MainMenu({ onStart }: MainMenuProps) {
@@ -73,15 +74,15 @@ export function MainMenu({ onStart }: MainMenuProps) {
           {/* Buttons */}
           <div className="flex flex-col gap-5 w-80">
             <button
-              className="btn-gold text-lg py-4 shadow-[0_0_40px_rgba(255,215,0,0.5)] hover:scale-105 transition-transform duration-300 rounded-xl"
+              className="btn-gold text-lg py-4 shadow-[0_0_40px_rgba(255,215,0,0.5)] hover:scale-105 transition-transform duration-300 rounded-xl flex items-center justify-center gap-2"
               onClick={() => setScreen('new')}
             >
-              ✨ NEW ADVENTURE
+              <Sparkles className="w-5 h-5" /> NEW ADVENTURE
             </button>
 
             {saveMeta && (
-              <button className="btn-primary text-base py-3 rounded-xl shadow-lg hover:shadow-realm-accent/50 transition-all duration-300" onClick={handleContinue}>
-                ▶️ CONTINUE
+              <button className="btn-primary text-base py-3 rounded-xl shadow-lg hover:shadow-realm-accent/50 transition-all duration-300 flex items-center justify-center gap-2" onClick={handleContinue}>
+                <Play className="w-4 h-4" /> CONTINUE
                 <span className="text-xs text-white/80 ml-2 tracking-widest font-mono">
                   {saveMeta.playerName} LV.{saveMeta.level}
                 </span>
@@ -89,25 +90,25 @@ export function MainMenu({ onStart }: MainMenuProps) {
             )}
 
             <button
-              className="btn-secondary text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent"
+              className="btn-secondary text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent flex items-center justify-center gap-2"
               onClick={() => setShowMultiplayer(true)}
             >
-              👥 MULTIPLAYER REALM
+              <Users className="w-4 h-4" /> MULTIPLAYER REALM
             </button>
 
             <div className="flex gap-4">
               <button
-                className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent"
+                className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent flex items-center justify-center gap-2"
                 onClick={() => setShowSettings(true)}
               >
-                ⚙️ Settings
+                <Settings className="w-4 h-4" /> Settings
               </button>
 
               <button
-                className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent"
+                className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent flex items-center justify-center gap-2"
                 onClick={() => setShowCreator(true)}
               >
-                🎨 CREATOR TOOLS
+                <Palette className="w-4 h-4" /> CREATOR TOOLS
               </button>
             </div>
 
@@ -115,15 +116,17 @@ export function MainMenu({ onStart }: MainMenuProps) {
               href="https://github.com/amarjaleelbanbhan/Infinty-Realms"
               target="_blank"
               rel="noreferrer"
-              className="btn-secondary text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent mt-2 text-center"
+              className="btn-secondary text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent mt-2 text-center flex items-center justify-center gap-2"
             >
-              ⭐ GITHUB
+              <Star className="w-4 h-4" /> GITHUB
             </a>
           </div>
 
           {/* Footer info */}
-          <div className="text-center text-xs text-realm-border mt-4">
-            <p>🌍 Procedurally generated • 🤖 AI-powered • ♾️ Infinite replayability</p>
+          <div className="text-center text-xs text-realm-border mt-4 flex items-center justify-center gap-3">
+            <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> Procedurally generated</span> •
+            <span className="flex items-center gap-1"><Bot className="w-3 h-3" /> AI-powered</span> •
+            <span className="flex items-center gap-1"><InfinityIcon className="w-3 h-3" /> Infinite replayability</span>
           </div>
         </div>
       )}
@@ -177,7 +180,7 @@ export function MainMenu({ onStart }: MainMenuProps) {
                     : 'border-realm-border bg-realm-surface hover:border-realm-accent/50'
                 }`}
               >
-                <div className="text-2xl mb-2">{cls.icon}</div>
+                <div className="mb-2"><cls.icon className="w-6 h-6 text-realm-accent" /></div>
                 <div className="font-game text-sm text-white mb-1">{cls.name}</div>
                 <div className="font-ui text-xs text-realm-text-muted mb-2">{cls.desc}</div>
                 <div className="font-mono text-xs text-realm-xp">{cls.bonus}</div>
@@ -189,8 +192,8 @@ export function MainMenu({ onStart }: MainMenuProps) {
             <button className="btn-secondary flex-1 text-sm" onClick={() => setScreen('new')} disabled={loading}>
               ← Back
             </button>
-            <button className="btn-gold flex-1 text-sm disabled:opacity-50" onClick={handleNewGame} disabled={loading}>
-              {loading ? 'Connecting to Realm...' : 'Begin Journey ✨'}
+            <button className="btn-gold flex-1 text-sm disabled:opacity-50 flex items-center justify-center gap-2" onClick={handleNewGame} disabled={loading}>
+              {loading ? 'Connecting to Realm...' : 'Begin Journey'} <Sparkles className="w-4 h-4" />
             </button>
           </div>
         </div>

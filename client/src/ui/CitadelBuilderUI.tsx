@@ -3,6 +3,7 @@ import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
 import type { CitadelStructureType } from '@shared/types';
 import { citadelSystem } from '@game/systems/CitadelSystem';
+import { BrickWall, DoorOpen, Crosshair, Sparkles, Shield, Castle } from 'lucide-react';
 
 export const CitadelBuilderUI: React.FC = () => {
   const { player } = useGameStore();
@@ -28,92 +29,52 @@ export const CitadelBuilderUI: React.FC = () => {
     }
   };
 
-  const types: {type: CitadelStructureType, label: string, icon: string}[] = [
-    { type: 'wall', label: 'Stone Wall', icon: '🧱' },
-    { type: 'gate', label: 'Iron Gate', icon: '🚪' },
-    { type: 'turret', label: 'Ballista', icon: '🏹' },
-    { type: 'energy_hub', label: 'Energy Hub', icon: '🔮' },
-    { type: 'shield', label: 'Force Shield', icon: '🛡️' },
+  const types: {type: CitadelStructureType, label: string, icon: React.ElementType}[] = [
+    { type: 'wall', label: 'Stone Wall', icon: BrickWall },
+    { type: 'gate', label: 'Iron Gate', icon: DoorOpen },
+    { type: 'turret', label: 'Ballista', icon: Crosshair },
+    { type: 'energy_hub', label: 'Energy Hub', icon: Sparkles },
+    { type: 'shield', label: 'Force Shield', icon: Shield },
   ];
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 150,
-        right: 20,
-        background: 'rgba(20, 20, 25, 0.95)',
-        border: '2px solid #5a5a6e',
-        borderRadius: '8px',
-        padding: '10px',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        pointerEvents: 'auto',
-        fontFamily: 'Cinzel, serif',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontWeight: 'bold' }}>Citadel Builder</span>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={() => citadelSystem.triggerSiege()}
-            style={{
-              background: '#8a2be2',
-              border: 'none',
-              color: '#fff',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'Cinzel, serif',
-              fontWeight: 'bold',
-            }}
-          >
-            Trigger Siege
-          </button>
-          <button
-            onClick={handleToggleBuildMode}
-            style={{
-              background: buildMode ? '#ff4444' : '#44ff44',
-              border: 'none',
-              color: '#fff',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'Cinzel, serif',
-              fontWeight: 'bold',
-            }}
-          >
-            {buildMode ? 'Exit Build Mode' : 'Enter Build Mode'}
-          </button>
-        </div>
-      </div>
-
-      {buildMode && (
-        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-          {types.map((t) => (
-            <div
-              key={t.type}
-              onClick={() => handleSelectType(t.type)}
-              style={{
-                padding: '8px',
-                background: selectedType === t.type ? '#5a5a6e' : '#2a2a35',
-                border: selectedType === t.type ? '1px solid #ffd700' : '1px solid #444',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                minWidth: '60px'
-              }}
+    <div className="absolute bottom-[150px] right-5 z-20 pointer-events-auto">
+      <div className="glass p-4 rounded-xl border border-white/10 flex flex-col gap-3 shadow-2xl min-w-[300px]">
+        <div className="flex justify-between items-center pb-2 border-b border-white/10">
+          <span className="font-game text-sm text-white flex items-center gap-2">
+            <Castle className="w-4 h-4 text-realm-accent" /> Citadel Builder
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => citadelSystem.triggerSiege()}
+              className="px-2.5 py-1 text-[10px] font-game tracking-widest bg-realm-hp/80 hover:bg-realm-hp text-white rounded transition-colors"
             >
-              <span style={{ fontSize: '24px' }}>{t.icon}</span>
-              <span style={{ fontSize: '10px', textAlign: 'center', marginTop: '4px' }}>{t.label}</span>
-            </div>
-          ))}
+              Trigger Siege
+            </button>
+            <button
+              onClick={handleToggleBuildMode}
+              className={`px-2.5 py-1 text-[10px] font-game tracking-widest text-white rounded transition-colors ${buildMode ? 'bg-red-500/80 hover:bg-red-500' : 'bg-realm-accent/80 hover:bg-realm-accent'}`}
+            >
+              {buildMode ? 'Exit Build Mode' : 'Enter Build Mode'}
+            </button>
+          </div>
         </div>
-      )}
+
+        {buildMode && (
+          <div className="flex gap-2 mt-2">
+            {types.map((t) => (
+              <div
+                key={t.type}
+                onClick={() => handleSelectType(t.type)}
+                className={`flex-1 p-2 flex flex-col items-center gap-2 rounded-lg cursor-pointer border transition-all ${selectedType === t.type ? 'bg-realm-accent/20 border-realm-accent text-white shadow-glow' : 'bg-black/30 border-white/10 text-white/50 hover:bg-black/50 hover:text-white'}`}
+              >
+                <t.icon className="w-6 h-6" />
+                <span className="text-[9px] font-ui text-center leading-tight">{t.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

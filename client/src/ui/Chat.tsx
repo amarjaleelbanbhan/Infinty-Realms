@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { socketManager } from '@game/systems/SocketManager';
 import { useUIStore } from '@stores/useUIStore';
 import type { ChatMessage } from '@shared/types';
+import { ChevronUp, ChevronDown, Send } from 'lucide-react';
 
 export function Chat() {
   const { currentScreen } = useUIStore();
@@ -52,9 +53,9 @@ export function Chat() {
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-realm-text-muted hover:text-white"
+            className="text-white/50 hover:text-white transition-colors"
           >
-            {isExpanded ? '▼' : '▲'}
+            {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
           </button>
         </div>
 
@@ -78,8 +79,8 @@ export function Chat() {
             placeholder={`Chat in ${activeChannel}...`}
             className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-realm-accent placeholder:text-white/30"
           />
-          <button type="submit" className="btn-primary text-xs py-1.5 px-4 rounded-xl">
-            Send
+          <button type="submit" className="btn-primary flex items-center justify-center p-2 rounded-xl" title="Send">
+            <Send className="w-4 h-4" />
           </button>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+import { Swords, X } from 'lucide-react';
 
 export function ArenaUI() {
   const [isOpen, setIsOpen] = useState(false);
@@ -62,9 +63,9 @@ export function ArenaUI() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="glass p-8 max-w-2xl w-full border-realm-gold">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-game text-3xl text-realm-gold">Arena of Spirits</h2>
-          <button onClick={() => setIsOpen(false)} className="text-white hover:text-realm-gold">
-            ✕
+          <h2 className="font-game text-3xl text-realm-gold flex items-center gap-3"><Swords className="w-8 h-8" /> Arena of Spirits</h2>
+          <button onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
@@ -85,10 +86,10 @@ export function ArenaUI() {
 
           <div className="p-4 bg-black/40 rounded border border-realm-gold/50 flex flex-col justify-center items-center">
             <button
-              className="btn-gold w-full text-lg py-4"
+              className="btn-gold w-full text-lg py-4 flex items-center justify-center gap-3"
               onClick={handleFight}
             >
-              ⚔️ Find Opponent
+              <Swords className="w-5 h-5" /> Find Opponent
             </button>
           </div>
         </div>

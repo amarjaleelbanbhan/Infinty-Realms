@@ -1,12 +1,22 @@
 import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+import { CloudRain, Coins, Sparkles, X, Sun } from 'lucide-react';
 
 const INTERVENTIONS = [
-  { id: 'healing_rain', name: 'Healing Rain', icon: '🌧️', desc: 'Restores HP for all players in the realm.' },
-  { id: 'gold_blessing', name: 'Midas Touch', desc: 'Showers the land with gold coins.', icon: '💰' },
-  { id: 'exp_surge', name: 'Wisdom Surge', desc: 'Grants temporary experience boost to all.', icon: '✨' },
+  { id: 'healing_rain', name: 'Healing Rain', icon: 'cloud-rain', desc: 'Restores HP for all players in the realm.' },
+  { id: 'gold_blessing', name: 'Midas Touch', desc: 'Showers the land with gold coins.', icon: 'coins' },
+  { id: 'exp_surge', name: 'Wisdom Surge', desc: 'Grants temporary experience boost to all.', icon: 'sparkles' },
 ];
+
+const renderIcon = (iconName: string) => {
+  switch (iconName) {
+    case 'cloud-rain': return <CloudRain className="w-6 h-6 text-blue-400" />;
+    case 'coins': return <Coins className="w-6 h-6 text-yellow-400" />;
+    case 'sparkles': return <Sparkles className="w-6 h-6 text-purple-400" />;
+    default: return <Sun className="w-6 h-6 text-white" />;
+  }
+};
 
 export function GodInterventionUI() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,9 +42,9 @@ export function GodInterventionUI() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="glass p-8 max-w-2xl w-full border-realm-mana" style={{ boxShadow: '0 0 40px rgba(108, 99, 255, 0.2)' }}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-game text-3xl text-realm-mana">God Interventions</h2>
+          <h2 className="font-game text-3xl text-realm-mana flex items-center gap-2"><Sun className="w-8 h-8 text-realm-mana" /> God Interventions</h2>
           <button onClick={() => setIsOpen(false)} className="text-white hover:text-realm-mana">
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
@@ -51,8 +61,10 @@ export function GodInterventionUI() {
               {INTERVENTIONS.map(inv => (
                 <div key={inv.id} className="p-4 bg-black/40 border border-realm-border rounded flex justify-between items-center hover:border-realm-mana/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="text-3xl">{inv.icon}</div>
-                    <div>
+                    <div className="w-12 h-12 rounded glass flex items-center justify-center bg-black/40 border border-realm-border/50">
+                      {renderIcon(inv.icon)}
+                    </div>
+                    <div className="text-left">
                       <h3 className="font-bold text-white">{inv.name}</h3>
                       <p className="text-sm text-realm-text-muted">{inv.desc}</p>
                     </div>

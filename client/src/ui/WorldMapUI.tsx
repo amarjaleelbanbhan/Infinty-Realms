@@ -3,10 +3,11 @@ import { useGameStore } from '@stores/useGameStore';
 import { BIOME_COLORS, type GeneratedWorld } from '@game/systems/WorldGenerator';
 import { leylineSystem } from '@game/systems/LeylineSystem';
 import type { BiomeType } from '@shared/types';
+import { Waves, Umbrella, Leaf, TreePine, Sun, Snowflake, Flame, Droplets, Skull, Map, X } from 'lucide-react';
 
-const BIOME_ICON: Partial<Record<BiomeType, string>> = {
-  ocean: '🌊', beach: '🏖️', plains: '🌾', forest: '🌲',
-  desert: '🏜️', snow: '❄️', volcano: '🌋', swamp: '🐊', dungeon: '☠️',
+const BIOME_ICON: Partial<Record<BiomeType, React.ElementType>> = {
+  ocean: Waves, beach: Umbrella, plains: Leaf, forest: TreePine,
+  desert: Sun, snow: Snowflake, volcano: Flame, swamp: Droplets, dungeon: Skull,
 };
 
 const LEGEND_BIOMES: BiomeType[] = ['ocean', 'beach', 'plains', 'forest', 'desert', 'snow', 'volcano', 'swamp'];
@@ -83,7 +84,7 @@ export function WorldMapUI({ onClose }: { onClose: () => void }) {
         {/* ── Header ── */}
         <div className="world-map-header">
           <div className="flex items-center gap-3">
-            <span className="text-2xl select-none">🗺️</span>
+            <Map className="w-8 h-8 text-realm-accent" />
             <div>
               <h2 className="font-game text-base text-white leading-tight tracking-widest uppercase">
                 Infinity Realm Map
@@ -104,7 +105,9 @@ export function WorldMapUI({ onClose }: { onClose: () => void }) {
               onClick={onClose}
               className="w-8 h-8 rounded-lg border border-realm-border flex items-center justify-center text-gray-500 hover:text-white hover:border-realm-accent transition-colors text-sm"
               aria-label="Close map"
-            >✕</button>
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
@@ -135,7 +138,7 @@ export function WorldMapUI({ onClose }: { onClose: () => void }) {
                   left: `${(city.x / mapW) * 100}%`,
                   top: `${(city.y / mapH) * 100}%`,
                 }}
-                title={`🏙️ ${city.name}`}
+                title={`City: ${city.name}`}
               />
             ))}
 
@@ -148,7 +151,7 @@ export function WorldMapUI({ onClose }: { onClose: () => void }) {
                   left: `${(d.x / mapW) * 100}%`,
                   top: `${(d.y / mapH) * 100}%`,
                 }}
-                title="☠️ Dungeon"
+                title="Dungeon"
               />
             ))}
 
@@ -164,7 +167,7 @@ export function WorldMapUI({ onClose }: { onClose: () => void }) {
                     left: `${(nx / mapW) * 100}%`,
                     top: `${(ny / mapH) * 100}%`,
                   }}
-                  title={`✨ Leyline Node`}
+                  title={`Leyline Node`}
                 />
               );
             })}
@@ -196,8 +199,11 @@ export function WorldMapUI({ onClose }: { onClose: () => void }) {
               return (
                 <div key={b} className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-sm border border-black/20" style={{ backgroundColor: color }} />
-                  <span className="font-mono text-[9px] text-gray-500 capitalize">
-                    {BIOME_ICON[b]} {b}
+                  <span className="font-mono text-[9px] text-gray-500 capitalize flex items-center gap-1">
+                  {BIOME_ICON[b] && (() => {
+                    const Icon = BIOME_ICON[b] as React.ElementType;
+                    return <Icon className="w-3 h-3" />;
+                  })()} {b}
                   </span>
                 </div>
               );

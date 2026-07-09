@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { GOD_PERKS } from '@shared/types';
+import { Crown, X } from 'lucide-react';
 
 export function AscensionUI() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,9 +38,11 @@ export function AscensionUI() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in">
       <div className="glass p-8 max-w-3xl w-full border-realm-gold" style={{ boxShadow: '0 0 50px rgba(255, 215, 0, 0.2)' }}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-game text-4xl text-realm-gold tracking-widest text-center w-full">ASCENSION</h2>
-          <button onClick={() => setIsOpen(false)} className="text-white hover:text-realm-gold absolute right-8 top-8">
-            ✕
+          <h2 className="font-game text-4xl text-realm-gold tracking-widest text-center w-full flex items-center justify-center gap-4">
+            <Crown className="w-10 h-10" /> ASCENSION
+          </h2>
+          <button onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white transition-colors absolute right-8 top-8">
+            <X className="w-6 h-6" />
           </button>
         </div>
 

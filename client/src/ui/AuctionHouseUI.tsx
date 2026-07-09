@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
 import type { Item } from '@shared/types';
+import { Landmark, X, HelpCircle } from 'lucide-react';
 
 interface AuctionItem {
   id: string;
@@ -110,8 +111,8 @@ export function AuctionHouseUI() {
     <div className="modal-overlay" onClick={closeAuctionHouse}>
       <div className="modal-content glass w-full max-w-4xl mx-4 p-6" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6 border-b border-realm-border pb-4">
-          <h2 className="font-game text-2xl text-realm-gold">🏛️ Grand Auction House</h2>
-          <button onClick={closeAuctionHouse} className="text-realm-text-muted hover:text-white text-xl">✕</button>
+          <h2 className="font-game text-2xl text-realm-gold flex items-center gap-2"><Landmark className="w-6 h-6" /> Grand Auction House</h2>
+          <button onClick={closeAuctionHouse} className="text-realm-text-muted hover:text-white"><X className="w-6 h-6" /></button>
         </div>
 
         <div className="flex gap-4 mb-6">
@@ -140,7 +141,7 @@ export function AuctionHouseUI() {
                 {items.map((auction) => (
                   <div key={auction.id} className="bg-black/40 border border-realm-border rounded p-4 flex gap-4">
                     <div className="w-16 h-16 rounded glass flex items-center justify-center text-3xl">
-                      {auction.item.icon || '❓'}
+                      {auction.item.icon || <HelpCircle className="w-8 h-8 text-white/30" />}
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start">

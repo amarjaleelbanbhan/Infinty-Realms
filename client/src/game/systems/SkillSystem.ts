@@ -18,7 +18,7 @@ export const KNOWN_SKILLS: Skill[] = [
   {
     id: 'fireball',
     name: 'Fireball',
-    icon: '🔥',
+    icon: 'flame',
     description: 'Launches a flaming sphere dealing heavy area damage.',
     manaCost: 15,
     cooldown: 3,
@@ -28,7 +28,7 @@ export const KNOWN_SKILLS: Skill[] = [
   {
     id: 'frost_nova',
     name: 'Frost Nova',
-    icon: '❄️',
+    icon: 'snowflake',
     description: 'Freezes surrounding enemies and deals frost damage.',
     manaCost: 20,
     cooldown: 6,
@@ -38,7 +38,7 @@ export const KNOWN_SKILLS: Skill[] = [
   {
     id: 'arcane_heal',
     name: 'Arcane Heal',
-    icon: '💖',
+    icon: 'heart',
     description: 'Restores a portion of your max health instantly.',
     manaCost: 25,
     cooldown: 8,
@@ -48,7 +48,7 @@ export const KNOWN_SKILLS: Skill[] = [
   {
     id: 'lightning_dash',
     name: 'Lightning Dash',
-    icon: '⚡',
+    icon: 'zap',
     description: 'Teleports forward and increases movement speed briefly.',
     manaCost: 10,
     cooldown: 4,

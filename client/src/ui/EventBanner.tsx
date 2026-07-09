@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEventStore } from '@game/systems/EventSystem';
+import { Star } from 'lucide-react';
 
 export function EventBanner() {
   const { activeEvent, clearEvent } = useEventStore();
@@ -39,8 +40,8 @@ export function EventBanner() {
               {formatTime(timeLeft)}
             </span>
           </div>
-          <p className="text-xs text-gray-300 font-ui mt-0.5 line-clamp-1">{activeEvent.description}</p>
-          <div className="text-xs font-mono text-realm-xp mt-1">✨ Modifiers: {activeEvent.effects}</div>
+          <p className="text-xs text-white/70 font-ui mt-0.5 line-clamp-1">{activeEvent.description}</p>
+          <div className="text-[10px] font-mono text-realm-xp mt-2 flex items-center gap-1 bg-white/5 w-fit px-2 py-1 rounded-md border border-white/10"><Star className="w-3 h-3 text-realm-xp" /> Modifiers: {activeEvent.effects}</div>
         </div>
       </div>
     </div>

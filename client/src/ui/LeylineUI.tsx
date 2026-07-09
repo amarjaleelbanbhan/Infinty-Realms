@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { leylineSystem } from '@game/systems/LeylineSystem';
 import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
+import { Zap, X } from 'lucide-react';
 import type { LeylineNode, LeylineNodeType } from '@shared/types';
 
 export function LeylineUI() {
@@ -35,9 +36,9 @@ export function LeylineUI() {
       {/* HUD Quick Button for Leylines */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-64 z-20 glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-1.5"
+        className="fixed top-4 left-64 z-20 glass px-3 py-1.5 text-xs font-mono text-realm-gold border border-realm-gold/40 hover:bg-realm-gold/10 transition-colors flex items-center gap-2 rounded-xl shadow-lg"
       >
-        <span>⚡ Leyline Nodes ({nodes.length})</span>
+        <Zap className="w-4 h-4" /> <span>Leyline Nodes ({nodes.length})</span>
       </button>
 
       {/* Leyline Modal */}
@@ -48,8 +49,8 @@ export function LeylineUI() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-realm-border pb-3 mb-4">
-              <h2 className="font-game text-xl text-white">⚡ Leyline Energy Network</h2>
-              <button onClick={() => setIsOpen(false)} className="text-realm-text-muted hover:text-white">✕</button>
+              <h2 className="font-game text-xl text-white flex items-center gap-2"><Zap className="w-5 h-5 text-realm-accent" /> Leyline Energy Network</h2>
+              <button onClick={() => setIsOpen(false)} className="text-realm-text-muted hover:text-white"><X className="w-5 h-5" /></button>
             </div>
 
             <p className="text-xs text-realm-text-muted font-ui mb-4">

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useUIStore } from '@stores/useUIStore';
 import { useGameStore } from '@stores/useGameStore';
 import { questSystem } from '@game/systems/QuestSystem';
+import { Store, AlertCircle, Sword, User, Beer, Hammer, Wand2, HeartHandshake, Crosshair, HelpCircle } from 'lucide-react';
 
 export function Dialogue() {
   const { isDialogueOpen, closeDialogue, dialogueNpc, dialogueText, dialogueOptions, addToast, openDialogue } = useUIStore();
@@ -85,9 +86,19 @@ export function Dialogue() {
     }
   };
 
-  const roleIcon: Record<string, string> = {
-    merchant: '🏪', quest_giver: '❗', guard: '⚔️', villager: '👤', innkeeper: '🍺',
-    blacksmith: '⚒️', mage: '🔮', healer: '💊', thief: '🗡️',
+  const renderRoleIcon = (role?: string) => {
+    switch (role) {
+      case 'merchant': return <Store className="w-6 h-6 text-yellow-400" />;
+      case 'quest_giver': return <AlertCircle className="w-6 h-6 text-orange-400" />;
+      case 'guard': return <Sword className="w-6 h-6 text-gray-300" />;
+      case 'villager': return <User className="w-6 h-6 text-blue-300" />;
+      case 'innkeeper': return <Beer className="w-6 h-6 text-orange-300" />;
+      case 'blacksmith': return <Hammer className="w-6 h-6 text-slate-400" />;
+      case 'mage': return <Wand2 className="w-6 h-6 text-purple-400" />;
+      case 'healer': return <HeartHandshake className="w-6 h-6 text-red-400" />;
+      case 'thief': return <Crosshair className="w-6 h-6 text-gray-400" />;
+      default: return <HelpCircle className="w-6 h-6 text-white/50" />;
+    }
   };
 
   return (
@@ -97,8 +108,8 @@ export function Dialogue() {
     >
       {/* NPC Portrait + Name */}
       <div className="flex items-center gap-3 mb-2 ml-2">
-        <div className="w-12 h-12 rounded-full glass flex items-center justify-center text-2xl border border-realm-accent/30">
-          {roleIcon[dialogueNpc?.role ?? ''] ?? '🧙'}
+        <div className="w-12 h-12 rounded-full glass flex items-center justify-center text-2xl border border-realm-accent/30 bg-black/50">
+          {renderRoleIcon(dialogueNpc?.role)}
         </div>
         <div>
           <p className="font-game text-sm text-realm-gold">{dialogueNpc?.name ?? 'Stranger'}</p>
