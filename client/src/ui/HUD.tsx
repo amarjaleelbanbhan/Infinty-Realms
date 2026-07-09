@@ -22,14 +22,14 @@ export function HUD() {
   return (
     <>
       {/* ── Top-left: Player stats ── */}
-      <div className="absolute top-4 left-4 z-10 select-none pointer-events-none">
-        <div className="glass p-5 min-w-[240px] rounded-2xl">
+      <div className="absolute top-4 left-4 z-10 select-none pointer-events-none animate-float-gentle">
+        <div className="premium-glass premium-border p-5 min-w-[260px]">
           {/* Name + level */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-game text-sm text-white tracking-wide">
+          <div className="flex items-center justify-between mb-4 border-b border-realm-border/50 pb-2">
+            <span className="font-game text-lg text-white tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               {player.name}
             </span>
-            <div className="flex gap-1">
+            <div className="flex gap-2 drop-shadow-md">
               {player.ascensions ? (
                 <span className="font-game text-xs text-realm-accent bg-realm-accent/10 px-2 py-0.5 rounded-full border border-realm-accent/30" title="Ascension Level">
                   ⭐{player.ascensions}
@@ -42,10 +42,10 @@ export function HUD() {
           </div>
 
           {/* HP bar */}
-          <div className="mb-2">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-mono text-realm-hp flex items-center gap-1"><Heart className="w-3 h-3" /> HP</span>
-              <span className="text-xs font-mono text-white/70">{hp}/{maxHp}</span>
+          <div className={`mb-3 ${hp / maxHp < 0.25 ? 'animate-pulse-slow' : ''}`}>
+            <div className="flex justify-between items-center mb-1 drop-shadow-md">
+              <span className="font-mono text-realm-hp flex items-center gap-1 font-bold text-xs"><Heart className="w-4 h-4" /> HP</span>
+              <span className="font-mono text-white/90 text-xs font-bold">{hp}/{maxHp}</span>
             </div>
             <div className="bar-track">
               <div
@@ -56,10 +56,10 @@ export function HUD() {
           </div>
 
           {/* Mana bar */}
-          <div className="mb-2">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-mono text-realm-mana flex items-center gap-1"><Droplet className="w-3 h-3" /> MP</span>
-              <span className="text-xs font-mono text-white/70">{mana}/{maxMana}</span>
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1 drop-shadow-md">
+              <span className="font-mono text-realm-mana flex items-center gap-1 font-bold text-xs"><Droplet className="w-4 h-4" /> MP</span>
+              <span className="font-mono text-white/90 text-xs font-bold">{mana}/{maxMana}</span>
             </div>
             <div className="bar-track">
               <div
@@ -71,9 +71,9 @@ export function HUD() {
 
           {/* XP bar */}
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-mono text-realm-xp flex items-center gap-1"><Star className="w-3 h-3" /> XP</span>
-              <span className="text-xs font-mono text-white/70">{experience ?? 0}/{xpToLevel}</span>
+            <div className="flex justify-between items-center mb-1 drop-shadow-md">
+              <span className="font-mono text-realm-xp flex items-center gap-1 font-bold text-xs"><Star className="w-4 h-4" /> XP</span>
+              <span className="font-mono text-white/90 text-xs font-bold">{experience ?? 0}/{xpToLevel}</span>
             </div>
             <div className="bar-track">
               <div
@@ -84,29 +84,24 @@ export function HUD() {
           </div>
 
           {/* Gold */}
-          <div className="mt-3 pt-3 border-t border-realm-border flex items-center gap-2">
-            <Coins className="w-4 h-4 text-realm-gold" />
-            <span className="font-mono text-sm text-realm-gold">{gold ?? 0}</span>
-            <span className="text-xs text-realm-text-muted">gold</span>
+          <div className="mt-4 pt-3 border-t border-realm-border/50 flex items-center gap-2 drop-shadow-md bg-black/20 rounded px-3 py-2">
+            <Coins className="w-5 h-5 text-realm-gold" />
+            <span className="font-game text-base text-realm-gold">{gold ?? 0}</span>
+            <span className="font-mono text-xs text-realm-text-muted uppercase tracking-widest mt-1">gold</span>
           </div>
         </div>
       </div>
 
       {/* ── Bottom-left: Hotbar ── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-        <div className="flex items-center gap-4 glass px-6 py-3 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-white/10">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+        <div className="flex items-center gap-3 premium-glass premium-border px-5 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
           {[Sword, Shield, FlaskConical, Navigation, Gem].map((Icon, i) => (
             <button
               key={i}
-              onClick={() => {
-                if (i === 3) {
-                  import('@game/systems/MountSystem').then(m => m.MountSystem.toggleMount());
-                }
-              }}
-              className="w-14 h-14 bg-white/5 flex items-center justify-center text-white/80 rounded-full border border-white/10 hover:border-realm-accent hover:text-realm-accent hover:bg-realm-accent/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(108,99,255,0.4)] active:scale-95"
-              data-tooltip={['Attack', 'Block', 'Heal', 'Mount', 'Gem'][i]}
+              className="w-14 h-14 bg-black/60 border border-white/20 rounded-xl flex items-center justify-center text-white/50 hover:text-realm-accent hover:border-realm-accent hover:bg-realm-accent/20 transition-all hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(108,99,255,0.4)] relative overflow-hidden group"
             >
-              <Icon className="w-6 h-6" />
+              <Icon strokeWidth={1.5} className="w-7 h-7 relative z-10" />
+              <span className="absolute bottom-1 right-2 font-mono text-[10px] text-white/40 group-hover:text-realm-accent font-bold">{i + 1}</span>
             </button>
           ))}
         </div>

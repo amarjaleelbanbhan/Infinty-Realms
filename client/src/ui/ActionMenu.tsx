@@ -37,19 +37,19 @@ export function ActionMenu(props: ActionMenuProps) {
       {/* ── Floating Menu Button ── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-6 right-8 z-40 w-14 h-14 glass flex items-center justify-center rounded-full hover:bg-realm-accent/20 transition-all hover:scale-110 shadow-lg text-white"
+        className="fixed top-8 right-8 z-40 w-14 h-14 premium-glass premium-border flex items-center justify-center hover:bg-realm-accent/20 transition-all hover:scale-110 shadow-lg text-white"
       >
         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
       {/* ── Modal Grid ── */}
       {isOpen && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center animate-in fade-in bg-black/60 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
+        <div className="fixed inset-0 z-30 flex items-center justify-center animate-in fade-in bg-black/80 backdrop-blur-md" onClick={() => setIsOpen(false)}>
           <div 
-            className="glass p-8 rounded-3xl shadow-2xl max-w-2xl w-full border-white/10 animate-slide-up"
+            className="premium-glass premium-border p-8 rounded-3xl shadow-[0_0_50px_rgba(108,99,255,0.15)] max-w-2xl w-full animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="font-game text-3xl text-center text-white mb-8 tracking-widest drop-shadow-[0_0_15px_rgba(108,99,255,0.8)]">
+            <h2 className="font-game text-4xl text-center text-transparent bg-clip-text bg-gradient-to-r from-white via-realm-accent to-white mb-8 tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               REALM FEATURES
             </h2>
             
@@ -61,10 +61,11 @@ export function ActionMenu(props: ActionMenuProps) {
                     item.action();
                     setIsOpen(false);
                   }}
-                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-realm-accent hover:bg-realm-accent/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_5px_15px_rgba(108,99,255,0.4)] text-white/70 hover:text-white"
+                  className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-realm-accent hover:bg-realm-accent/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(108,99,255,0.4)] text-white/50 hover:text-white group relative overflow-hidden"
                 >
-                  <item.icon className="w-8 h-8 mb-1" strokeWidth={1.5} />
-                  <span className="font-mono text-xs text-white/90 font-bold uppercase tracking-wider">{item.label}</span>
+                  <item.icon className="w-10 h-10 mb-1 group-hover:scale-110 transition-transform duration-300" strokeWidth={1} />
+                  <span className="font-mono text-[10px] text-white/80 group-hover:text-realm-accent font-bold uppercase tracking-[0.2em]">{item.label}</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-realm-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </button>
               ))}
             </div>

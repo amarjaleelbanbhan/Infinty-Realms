@@ -130,6 +130,57 @@ html, body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
 }
 
+/* ─── Premium Glass (AAA Styling) ────────────────────────────── */
+.premium-glass {
+  background: linear-gradient(145deg, rgba(20, 20, 45, 0.85), rgba(10, 10, 25, 0.95));
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border-radius: 12px;
+  border: 1px solid rgba(124, 107, 255, 0.3);
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.8), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 30%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+  pointer-events: none;
+}
+
+/* ─── Premium Border ─────────────────────────────────────────── */
+.premium-border {
+  position: relative;
+}
+
+.premium-border::before, .premium-border::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-accent);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.premium-border::before {
+  top: -2px; left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.premium-border::after {
+  bottom: -2px; right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
 /* ─── Glow Effects ───────────────────────────────────────────── */
 .glow-accent { box-shadow: 0 0 30px rgba(108, 99, 255, 0.6), inset 0 0 10px rgba(108, 99, 255, 0.4); }
 .glow-gold   { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.4); }
@@ -295,10 +346,29 @@ html, body {
 }
 
 .modal-content {
-  animation: slideUp 0.3s ease;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 90vw;
   max-height: 85vh;
   overflow-y: auto;
+}
+
+/* ─── Premium Animations ─────────────────────────────────────── */
+@keyframes pulse-slow {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+@keyframes float-gentle {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+.animate-float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
 }
 
 @keyframes slideUp {

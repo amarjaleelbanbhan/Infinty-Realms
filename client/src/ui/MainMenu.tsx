@@ -59,7 +59,7 @@ export function MainMenu({ onStart }: MainMenuProps) {
       {/* Particle overlay — handled by Phaser, this is just the React menu */}
 
       {screen === 'main' && (
-        <div className="flex flex-col items-center gap-10 animate-slide-up bg-black/40 p-12 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl">
+        <div className="flex flex-col items-center gap-10 animate-slide-up premium-glass premium-border p-12 max-w-xl w-full mx-4 text-center">
           {/* Title */}
           <div className="text-center mb-2">
             <h1 className="font-game text-6xl md:text-8xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white to-realm-accent mb-4 animate-pulse"
@@ -132,11 +132,11 @@ export function MainMenu({ onStart }: MainMenuProps) {
       )}
 
       {screen === 'new' && (
-        <div className="glass p-8 w-full max-w-sm mx-4 animate-slide-up">
+        <div className="flex flex-col items-center gap-6 animate-slide-up premium-glass premium-border p-12 max-w-xl w-full mx-4 text-center">
           <h2 className="font-game text-3xl text-transparent bg-clip-text bg-gradient-to-r from-white to-realm-accent mb-6 text-center animate-pulse glow-accent" style={{ textShadow: '0 0 10px rgba(108, 99, 255, 0.5)' }}>Your Hero</h2>
 
           {/* Name input */}
-          <div className="mb-6">
+          <div className="mb-6 w-full">
             <label className="block font-ui text-xs text-realm-text-muted mb-2 uppercase tracking-widest font-bold">
               Hero Name
             </label>
@@ -151,7 +151,7 @@ export function MainMenu({ onStart }: MainMenuProps) {
             />
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 w-full">
             <button className="btn-secondary flex-1 text-sm font-bold" onClick={() => setScreen('main')}>
               ← Back
             </button>
@@ -166,24 +166,27 @@ export function MainMenu({ onStart }: MainMenuProps) {
       )}
 
       {screen === 'class' && (
-        <div className="glass p-8 w-full max-w-lg mx-4 animate-slide-up">
+        <div className="premium-glass premium-border p-8 w-full max-w-lg mx-4 animate-slide-up">
           <h2 className="font-game text-2xl text-white mb-6 text-center">Choose Your Path</h2>
 
           <div className="grid grid-cols-2 gap-3 mb-6">
-            {HERO_CLASSES.map((cls) => (
+            {HERO_CLASSES.map((c) => (
               <button
-                key={cls.id}
-                onClick={() => setSelectedClass(cls.id)}
-                className={`p-4 rounded-xl border text-left transition-all duration-200 ${
-                  selectedClass === cls.id
-                    ? 'border-realm-accent bg-realm-accent/10 shadow-glow'
-                    : 'border-realm-border bg-realm-surface hover:border-realm-accent/50'
+                key={c.id}
+                onClick={() => setSelectedClass(c.id)}
+                className={`p-6 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group ${
+                  selectedClass === c.id
+                    ? 'border-realm-accent bg-realm-accent/20 shadow-[0_0_30px_rgba(108,99,255,0.4)] transform -translate-y-2'
+                    : 'border-white/10 bg-black/40 hover:border-white/30 hover:bg-white/5'
                 }`}
               >
-                <div className="mb-2"><cls.icon className="w-6 h-6 text-realm-accent" /></div>
-                <div className="font-game text-sm text-white mb-1">{cls.name}</div>
-                <div className="font-ui text-xs text-realm-text-muted mb-2">{cls.desc}</div>
-                <div className="font-mono text-xs text-realm-xp">{cls.bonus}</div>
+                <div className="absolute inset-0 bg-gradient-to-br from-realm-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex items-center gap-4 mb-2 relative z-10">
+                  <c.icon className={`w-8 h-8 ${selectedClass === c.id ? 'text-realm-accent' : 'text-white/60'}`} />
+                  <span className="font-game text-xl text-white tracking-wider">{c.name}</span>
+                </div>
+                <div className="font-ui text-xs text-realm-text-muted mb-2">{c.desc}</div>
+                <div className="font-mono text-xs text-realm-xp">{c.bonus}</div>
               </button>
             ))}
           </div>

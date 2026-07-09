@@ -35,7 +35,18 @@ import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
 export default function App() {
-  const { currentScreen, setScreen } = useUIStore();
+  const {
+    currentScreen,
+    setScreen,
+    isInventoryOpen,
+    isQuestLogOpen,
+    isMapOpen,
+    isMerchantShopOpen,
+    isAuctionHouseOpen,
+    isCraftingOpen,
+    isSkillTreeOpen,
+    isDialogueOpen
+  } = useUIStore();
   const [gameStarted, setGameStarted] = useState(false);
   const [showGuild, setShowGuild] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
@@ -45,6 +56,10 @@ export default function App() {
   const [showCreator, setShowCreator] = useState(false);
   const [showHousing, setShowHousing] = useState(false);
   const [showShop, setShowShop] = useState(false);
+
+  const isStoreModalOpen = isInventoryOpen || isQuestLogOpen || isMapOpen || isMerchantShopOpen || isAuctionHouseOpen || isCraftingOpen || isSkillTreeOpen || isDialogueOpen;
+  const isLocalModalOpen = showGuild || showMarket || showJournal || showSkills || showMap || showCreator || showHousing || showShop;
+  const isAnyModalOpen = isStoreModalOpen || isLocalModalOpen || currentScreen === 'pause';
 
   useEffect(() => {
     // Check mobile screen size
@@ -79,29 +94,33 @@ export default function App() {
           <MainMenu onStart={() => setGameStarted(true)} />
         ) : (
           <>
-            <HUD />
-            <EventBanner />
+            {/* Main HUD Layer (Fades out when a modal is open) */}
+            <div className={`transition-all duration-300 ${isAnyModalOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              <HUD />
+              <EventBanner />
+              <MobileControls />
+              <Chat />
+              <LeylineUI />
+              <ActionMenu 
+                onOpenShop={() => setShowShop(true)}
+                onOpenHousing={() => setShowHousing(true)}
+                onOpenGuild={() => setShowGuild(true)}
+                onOpenMarket={() => setShowMarket(true)}
+                onOpenJournal={() => setShowJournal(true)}
+                onOpenSpells={() => setShowSkills(true)}
+                onOpenMap={() => setShowMap(true)}
+                onOpenCreator={() => setShowCreator(true)}
+              />
+            </div>
+
+            {/* Modals Layer */}
             <QuestLog />
             <Inventory />
             <Dialogue />
             <MerchantShopUI />
             <PauseMenu />
-            <MobileControls />
-            <Chat />
-            <LeylineUI />
             <CraftingUI />
             <AuctionHouseUI />
-
-            <ActionMenu 
-              onOpenShop={() => setShowShop(true)}
-              onOpenHousing={() => setShowHousing(true)}
-              onOpenGuild={() => setShowGuild(true)}
-              onOpenMarket={() => setShowMarket(true)}
-              onOpenJournal={() => setShowJournal(true)}
-              onOpenSpells={() => setShowSkills(true)}
-              onOpenMap={() => setShowMap(true)}
-              onOpenCreator={() => setShowCreator(true)}
-            />
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
             {showHousing && <HousingUI onClose={() => setShowHousing(false)} />}
