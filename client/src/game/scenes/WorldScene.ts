@@ -669,6 +669,61 @@ export class WorldScene extends Phaser.Scene {
         const worldX = this.cameras.main.scrollX + pointer.x;
         const worldY = this.cameras.main.scrollY + pointer.y;
         citadelSystem.placeBuilding(worldX, worldY, this.buildModeType, this.buildModeGuildId);
+        return;
+      }
+
+      // World Interaction
+      if (!this.buildModeActive && pointer.leftButtonDown()) {
+        const worldX = this.cameras.main.scrollX + pointer.x;
+        const worldY = this.cameras.main.scrollY + pointer.y;
+
+        // Check NPCs
+        const clickedNPC = this.npcs.find(npc => {
+           return Phaser.Math.Distance.Between(worldX, worldY, npc.x, npc.y) < 32;
+        });
+
+        if (clickedNPC) {
+           const pDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, clickedNPC.x, clickedNPC.y);
+           if (pDist <= this.INTERACT_RANGE) {
+               this.interactWithNPC(clickedNPC);
+           } else {
+               useUIStore.getState().addToast('Too far to interact.', 'warning');
+           }
+           return;
+        }
+
+        // Check Farm Plots
+        const clickedPlot = farmingSystem.getPlots().find(plot => {
+           return Phaser.Math.Distance.Between(worldX, worldY, plot.x, plot.y) < 32;
+        });
+
+        if (clickedPlot) {
+           const pDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, clickedPlot.x, clickedPlot.y);
+           if (pDist <= this.INTERACT_RANGE) {
+               farmingSystem.harvestPlot(clickedPlot.id);
+           } else {
+               useUIStore.getState().addToast('Too far to harvest.', 'warning');
+           }
+           return;
+        }
+
+        // Check Leylines
+        const clickedNode = leylineSystem.getNodes().find(node => {
+           return Phaser.Math.Distance.Between(worldX, worldY, node.x, node.y) < 32;
+        });
+
+        if (clickedNode) {
+           const pDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, clickedNode.x, clickedNode.y);
+           if (pDist <= this.INTERACT_RANGE) {
+               const tx = Math.floor(clickedNode.x / TILE_SIZE);
+               const ty = Math.floor(clickedNode.y / TILE_SIZE);
+               const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
+               farmingSystem.plantSeed(clickedNode.x + (Math.random() * 40 - 20), clickedNode.y + (Math.random() * 40 - 20), biome);
+           } else {
+               useUIStore.getState().addToast('Too far to interact with node.', 'warning');
+           }
+           return;
+        }
       }
     });
   }
@@ -1356,61 +1411,10 @@ export class WorldScene extends Phaser.Scene {
     }
 
     if (nearestNPC) {
-      const ui = useUIStore.getState();
-      const gameStore = useGameStore.getState();
-      const token = gameStore.playerToken;
-
-      const npcInfo = {
-        id: nearestNPC.npcData.id,
-        name: nearestNPC.npcData.name,
-        role: nearestNPC.npcData.role as NPC['role'],
-      };
-
-      // Show temporary loading dialogue
-      ui.openDialogue(npcInfo, 'Thinking...', []);
-
-      let dialogue = nearestNPC.npcData.dialogue[Math.floor(Math.random() * nearestNPC.npcData.dialogue.length)];
-      let options = [
-        { text: 'Tell me about your quests', action: 'quest' },
-        { text: 'Farewell', action: 'close' },
-      ];
-
-      if (nearestNPC.npcData.role === 'merchant') {
-        options.unshift({ text: 'Show me your wares', action: 'shop' });
-      }
-
-      if (token && gameStore.player) {
-        try {
-          const res = await fetch('/api/npcs/interact', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              npcId: nearestNPC.npcData.id,
-              name: nearestNPC.npcData.name,
-              role: nearestNPC.npcData.role,
-              biome: nearestNPC.npcData.biome ?? 'plains',
-              worldSeed: gameStore.player.worldSeed ?? 'default',
-              playerLevel: gameStore.player.level ?? 1,
-              playerName: gameStore.player.name ?? 'Hero',
-            }),
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            dialogue = data.dialogue;
-            options = data.options ?? options;
-          }
-        } catch (err) {
-          console.warn('[Dialogue] Failed to fetch NPC dialogue from server, falling back to local simulation:', err);
-        }
-      }
-
-      ui.openDialogue(npcInfo, dialogue, options);
+      this.interactWithNPC(nearestNPC);
       return;
     }
+
 
     // Check Farm Plots
     for (const plot of farmingSystem.getPlots()) {
@@ -1433,6 +1437,62 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
+  }
+
+  private async interactWithNPC(npc: NPCSprite) {
+    const ui = useUIStore.getState();
+    const gameStore = useGameStore.getState();
+    const token = gameStore.playerToken;
+
+    const npcInfo = {
+      id: npc.npcData.id,
+      name: npc.npcData.name,
+      role: npc.npcData.role as NPC['role'],
+    };
+
+    // Show temporary loading dialogue
+    ui.openDialogue(npcInfo, 'Thinking...', []);
+
+    let dialogue = npc.npcData.dialogue[Math.floor(Math.random() * npc.npcData.dialogue.length)];
+    let options = [
+      { text: 'Tell me about your quests', action: 'quest' },
+      { text: 'Farewell', action: 'close' },
+    ];
+
+    if (npc.npcData.role === 'merchant') {
+      options.unshift({ text: 'Show me your wares', action: 'shop' });
+    }
+
+    if (token && gameStore.player) {
+      try {
+        const res = await fetch('/api/npcs/interact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            npcId: npc.npcData.id,
+            name: npc.npcData.name,
+            role: npc.npcData.role,
+            biome: npc.npcData.biome ?? 'plains',
+            worldSeed: gameStore.player.worldSeed ?? 'default',
+            playerLevel: gameStore.player.level ?? 1,
+            playerName: gameStore.player.name ?? 'Hero',
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          dialogue = data.dialogue;
+          options = data.options ?? options;
+        }
+      } catch (err) {
+        console.warn('[Dialogue] Failed to fetch NPC dialogue from server, falling back to local simulation:', err);
+      }
+    }
+
+    ui.openDialogue(npcInfo, dialogue, options);
   }
 
   private updateCooldowns(delta: number) {
