@@ -9,6 +9,10 @@ export class CitadelSystem {
     return this.buildings;
   }
 
+  loadBuildings(buildings: CitadelBuilding[]) {
+    this.buildings = buildings;
+  }
+
   placeBuilding(x: number, y: number, type: CitadelStructureType, guildId: string): CitadelBuilding | null {
     // Snap to grid
     const TILE_SIZE = 32;

@@ -50,6 +50,10 @@ export class FarmingSystem {
     return this.plots;
   }
 
+  loadPlots(plots: FarmPlot[]) {
+    this.plots = plots;
+  }
+
   plantSeed(x: number, y: number, biome: BiomeType): FarmPlot | null {
     const store = useGameStore.getState();
     const ui = useUIStore.getState();

@@ -138,6 +138,10 @@ export class LeylineSystem {
   getNodes(): LeylineNode[] {
     return this.nodes;
   }
+
+  loadNodes(nodes: LeylineNode[]) {
+    this.nodes = nodes;
+  }
 }
 
 export const leylineSystem = new LeylineSystem();

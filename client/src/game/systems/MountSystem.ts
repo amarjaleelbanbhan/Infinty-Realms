@@ -22,7 +22,7 @@ export class MountSystem {
     }
     
     const isMounted = !store.player.isMounted;
-    store.updatePlayer({ isMounted });
+    store.setPlayer({ ...store.player, isMounted });
     
     if (isMounted) {
       useUIStore.getState().addToast(`Summoned ${store.player.mount}!`, 'info');

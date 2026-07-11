@@ -5,6 +5,9 @@
 import type { SaveState } from '@shared/types';
 import { useGameStore } from '@stores/useGameStore';
 import { useQuestStore } from '@stores/useQuestStore';
+import { farmingSystem } from '@game/systems/FarmingSystem';
+import { leylineSystem } from '@game/systems/LeylineSystem';
+import { citadelSystem } from '@game/systems/CitadelSystem';
 
 const SAVE_KEY = 'infinity-realms-save-v1';
 const SAVE_VERSION = '0.1.0';
@@ -44,6 +47,10 @@ export class SaveSystem {
         defeatedBosses: [],
         playtime: gameStore.player.playtime ?? 0,
       };
+
+      saveState.world.farmPlots = farmingSystem.getPlots();
+      saveState.world.leylineNodes = leylineSystem.getNodes();
+      saveState.world.citadelBuildings = citadelSystem.getBuildings();
 
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveState));
       console.log('[Save] Game saved at', new Date().toLocaleTimeString());
@@ -140,6 +147,10 @@ export class SaveSystem {
     gameStore.setPlayer(save.player);
     gameStore.setWorldState(save.world);
     gameStore.startSession(save.player.name);
+
+    if (save.world.farmPlots) farmingSystem.loadPlots(save.world.farmPlots);
+    if (save.world.leylineNodes) leylineSystem.loadNodes(save.world.leylineNodes);
+    if (save.world.citadelBuildings) citadelSystem.loadBuildings(save.world.citadelBuildings);
 
     save.activeQuests.forEach((q) => questStore.addQuest(q));
   }

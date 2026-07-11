@@ -697,7 +697,7 @@ export class WorldScene extends Phaser.Scene {
            if (pDist <= this.INTERACT_RANGE) {
                this.interactWithNPC(clickedNPC);
            } else {
-               useUIStore.getState().addToast('Too far to interact.', 'warning');
+               useUIStore.getState().addToast('Too far to interact.', 'error');
            }
            return;
         }
@@ -712,7 +712,7 @@ export class WorldScene extends Phaser.Scene {
            if (pDist <= this.INTERACT_RANGE) {
                farmingSystem.harvestPlot(clickedPlot.id);
            } else {
-               useUIStore.getState().addToast('Too far to harvest.', 'warning');
+               useUIStore.getState().addToast('Too far to harvest.', 'error');
            }
            return;
         }
@@ -730,7 +730,7 @@ export class WorldScene extends Phaser.Scene {
                const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
                farmingSystem.plantSeed(clickedNode.x + (Math.random() * 40 - 20), clickedNode.y + (Math.random() * 40 - 20), biome);
            } else {
-               useUIStore.getState().addToast('Too far to interact with node.', 'warning');
+               useUIStore.getState().addToast('Too far to interact with node.', 'error');
            }
            return;
         }
@@ -858,7 +858,6 @@ export class WorldScene extends Phaser.Scene {
 
     const dt = delta / 1000;
     this.handlePlayerInput(dt);
-    this.updateMount(dt);
     this.updateEnemies(dt);
     this.updateNPCs(dt);
     this.checkItemPickup();
@@ -1903,7 +1902,6 @@ export class WorldScene extends Phaser.Scene {
       remote.destroy();
     }
     this.events.on('shutdown', () => {
-      window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('ir:mount_summoned', this.updateMountVisual.bind(this));
       window.removeEventListener('ir:mount_dismissed', this.updateMountVisual.bind(this));
     });
