@@ -11,6 +11,9 @@ class GenerateQuestDto {
   @IsString() season!: string;
   @IsNumber() playerLevel!: number;
   @IsOptional() @IsString() nearbyNpcName?: string;
+  @IsOptional() @IsString() npcRole?: string;
+  @IsOptional() @IsString() npcPersonality?: string;
+  @IsOptional() npcMemory?: string[];
 }
 
 @ApiTags('quests')
@@ -33,6 +36,9 @@ export class QuestsController {
       playerLevel: dto.playerLevel,
       playerId: req.user.playerId,
       nearbyNpcName: dto.nearbyNpcName,
+      npcRole: dto.npcRole,
+      npcPersonality: dto.npcPersonality,
+      npcMemory: dto.npcMemory,
     });
   }
 

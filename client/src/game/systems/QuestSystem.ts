@@ -93,7 +93,7 @@ export class QuestSystem {
   }
 
   /** Generate a new quest (tries server first, falls back to client mock) */
-  async generateQuest(options?: { npcName?: string }): Promise<Quest> {
+  async generateQuest(options?: { npcName?: string, npcRole?: string, npcPersonality?: string, npcMemory?: string[] }): Promise<Quest> {
     const gameStore = useGameStore.getState();
     const uiStore = useUIStore.getState();
 
@@ -122,6 +122,9 @@ export class QuestSystem {
             season,
             playerLevel,
             nearbyNpcName: options?.npcName,
+            npcRole: options?.npcRole,
+            npcPersonality: options?.npcPersonality,
+            npcMemory: options?.npcMemory,
           }),
         });
         if (res.ok) {

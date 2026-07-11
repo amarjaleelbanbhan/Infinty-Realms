@@ -507,6 +507,9 @@ export interface QuestGenerationRequest {
   season: Season;
   playerLevel: number;
   nearbyNpcName?: string;
+  npcRole?: string;
+  npcPersonality?: string;
+  npcMemory?: string[];
   recentEvents?: string[];
   prompt?: string;
 }

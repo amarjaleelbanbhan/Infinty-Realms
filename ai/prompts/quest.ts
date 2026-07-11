@@ -10,9 +10,13 @@ export const buildQuestPrompt = (context: {
   season: string;
   playerLevel: number;
   nearbyNpcName?: string;
+  npcRole?: string;
+  npcPersonality?: string;
+  npcMemory?: string[];
   recentEvents?: string[];
 }) => `Generate a quest for a level ${context.playerLevel} player in a ${context.biome} biome during ${context.season}.
-${context.nearbyNpcName ? `The quest giver is ${context.nearbyNpcName}.` : ''}
+${context.nearbyNpcName ? `The quest giver is ${context.nearbyNpcName}${context.npcRole ? `, a ${context.npcRole}` : ''}${context.npcPersonality ? ` who is ${context.npcPersonality}` : ''}.` : ''}
+${context.npcMemory?.length ? `The NPC remembers: ${context.npcMemory.join('; ')}.` : ''}
 ${context.recentEvents?.length ? `Recent world events: ${context.recentEvents.join(', ')}.` : ''}
 
 Respond with this exact JSON structure:

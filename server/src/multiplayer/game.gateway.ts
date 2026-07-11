@@ -9,7 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RoomService } from './room.service';
-import type { Vec2, ChatMessage } from '@infinity-realms/shared/types';
+import { QuestsService } from '../quests/quests.service';
+import type { Vec2, ChatMessage, BiomeType, Season } from '@infinity-realms/shared/types';
 
 @WebSocketGateway({
   cors: {
@@ -20,7 +21,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private roomService: RoomService) {}
+  constructor(
+    private roomService: RoomService,
+    private questsService: QuestsService,
+  ) {}
 
   handleConnection(client: Socket) {
     console.log(`[WS] Client connected: ${client.id}`);
@@ -115,6 +119,43 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(data.roomCode).emit('chatMessage', msg);
     } else {
       this.server.emit('chatMessage', msg);
+    }
+  }
+  @SubscribeMessage('requestQuest')
+  async handleRequestQuest(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { 
+      playerId: string; 
+      npcId: string; 
+      npcName: string; 
+      playerLevel: number; 
+      worldSeed: string; 
+      biome: BiomeType; 
+      season: Season 
+    },
+  ) {
+    try {
+      const quest = await this.questsService.generateAndSave({
+        worldSeed: data.worldSeed,
+        biome: data.biome,
+        season: data.season,
+        playerLevel: data.playerLevel,
+        playerId: data.playerId,
+        nearbyNpcName: data.npcName,
+      });
+
+      client.emit('questOffered', { 
+        npcId: data.npcId,
+        quest: {
+          ...quest,
+          objectives: JSON.parse(quest.objectivesJson),
+          rewards: JSON.parse(quest.rewardsJson),
+        }
+      });
+      return { success: true };
+    } catch (err) {
+      console.error('[WS] Failed to generate quest:', err);
+      return { success: false, error: 'Quest generation failed' };
     }
   }
 }

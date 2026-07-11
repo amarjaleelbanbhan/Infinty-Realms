@@ -18,6 +18,9 @@ export class QuestsService {
     playerLevel: number;
     playerId: string;
     nearbyNpcName?: string;
+    npcRole?: string;
+    npcPersonality?: string;
+    npcMemory?: string[];
   }) {
     const generated = await this.ai.generateQuest({
       worldSeed: options.worldSeed,
@@ -25,6 +28,9 @@ export class QuestsService {
       season: options.season,
       playerLevel: options.playerLevel,
       nearbyNpcName: options.nearbyNpcName,
+      npcRole: options.npcRole,
+      npcPersonality: options.npcPersonality,
+      npcMemory: options.npcMemory,
     });
 
     return this.prisma.quest.create({

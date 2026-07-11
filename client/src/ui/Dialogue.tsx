@@ -35,7 +35,12 @@ export function Dialogue() {
 
   const handleOption = (action: string) => {
     if (action === 'quest') {
-      questSystem.generateQuest({ npcName: dialogueNpc?.name });
+      questSystem.generateQuest({ 
+        npcName: dialogueNpc?.name,
+        npcRole: dialogueNpc?.role,
+        npcPersonality: dialogueNpc?.personality,
+        npcMemory: dialogueNpc?.memory?.map(m => m.event),
+      });
       addToast('Quest offered!', 'success');
     } else if (action === 'trade') {
       if (dialogueNpc?.id) {
