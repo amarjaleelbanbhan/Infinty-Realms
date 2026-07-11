@@ -13,7 +13,7 @@ const MOCK_SKILLS: SkillNode[] = [
 
 export function SkillTree() {
   const { isSkillTreeOpen, closeSkillTree } = useUIStore();
-  const { player } = useGameStore();
+  const { player, unlockSkill } = useGameStore();
   const [selectedSubclass, setSelectedSubclass] = useState<SubclassType | null>(player?.subclass ?? null);
 
   if (!isSkillTreeOpen) return null;
@@ -30,7 +30,7 @@ export function SkillTree() {
             <h2 className="font-game text-2xl text-white tracking-widest animate-pulse flex items-center gap-3">
               <Stars className="w-6 h-6 text-realm-accent" /> Constellation
             </h2>
-            <p className="text-sm font-ui text-realm-text-muted mt-1">Unlock your true potential.</p>
+            <p className="text-sm font-ui text-realm-text-muted mt-1">Unlock your true potential. Available Points: <span className="text-realm-gold font-mono">{player?.skillPoints ?? 0}</span></p>
           </div>
           <button onClick={closeSkillTree} className="text-white/50 hover:text-white transition-colors">
             <X className="w-6 h-6" />
@@ -66,20 +66,20 @@ export function SkillTree() {
               <div className="relative w-full h-full flex flex-col items-center justify-center gap-12">
                 {/* Mock Tree visualization */}
                 <div className="flex justify-center w-full">
-                  <SkillNodeUI node={MOCK_SKILLS[0]} unlocked={true} />
+                  <SkillNodeUI node={MOCK_SKILLS[0]} player={player} unlockSkill={(n) => unlockSkill(n.id, n.cost, selectedSubclass!)} />
                 </div>
                 <div className="flex justify-center gap-24 w-full relative">
                   {/* Connecting lines mocked */}
                   <div className="absolute top-[-3rem] left-1/2 w-px h-12 bg-realm-accent/50 origin-top -rotate-[35deg]"></div>
                   <div className="absolute top-[-3rem] left-1/2 w-px h-12 bg-realm-accent/50 origin-top rotate-[35deg]"></div>
                   
-                  <SkillNodeUI node={MOCK_SKILLS[1]} unlocked={false} />
-                  <SkillNodeUI node={MOCK_SKILLS[2]} unlocked={false} />
+                  <SkillNodeUI node={MOCK_SKILLS[1]} player={player} unlockSkill={(n) => unlockSkill(n.id, n.cost, selectedSubclass!)} />
+                  <SkillNodeUI node={MOCK_SKILLS[2]} player={player} unlockSkill={(n) => unlockSkill(n.id, n.cost, selectedSubclass!)} />
                 </div>
                 <div className="flex justify-center w-full relative">
                   <div className="absolute top-[-3rem] left-[65%] w-px h-12 bg-realm-border origin-top -rotate-[20deg]"></div>
                   <div className="ml-48">
-                    <SkillNodeUI node={MOCK_SKILLS[3]} unlocked={false} />
+                    <SkillNodeUI node={MOCK_SKILLS[3]} player={player} unlockSkill={(n) => unlockSkill(n.id, n.cost, selectedSubclass!)} />
                   </div>
                 </div>
               </div>
@@ -95,13 +95,30 @@ export function SkillTree() {
   );
 }
 
-function SkillNodeUI({ node, unlocked }: { node: SkillNode, unlocked: boolean }) {
+function SkillNodeUI({ node, player, unlockSkill }: { node: SkillNode, player: any, unlockSkill: (node: SkillNode) => void }) {
+  const unlocked = player?.skills?.includes(node.id);
+  const prereqsMet = node.prerequisites.length === 0 || node.prerequisites.every((req) => player?.skills?.includes(req));
+  const canAfford = (player?.skillPoints ?? 0) >= node.cost;
+  const isAvailable = prereqsMet && !unlocked && canAfford;
+
   return (
     <div 
+      onClick={() => {
+        if (isAvailable) {
+          unlockSkill(node);
+          useUIStore.getState().addToast(`Unlocked ${node.name}`, 'success');
+        } else if (!prereqsMet) {
+          useUIStore.getState().addToast(`Prerequisites not met for ${node.name}`, 'error');
+        } else if (!canAfford && !unlocked) {
+          useUIStore.getState().addToast(`Not enough Skill Points!`, 'error');
+        }
+      }}
       className={`relative rounded-full w-16 h-16 flex items-center justify-center cursor-pointer transition-all duration-300 group
         ${unlocked 
           ? 'bg-realm-accent/20 border-2 border-realm-accent shadow-[0_0_20px_rgba(108,99,255,0.6)] text-white' 
-          : 'bg-realm-surface border border-realm-border hover:border-white/50 text-white/40'}`}
+          : isAvailable
+            ? 'bg-white/10 border border-white hover:border-realm-accent text-white/80 shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:scale-110'
+            : 'bg-realm-surface border border-realm-border opacity-50 cursor-not-allowed text-white/40'}`}
     >
       {node.icon === '🔮' && <Sparkles className="w-8 h-8" />}
       {node.icon === '❄️' && <Snowflake className="w-8 h-8" />}
@@ -111,9 +128,10 @@ function SkillNodeUI({ node, unlocked }: { node: SkillNode, unlocked: boolean })
       
       {/* Tooltip */}
       <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-48 bg-realm-card border border-realm-border rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
-        <div className="font-game text-white text-sm mb-1">{node.name}</div>
+        <div className="font-game text-white text-sm mb-1">{node.name} {unlocked && <span className="text-realm-accent text-xs">(Unlocked)</span>}</div>
         <div className="text-xs font-ui text-realm-text-muted mb-2">{node.description}</div>
         <div className="text-xs font-mono text-realm-gold">Cost: {node.cost} SP</div>
+        {!prereqsMet && <div className="text-[10px] text-red-400 mt-1">Missing Prerequisites</div>}
       </div>
     </div>
   );

@@ -96,6 +96,7 @@ export interface Player {
   inventory: InventorySlot[];
   equipment: Equipment;
   skills: string[];
+  skillPoints: number;
   reputation: Record<string, number>;  // cityId → -100..100
   questIds: UUID[];
   titles: string[];

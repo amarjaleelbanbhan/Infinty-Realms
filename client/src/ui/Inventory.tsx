@@ -5,7 +5,7 @@ import { Backpack, Coins, Sword, Shield, HardHat, Gem, FlaskConical, PackageOpen
 
 export function Inventory() {
   const { isInventoryOpen, closeInventory } = useUIStore();
-  const { player } = useGameStore();
+  const { player, equipItem, unequipItem, consumeItem } = useGameStore();
 
   if (!isInventoryOpen) return null;
 
@@ -55,10 +55,29 @@ export function Inventory() {
               return (
                 <div
                   key={slot}
-                  className="flex-1 aspect-square rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-realm-accent hover:bg-realm-accent/10 transition-all shadow-inner"
+                  onClick={() => {
+                    if (equipped) {
+                      unequipItem(slot as 'weapon' | 'armor' | 'helmet' | 'accessory');
+                      useUIStore.getState().addToast(`Unequipped ${equipped.name}`, 'info');
+                    }
+                  }}
+                  className={`flex-1 aspect-square rounded-2xl border ${equipped ? rarityBorder[equipped.rarity] : 'border-white/10'} bg-white/5 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-realm-accent hover:bg-realm-accent/10 transition-all shadow-inner`}
+                  style={equipped ? { color: `var(--color-${equipped.rarity === 'legendary' ? 'gold' : equipped.rarity === 'epic' ? 'accent' : 'text'})` } : {}}
+                  data-tooltip={equipped ? equipped.name : undefined}
                 >
-                  <Icon className="w-8 h-8 text-white/40" strokeWidth={1.5} />
-                  <span className="text-[10px] text-white/50 capitalize font-mono">{slot}</span>
+                  {equipped ? (
+                    <span className="flex items-center justify-center w-full h-full drop-shadow-[0_0_10px_currentColor]">
+                      {equipped.type === 'weapon' ? <Sword className="w-8 h-8" />
+                        : equipped.type === 'consumable' ? <FlaskConical className="w-8 h-8" />
+                        : equipped.type === 'material' ? <Gem className="w-8 h-8" />
+                        : <PackageOpen className="w-8 h-8" />}
+                    </span>
+                  ) : (
+                    <>
+                      <Icon className="w-8 h-8 text-white/40" strokeWidth={1.5} />
+                      <span className="text-[10px] text-white/50 capitalize font-mono">{slot}</span>
+                    </>
+                  )}
                 </div>
               );
             })}
@@ -74,9 +93,20 @@ export function Inventory() {
             {filledSlots.map((slot, i) => (
               <div
                 key={i}
-                className={`inventory-slot ${slot ? 'occupied hover:scale-110 hover:shadow-[0_0_15px_currentColor]' : 'empty'} ${slot ? rarityBorder[slot.item.rarity] ?? 'border-gray-500' : ''}`}
+                onClick={() => {
+                  if (slot) {
+                    if (['weapon', 'armor', 'helmet', 'accessory'].includes(slot.item.type)) {
+                      equipItem(slot.item);
+                      useUIStore.getState().addToast(`Equipped ${slot.item.name}`, 'success');
+                    } else if (slot.item.type === 'consumable') {
+                      consumeItem(slot.item);
+                      useUIStore.getState().addToast(`Consumed ${slot.item.name}`, 'info');
+                    }
+                  }
+                }}
+                className={`inventory-slot ${slot ? 'occupied hover:scale-110 hover:shadow-[0_0_15px_currentColor] cursor-pointer' : 'empty'} ${slot ? rarityBorder[slot.item.rarity] ?? 'border-gray-500' : ''}`}
                 style={slot ? { color: `var(--color-${slot.item.rarity === 'legendary' ? 'gold' : slot.item.rarity === 'epic' ? 'accent' : 'text'})` } : {}}
-                data-tooltip={slot ? `${slot.item.name} x${slot.quantity}` : undefined}
+                data-tooltip={slot ? `${slot.item.name} x${slot.quantity}\n${slot.item.description}${['weapon', 'armor', 'helmet', 'accessory'].includes(slot.item.type) ? '\n(Click to equip)' : slot.item.type === 'consumable' ? '\n(Click to consume)' : ''}` : undefined}
               >
                 {slot ? (
                   <>

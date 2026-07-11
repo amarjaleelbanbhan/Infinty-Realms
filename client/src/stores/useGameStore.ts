@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Player, WorldState, Season, Item } from '@shared/types';
+import type { Player, WorldState, Season, Item, SubclassType } from '@shared/types';
 
 interface GameState {
   // Session
@@ -25,6 +25,10 @@ interface GameState {
   addExperience: (amount: number) => void;
   addToInventory: (item: Item, quantity: number) => void;
   removeFromInventory: (itemId: string, quantity: number) => boolean;
+  equipItem: (item: Item) => void;
+  unequipItem: (slot: 'weapon' | 'armor' | 'helmet' | 'accessory') => void;
+  consumeItem: (item: Item) => void;
+  unlockSkill: (skillId: string, cost: number, subclass: SubclassType) => void;
   setWorldState: (world: Partial<WorldState>) => void;
   setCurrentWeather: (weather: string) => void;
   updateSeason: (season: Season) => void;
@@ -128,6 +132,7 @@ export const useGameStore = create<GameState>()(
             inventory: [],
             equipment: {},
             skills: ['slash'],
+            skillPoints: 0,
             reputation: {},
             titles: ['Novice'],
             questIds: [],
@@ -182,6 +187,7 @@ export const useGameStore = create<GameState>()(
                   ...s.player,
                   experience: newXp - xpToLevel,
                   level: (s.player.level ?? 1) + 1,
+                  skillPoints: (s.player.skillPoints ?? 0) + 1,
                   stats: s.player.stats
                     ? {
                         ...s.player.stats,
@@ -226,16 +232,102 @@ export const useGameStore = create<GameState>()(
 
         if (inventory[idx].quantity < quantity) return false;
 
+        const removed = inventory[idx].quantity >= quantity;
         inventory[idx].quantity -= quantity;
-        if (inventory[idx].quantity === 0) {
+        if (inventory[idx].quantity <= 0) {
           inventory.splice(idx, 1);
         }
 
         set({ player: { ...player, inventory } });
-        return true;
+        return removed;
       },
 
-      setWorldState: (world) => set({ worldState: world }),
+      equipItem: (item) => set((s) => {
+        if (!s.player || !s.player.equipment) return {};
+        const slot = item.type as 'weapon' | 'armor' | 'helmet' | 'accessory';
+        if (!['weapon', 'armor', 'helmet', 'accessory'].includes(slot)) return {};
+        
+        const currentEquip = s.player.equipment[slot];
+        const newPlayer = { ...s.player, equipment: { ...s.player.equipment, [slot]: item } };
+        
+        // Remove new equip from inventory
+        const newInv = [...(s.player.inventory || [])];
+        const idx = newInv.findIndex(x => x.item.id === item.id);
+        if (idx >= 0) {
+          if (newInv[idx].quantity > 1) {
+            newInv[idx] = { ...newInv[idx], quantity: newInv[idx].quantity - 1 };
+          } else {
+            newInv.splice(idx, 1);
+          }
+        }
+        
+        // Put old equip back to inventory
+        if (currentEquip) {
+          const existIdx = newInv.findIndex(x => x.item.id === currentEquip.id);
+          if (existIdx >= 0) {
+            newInv[existIdx] = { ...newInv[existIdx], quantity: newInv[existIdx].quantity + 1 };
+          } else {
+            newInv.push({ item: currentEquip, quantity: 1 });
+          }
+        }
+        newPlayer.inventory = newInv;
+        return { player: newPlayer };
+      }),
+
+      unequipItem: (slot) => set((s) => {
+        if (!s.player || !s.player.equipment || !s.player.equipment[slot]) return {};
+        const currentEquip = s.player.equipment[slot]!;
+        
+        const newPlayer = { ...s.player, equipment: { ...s.player.equipment } };
+        delete newPlayer.equipment[slot];
+        
+        const newInv = [...(s.player.inventory || [])];
+        const existIdx = newInv.findIndex(x => x.item.id === currentEquip.id);
+        if (existIdx >= 0) {
+          newInv[existIdx] = { ...newInv[existIdx], quantity: newInv[existIdx].quantity + 1 };
+        } else {
+          newInv.push({ item: currentEquip, quantity: 1 });
+        }
+        
+        newPlayer.inventory = newInv;
+        return { player: newPlayer };
+      }),
+
+      consumeItem: (item) => set((s) => {
+        if (!s.player || item.type !== 'consumable') return {};
+        const newInv = [...(s.player.inventory || [])];
+        const idx = newInv.findIndex(x => x.item.id === item.id);
+        if (idx < 0) return {};
+        
+        if (newInv[idx].quantity > 1) {
+          newInv[idx] = { ...newInv[idx], quantity: newInv[idx].quantity - 1 };
+        } else {
+          newInv.splice(idx, 1);
+        }
+
+        // Apply effect (simple HP heal for now)
+        const stats = s.player.stats ? { ...s.player.stats } : { ...DEFAULT_PLAYER_STATS };
+        stats.hp = Math.min(stats.maxHp, stats.hp + (item.value || 20));
+
+        return { player: { ...s.player, inventory: newInv, stats } as Partial<Player> };
+      }),
+
+      unlockSkill: (skillId, cost, subclass) => set((s) => {
+        if (!s.player) return {};
+        if ((s.player.skillPoints ?? 0) < cost) return {};
+        if (s.player.skills?.includes(skillId)) return {};
+
+        return {
+          player: {
+            ...s.player,
+            subclass: s.player.subclass ?? subclass,
+            skillPoints: (s.player.skillPoints ?? 0) - cost,
+            skills: [...(s.player.skills ?? []), skillId],
+          } as Partial<Player>
+        };
+      }),
+
+      setWorldState: (world) => set((s) => ({ worldState: world })),
       
       setCurrentWeather: (weather) => set({ currentWeather: weather }),
 
@@ -292,6 +384,8 @@ export const useGameStore = create<GameState>()(
           gold: 0,
           inventory: [],
           equipment: {},
+          skills: [],
+          skillPoints: 0,
           worldSeed: newSeed,
           ascensions: (player.ascensions || 0) + 1,
           godPerks: [...(player.godPerks || []), perkId],
