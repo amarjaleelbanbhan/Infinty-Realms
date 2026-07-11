@@ -51,6 +51,11 @@ interface NPCSprite extends Phaser.GameObjects.Container {
     personality: string;
     dialogue: string[];
     biome?: string;
+    state: 'idle' | 'patrol';
+    patrolOriginX: number;
+    patrolOriginY: number;
+    patrolTimer: number;
+    speed: number;
   };
 }
 
@@ -576,6 +581,11 @@ export class WorldScene extends Phaser.Scene {
       personality: 'friendly',
       dialogue: dialogues[role] ?? ['...'],
       biome: this.world.tiles[Math.floor(y / TILE_SIZE)]?.[Math.floor(x / TILE_SIZE)]?.biome ?? 'plains',
+      state: 'idle',
+      patrolOriginX: x,
+      patrolOriginY: y,
+      patrolTimer: 2 + Math.random() * 5,
+      speed: 20 + Math.random() * 15,
     };
 
     this.npcs.push(container);
@@ -848,8 +858,11 @@ export class WorldScene extends Phaser.Scene {
 
     const dt = delta / 1000;
     this.handlePlayerInput(dt);
+    this.updateMount(dt);
     this.updateEnemies(dt);
+    this.updateNPCs(dt);
     this.checkItemPickup();
+    this.updateCooldowns(dt);
     this.checkNPCInteraction();
     this.checkDungeonEntry();
     this.updateLeylineRendering();
@@ -1214,6 +1227,50 @@ export class WorldScene extends Phaser.Scene {
     hpBar.fillRect(0, 0, W, 3);
     hpBar.fillStyle(ratio > 0.5 ? 0x22cc44 : ratio > 0.25 ? 0xffaa00 : 0xcc2222, 1);
     hpBar.fillRect(0, 0, Math.round(W * ratio), 3);
+  }
+
+  private updateNPCs(dt: number) {
+    for (const npc of this.npcs) {
+      const nd = npc.npcData;
+
+      switch (nd.state) {
+        case 'idle':
+          nd.patrolTimer -= dt;
+          if (nd.patrolTimer <= 0) {
+            nd.state = 'patrol';
+            nd.patrolTimer = 3 + Math.random() * 4;
+          }
+          break;
+
+        case 'patrol': {
+          const targetX = nd.patrolOriginX + (Math.random() - 0.5) * 80;
+          const targetY = nd.patrolOriginY + (Math.random() - 0.5) * 80;
+          const dx = targetX - npc.x;
+          const dy = targetY - npc.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist > 5) {
+            npc.x += (dx / dist) * nd.speed * dt;
+            npc.y += (dy / dist) * nd.speed * dt;
+            
+            // Flip sprite based on direction
+            const body = npc.list[1] as Phaser.GameObjects.Image;
+            if (dx < 0) body.setFlipX(true);
+            else body.setFlipX(false);
+          } else {
+            nd.state = 'idle';
+            nd.patrolTimer = 2 + Math.random() * 3;
+          }
+
+          nd.patrolTimer -= dt;
+          if (nd.patrolTimer <= 0) {
+            nd.state = 'idle';
+            nd.patrolTimer = 2 + Math.random() * 3;
+          }
+          break;
+        }
+      }
+    }
   }
 
   private updateEnemies(dt: number) {
