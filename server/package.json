@@ -11,7 +11,8 @@
     "test": "jest",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@infinity-realms/ai": "*",

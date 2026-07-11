@@ -64,6 +64,9 @@ export interface WorldState {
   dayTime: number;     // 0–24
   worldAge: number;    // days elapsed
   biomeDepletion: Record<BiomeType, number>; // 0 (barren) to 100 (healthy)
+  farmPlots?: FarmPlot[];
+  leylineNodes?: LeylineNode[];
+  citadelBuildings?: CitadelBuilding[];
 }
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
