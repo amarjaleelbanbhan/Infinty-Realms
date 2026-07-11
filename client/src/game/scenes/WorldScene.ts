@@ -7,6 +7,8 @@ import { generateWorld, BIOME_TILE_COLOR, type GeneratedWorld } from '@game/syst
 import { CombatSystem } from '@game/systems/CombatSystem';
 import { WeatherSystem } from '@game/systems/WeatherSystem';
 import { saveSystem } from '@game/systems/SaveSystem';
+import { eventSystem } from '@game/systems/EventSystem';
+import { useDungeonStore } from '@stores/useDungeonStore';
 import { questSystem } from '@game/systems/QuestSystem';
 import { soundSystem } from '@game/systems/SoundSystem';
 import { useGameStore } from '@stores/useGameStore';
@@ -1493,6 +1495,18 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
+
+    // Check Dungeon Entry
+    for (const dungeon of this.world.dungeonTiles) {
+      const dx = this.player.x - (dungeon.x * TILE_SIZE + TILE_SIZE / 2);
+      const dy = this.player.y - (dungeon.y * TILE_SIZE + TILE_SIZE / 2);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < TILE_SIZE * 1.5) {
+        const seed = `${this.world.seed}-dungeon-${dungeon.x}-${dungeon.y}`;
+        useDungeonStore.getState().openEntryModal(seed, 'dungeon', 5);
+        return;
+      }
+    }
   }
 
   private async interactWithNPC(npc: NPCSprite) {
@@ -1503,7 +1517,7 @@ export class WorldScene extends Phaser.Scene {
     const npcInfo = {
       id: npc.npcData.id,
       name: npc.npcData.name,
-      role: npc.npcData.role as NPC['role'],
+      role: npc.npcData.role as any,
     };
 
     // Show temporary loading dialogue
@@ -1677,19 +1691,21 @@ export class WorldScene extends Phaser.Scene {
 
   private checkDungeonEntry() {
     if (!this.player) return;
+    
+    let nearDungeon = false;
     for (const dungeon of this.world.dungeonTiles) {
       const dx = this.player.x - (dungeon.x * TILE_SIZE + TILE_SIZE / 2);
       const dy = this.player.y - (dungeon.y * TILE_SIZE + TILE_SIZE / 2);
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < TILE_SIZE / 2) {
-        this.scene.stop('WorldScene');
-        this.scene.start('DungeonScene', {
-          seed: `${this.world.seed}-dungeon-${dungeon.x}-${dungeon.y}`,
-          returnX: this.player.x,
-          returnY: this.player.y + TILE_SIZE,
-        });
+      if (dist < TILE_SIZE * 1.5) {
+        nearDungeon = true;
         break;
       }
+    }
+
+    if (nearDungeon) {
+      // We could display a prompt here, but the interact action handles it
+      // For now, we can just let it be, or show a floating text.
     }
   }
 

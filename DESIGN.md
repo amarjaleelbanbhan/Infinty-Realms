@@ -90,4 +90,26 @@ Based on my analysis of the codebase, here is the Phase 1 Design Document adapte
 2. **Task 2: Integrate Multiplayer Sync** - Connect the client movement to the Node.js server via socket.io to see other players.
 3. **Task 3: Implement Combat Engine** - Hook up the React hotbar buttons (1-5) to actual Phaser combat events and animations.
 4. **Task 4: AI NPC Integration** - Connect the `ai` workspace to dynamically generate dialogue for NPCs when interacted with.
-5. **Task 5: Save/Load Polish** - Ensure all inventory and world state persists flawlessly across sessions.
+9. **Task 5: Save/Load Polish** - Ensure all inventory and world state persists flawlessly across sessions.
+
+---
+
+## 10. Milestone 4: Dungeons & Bosses - Procedural Dungeons
+
+**Mechanics:**
+- Dungeons are instanced zones separate from the main overworld.
+- A dungeon consists of interconnected rooms (Entrance, Hallways, Enemy Rooms, Boss Room, Treasure Room).
+- *Trigger*: Player clicks on a "Dungeon Entrance" tile or NPC in the overworld.
+- *Effect*: Transitions the Phaser scene to a `DungeonScene`. The server generates a dungeon seed and room layout.
+- The player navigates through rooms, clearing enemies. The doors to the next room unlock only when all enemies in the current room are defeated.
+- The final room contains a Boss entity and high-tier loot.
+
+**Data Model:**
+- Expand the existing `DungeonState` in `shared/types`.
+- Rooms have: `x`, `y`, `width`, `height`, `type` ('entrance', 'combat', 'boss', 'treasure'), `cleared: boolean`, `doors: string[]` (North, South, East, West).
+- The Server keeps track of the dungeon instance and handles multiplayer synchronization if the player is in a party.
+
+**UI:**
+- **Dungeon Entry Modal:** Shows recommended level, party members, and an "Enter Dungeon" button.
+- **Dungeon HUD:** Overlays a mini-map showing visited rooms and the current room.
+- **Victory/Defeat Screen:** Shows summary of loot and XP upon clearing the boss, or prompts a respawn if the player dies.

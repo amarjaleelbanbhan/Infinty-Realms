@@ -31,6 +31,7 @@ import { AuctionHouseUI } from '@ui/AuctionHouseUI';
 import { HousingUI } from '@ui/HousingUI';
 import { CosmeticShopUI } from '@ui/CosmeticShopUI';
 import { CraftingUI } from '@ui/CraftingUI';
+import { DungeonEntryUI } from '@ui/DungeonEntryUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -118,8 +119,9 @@ export default function App() {
             <Inventory />
             <Dialogue />
             <MerchantShopUI />
-            <PauseMenu />
+            {currentScreen === 'pause' && <PauseMenu />}
             <CraftingUI />
+            <DungeonEntryUI />
             <AuctionHouseUI />
 
             {showGuild && <GuildUI onClose={() => setShowGuild(false)} />}
