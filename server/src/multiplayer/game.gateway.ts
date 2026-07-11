@@ -64,7 +64,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Notify room members
     client.to(result.room.id).emit('playerJoined', {
-      id: data.playerId,
+      playerId: data.playerId,
       name: data.name,
     });
 
@@ -78,7 +78,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (data.roomCode) {
       client.to(data.roomCode).emit('playerMoved', {
-        id: data.playerId,
+        playerId: data.playerId,
         pos: data.pos,
         direction: data.direction,
       });
@@ -92,7 +92,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (data.roomCode) {
       client.to(data.roomCode).emit('playerAttacked', {
-        id: data.playerId,
+        playerId: data.playerId,
         direction: data.direction,
       });
     }
