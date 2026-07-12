@@ -26,13 +26,18 @@ for the full critique.
   mutating anything, and pushes the authoritative result back to both
   clients (10 tests cover valid trades, insufficient gold/items, and
   replay-after-completion).
+- **Weak gold/XP anti-cheat (was Medium severity)**: `players.service.ts`'s
+  rate-of-change heuristic used to only log a warning and silently drop the
+  offending field, still returning success — no signal to the client, no
+  record kept. `saveState` now throws (HTTP 403) and rejects the whole save
+  on a violation, and tracks a per-player violation count so repeat
+  offenders are distinguishable from a one-off legitimate spike (7 tests).
 
 ## Known vulnerabilities (not fixed this pass)
 
 | Issue | Severity | Detail |
 |---|---|---|
 | No server-side combat authority | High | Damage/HP is computed entirely client-side against client-only enemies. A modified client can claim arbitrary kills/loot/XP with nothing to check it. |
-| Weak gold/XP anti-cheat | Medium | `players.service.ts`'s rate-of-change heuristic only logs a warning and silently drops the field on the *next* save — it doesn't reject the request, flag the account, or alert anyone. Trivially defeated by editing slowly (under the per-second threshold). |
 | Client-trusted persistence | Medium | `SaveSystem` treats localStorage as the source of truth and pushes to the server every 60s. Between pushes, the server has no ground truth at all. |
 | Party invites still fully fake | Medium | No socket round-trip, no consent — the same trust-model gap trading had before this pass, not yet fixed for parties. |
 | Single in-memory process, no horizontal scaling | Low (today) | Not exploitable per se, but means there's no redundancy — a crash loses all room/socket-registry state instantly. Becomes a real availability concern only at higher player counts. |
@@ -51,9 +56,9 @@ for the full critique.
 ## Recommended next steps (priority order)
 
 1. Server-side combat/enemy simulation (bigger effort — needs design first)
-2. Reject (not just warn-and-drop) on anti-cheat heuristic violations, with
-   a persisted flag for repeat offenders
-3. Real party invite consent flow (same pattern as the trade-request fix)
-4. Rotate `JWT_SECRET` and confirm it's excluded from version control in
+2. Real party invite consent flow (same pattern as the trade-request fix)
+3. Rotate `JWT_SECRET` and confirm it's excluded from version control in
    any real deployment (currently only `.env` itself is gitignored, not
    `.env.example` — confirm `.env.example` never contains a real secret)
+4. Persist violation counts (currently in-memory, resets on restart) if
+   repeat-offender tracking needs to survive a deploy

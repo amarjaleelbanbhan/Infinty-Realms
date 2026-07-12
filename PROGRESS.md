@@ -270,3 +270,25 @@ locally before assuming it'll pass in CI. Client and server typecheck
 both clean with the new files in place.
 Next: server-side combat/enemy authority; real persistence-on-write;
 reject-not-warn anti-cheat; real party invite consent flow.
+
+[2026-07-12 22:35] Phase 1 — Reject (not warn-and-drop) anti-cheat violations
+Status: done
+Files changed: `server/src/players/players.service.ts`, `server/src/players/players.service.spec.ts` (new)
+Tests added: 7 cases (unknown player, valid delta accepted, gold/XP
+rejection, gold decreases always allowed, violation count increments
+across repeat offenses, rejected field blocks the whole batch save)
+Technical notes: `saveState`'s gold/XP rate-of-change heuristic used to
+silently drop just the offending field and still return `{ saved: true
+}` to the client — no error, no persisted record of the violation. Now
+throws `ForbiddenException` (HTTP 403), rejecting the whole save rather
+than partially applying it, and tracks a per-player in-memory violation
+count. Confirmed the client's existing `SaveSystem.ts` fetch handling
+already checks `res.ok` and only warns on non-2xx, so no client changes
+were required.
+Verified: 36/36 server tests passing, typecheck clean.
+Known limitations: violation counts are in-memory only (reset on
+server restart) — fine for detecting a burst within a session, not
+for cross-session moderation. Persisting them is listed as a follow-up
+in SECURITY.md, not done here.
+Next: server-side combat/enemy authority; real persistence-on-write;
+real party invite consent flow.

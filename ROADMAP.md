@@ -37,6 +37,7 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Real persistence-on-write (currently 60s client-trusted push) | PLANNED |
 | CI (typecheck + test on every push) | DONE — CI already ran typecheck+build; added the missing test step |
 | Client-side test infrastructure | DONE (vitest) |
+| Anti-cheat rejects (not silently drops) gold/XP violations | DONE |
 
 ## Phase 2 — Core Gameplay
 **Status: PLANNED**

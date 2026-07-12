@@ -19,6 +19,9 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
   report incorrectly said "no CI" existed at all; it did, just without a
   test step). Added client test infrastructure (vitest, since none existed
   for the client workspace at all before this).
+- Anti-cheat gold/XP heuristic in `players.service.ts` used to silently
+  drop the offending field and still return success. Now rejects the whole
+  save (HTTP 403) and tracks a per-player violation count — see `SECURITY.md`.
 
 ## Outstanding
 
@@ -32,10 +35,9 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
 - **Persistence is client-trusted and delayed.** `SaveSystem` writes to
   localStorage as the source of truth and pushes to the server every 60s
   with the client's full computed player object. Server restart or crash
-  mid-session loses anything not yet flushed. The one server-side check
-  (gold/XP-rate heuristic in `players.service.ts`) only logs a warning and
-  silently drops the field — it doesn't reject the request or flag the
-  account.
+  mid-session loses anything not yet flushed. The anti-cheat check on that
+  endpoint now rejects bad deltas outright (see above), but the underlying
+  60s-delayed, client-computed save cadence itself is unchanged.
 
 ### Known-fake features not yet addressed
 - **Party invites are still fake** (`PartyContextMenu.tsx` `handleInvite`)

@@ -15,7 +15,7 @@ fully DONE — see the "Foundation-blocking" rule in `ROADMAP.md`.
       typecheck+build; added the missing test step)
 - [x] Client-side test infrastructure (vitest, paired with existing Vite config)
 - [ ] Real persistence-on-write, not a 60s client-trusted push
-- [ ] Reject (not just warn-and-log) anti-cheat violations in `players.service.ts`
+- [x] Reject (not just warn-and-log) anti-cheat violations in `players.service.ts`
 
 ## Should Have (Phase 1 hardening / early Phase 5)
 - [ ] Real party invite consent flow (same pattern as the trade-request fix)
