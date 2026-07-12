@@ -37,6 +37,11 @@ Next: Check README.md for phase completion
 Status: done
 Verification: Created useTradeStore.ts, TradeUI.tsx, and updated Inventory.tsx to support P2P trading. Hooked into PartyContextMenu for trade requests. Mocked partner trade logic for local loop testing. Client typecheck passes.
 Next: Phase 2 is mostly complete. Moving to remaining items or Phase 3.
+
+[2026-07-12 14:30] Cycle 15 — Phase 4: AI Dungeon Master
+Status: done
+Verification: Enhanced EventSystem.ts to dispatch global window events when World Events start/end. Wired WorldScene.ts to listen to these events and apply a ColorMatrix night FX during dragon attacks. Wired CombatSystem to apply a global 25% damage buff to enemies against players during dragon attacks. Client typecheck passes.
+Next: Phase 4 features are largely complete. Moving to Phase 5 or polishing remaining systems.
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

@@ -10,15 +10,22 @@ interface EventStore {
   clearEvent: () => void;
 }
 
-export const useEventStore = create<EventStore>((set) => ({
+export const useEventStore = create<EventStore>((set, get) => ({
   activeEvent: null,
 
   triggerEvent: (event) => {
     set({ activeEvent: event });
     useUIStore.getState().addToast(`🔥 WORLD EVENT: ${event.title}`, 'info');
+    window.dispatchEvent(new CustomEvent('ir:world_event_start', { detail: event }));
   },
 
-  clearEvent: () => set({ activeEvent: null }),
+  clearEvent: () => {
+    const prev = get().activeEvent;
+    if (prev) {
+      window.dispatchEvent(new CustomEvent('ir:world_event_end', { detail: prev }));
+    }
+    set({ activeEvent: null });
+  },
 }));
 
 export class EventSystem {

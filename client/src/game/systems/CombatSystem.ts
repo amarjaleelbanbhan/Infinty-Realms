@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSettingsStore } from '@stores/useSettingsStore';
+import { useEventStore } from '@game/systems/EventSystem';
 import { soundSystem } from '@game/systems/SoundSystem';
 import type { PlayerStats } from '@shared/types';
 
@@ -37,7 +38,16 @@ export class CombatSystem {
   /** Calculate damage with variance and critical hits */
   calculateDamage(attacker: PlayerStats, defender: PlayerStats, luck = 5): { damage: number; isCrit: boolean } {
     const variance = 0.8 + Math.random() * 0.4; // 80–120% variance
-    const rawDamage = Math.max(1, attacker.attack * variance - defender.defense * 0.5);
+    let rawDamage = Math.max(1, attacker.attack * variance - defender.defense * 0.5);
+    
+    // AI Dungeon Master Buffs
+    const eventStore = useEventStore.getState();
+    if (eventStore.activeEvent?.type === 'dragon_attack') {
+      // Are we checking if attacker is enemy? Actually, dragon_attack buffs enemies!
+      // In this function we don't know who is who just by stats, so we rely on the caller or just buff everything globally for chaos.
+      // Wait, we DO know who is who based on if the caller is `damagePlayer` or `damageEnemy`.
+    }
+
     const critChance = Math.min(0.4, 0.05 + luck * 0.01);
     const isCrit = Math.random() < critChance;
     const damage = Math.round(isCrit ? rawDamage * 1.8 : rawDamage);
@@ -46,6 +56,11 @@ export class CombatSystem {
 
   /** Apply damage to player */
   damagePlayer(damage: number, isCrit = false) {
+    const eventStore = useEventStore.getState();
+    if (eventStore.activeEvent?.type === 'dragon_attack') {
+      damage = Math.round(damage * 1.25); // Dragon attack increases enemy damage against player by 25%
+    }
+
     const gameStore = useGameStore.getState();
     const stats = gameStore.player?.stats;
     if (!stats) return;

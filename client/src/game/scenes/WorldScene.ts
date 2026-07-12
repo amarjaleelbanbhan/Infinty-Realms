@@ -136,6 +136,13 @@ export class WorldScene extends Phaser.Scene {
     const seed = data.seed ?? gameStore.worldState?.seed ?? `realm-${Date.now()}`;
 
     console.log(`[WorldScene] Generating world with seed: ${seed}`);
+    eventSystem.stop();
+
+    if ((this as any).handleDMEventStart) {
+      window.removeEventListener('ir:world_event_start', (this as any).handleDMEventStart);
+      window.removeEventListener('ir:world_event_end', (this as any).handleDMEventEnd);
+    }
+
     this.world = generateWorld(seed, 128, 128);
 
     this.returnFromDungeon = data.returnFromDungeon ?? false;
@@ -160,6 +167,7 @@ export class WorldScene extends Phaser.Scene {
     // ── Systems ──
     this.combatSystem = new CombatSystem(this);
     this.weatherSystem = new WeatherSystem(this);
+    eventSystem.start();
 
     // ── Layers ──
     this.tileGraphics = this.add.graphics();
@@ -658,6 +666,37 @@ export class WorldScene extends Phaser.Scene {
   private setupInput() {
     if (!this.input.keyboard) return;
 
+    // Listen for Dungeon Master events
+    const handleEventStart = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      // We check for 'dragon_attack' since we use that from EventSystem
+      if (detail.type === 'dragon_attack') {
+        const colorMatrix = this.cameras.main.postFX.addColorMatrix();
+        colorMatrix.night(); // Darken
+        // Store on camera object for removal later
+        (this.cameras.main as any).dragonFX = colorMatrix;
+      }
+    };
+    
+    const handleEventEnd = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.type === 'dragon_attack') {
+        const fx = (this.cameras.main as any).dragonFX;
+        if (fx) {
+          this.cameras.main.postFX.remove(fx);
+          (this.cameras.main as any).dragonFX = null;
+        }
+      }
+    };
+
+    window.addEventListener('ir:world_event_start', handleEventStart);
+    window.addEventListener('ir:world_event_end', handleEventEnd);
+
+    // Save references to clean up
+    (this as any).handleDMEventStart = handleEventStart;
+    (this as any).handleDMEventEnd = handleEventEnd;
+    
+    // ── Controls ──
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = {
       up:    this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
