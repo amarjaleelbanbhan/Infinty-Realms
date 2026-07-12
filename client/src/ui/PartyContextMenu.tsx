@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import { usePartyStore } from '@stores/usePartyStore';
-import { useGameStore } from '@stores/useGameStore';
-import { useUIStore } from '@stores/useUIStore';
 import { useTradeStore } from '@stores/useTradeStore';
 
 export function PartyContextMenu() {
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, playerId: string, playerName: string } | null>(null);
-  const { setParty, members } = usePartyStore();
-  const { player } = useGameStore();
-  const addToast = useUIStore(s => s.addToast);
 
   useEffect(() => {
     const handleContextMenuEvent = (e: CustomEvent) => {
@@ -31,25 +26,9 @@ export function PartyContextMenu() {
   if (!contextMenu) return null;
 
   const handleInvite = () => {
-    // Simulated Party Invite for now. In a real system, emit a socket.io event.
-    if (!player) return;
-    
-    // Simulate accepting the invite immediately
-    if (members.length === 0) {
-      // Create new party
-      const newPartyId = `party-${Date.now()}`;
-      setParty(newPartyId, player.id as string, [
-        { id: player.id as string, name: player.name as string, level: 1, hp: 100, maxHp: 100 },
-        { id: contextMenu.playerId, name: contextMenu.playerName, level: 1, hp: 100, maxHp: 100 }
-      ]);
-    } else {
-      // Add to existing party
-      const newMembers = [...members, { id: contextMenu.playerId, name: contextMenu.playerName, level: 1, hp: 100, maxHp: 100 }];
-      const state = usePartyStore.getState();
-      state.setParty(state.partyId as string, state.leaderId as string, newMembers);
-    }
-    
-    addToast(`Invited ${contextMenu.playerName} to party!`, 'success');
+    // Sends a real 'partyInviteRequest' over the socket; the target's client
+    // shows a PartyInvitePrompt and only joins once they genuinely accept.
+    usePartyStore.getState().requestInvite(contextMenu.playerId, contextMenu.playerName);
     setContextMenu(null);
   };
 

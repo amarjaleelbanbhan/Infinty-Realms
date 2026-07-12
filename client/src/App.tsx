@@ -38,11 +38,13 @@ import { PartyContextMenu } from '@ui/PartyContextMenu';
 import { TradeUI } from '@ui/TradeUI';
 import { DeathOverlay } from '@ui/DeathOverlay';
 import { TradeRequestPrompt } from '@ui/TradeRequestPrompt';
+import { PartyInvitePrompt } from '@ui/PartyInvitePrompt';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 import { useTradeStore } from '@stores/useTradeStore';
+import { usePartyStore } from '@stores/usePartyStore';
 import { socketManager } from '@game/systems/SocketManager';
-import type { TradeOffer, InventorySlot } from '@shared/types';
+import type { TradeOffer, InventorySlot, PartyMember } from '@shared/types';
 
 export default function App() {
   const {
@@ -99,6 +101,14 @@ export default function App() {
       useTradeStore.getState().applyTradeExecuted(data);
     const onTradeFailed = (data: { reason: string }) => useTradeStore.getState().handleTradeFailed(data.reason);
 
+    // Real (socket-relayed) party lifecycle events — mirrors the trade fix above.
+    const onPartyInviteIncoming = (data: { fromId: string; fromName: string }) =>
+      usePartyStore.getState().receiveInvite(data.fromId, data.fromName);
+    const onPartyInviteResponse = (data: { accepted: boolean; partnerId: string; partnerName?: string; reason?: string }) =>
+      usePartyStore.getState().handleInviteResponse(data.accepted, data.partnerId, data.partnerName, data.reason);
+    const onPartyRosterUpdate = (data: { partyId: string | null; leaderId: string | null; members: PartyMember[] }) =>
+      usePartyStore.getState().applyRosterUpdate(data.partyId, data.leaderId, data.members);
+
     socketManager.on('tradeRequestIncoming', onTradeRequestIncoming);
     socketManager.on('tradeRequestResponse', onTradeRequestResponse);
     socketManager.on('tradePartnerOfferUpdate', onTradePartnerOfferUpdate);
@@ -106,6 +116,9 @@ export default function App() {
     socketManager.on('tradePartnerCancelled', onTradePartnerCancelled);
     socketManager.on('tradeExecuted', onTradeExecuted);
     socketManager.on('tradeFailed', onTradeFailed);
+    socketManager.on('partyInviteIncoming', onPartyInviteIncoming);
+    socketManager.on('partyInviteResponse', onPartyInviteResponse);
+    socketManager.on('partyRosterUpdate', onPartyRosterUpdate);
 
     return () => {
       window.removeEventListener('resize', checkMobile);
@@ -118,6 +131,9 @@ export default function App() {
       socketManager.off('tradePartnerCancelled', onTradePartnerCancelled);
       socketManager.off('tradeExecuted', onTradeExecuted);
       socketManager.off('tradeFailed', onTradeFailed);
+      socketManager.off('partyInviteIncoming', onPartyInviteIncoming);
+      socketManager.off('partyInviteResponse', onPartyInviteResponse);
+      socketManager.off('partyRosterUpdate', onPartyRosterUpdate);
     };
   }, []);
 
@@ -185,6 +201,7 @@ export default function App() {
             <AuctionHouseUI />
             <TradeUI />
             <TradeRequestPrompt />
+            <PartyInvitePrompt />
             <SkillTree />
             <DeathOverlay />
           </>

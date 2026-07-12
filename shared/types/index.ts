@@ -460,6 +460,16 @@ export interface WeatherEffect {
   modifier: number;    // multiplier
 }
 
+// ─── Party (Phase 2) ────────────────────────────────────────────
+
+export interface PartyMember {
+  id: UUID;
+  name: string;
+  level: number;
+  hp: number;
+  maxHp: number;
+}
+
 // ─── Trading (Phase 2) ─────────────────────────────────────────
 
 export interface TradeOffer {
@@ -491,6 +501,14 @@ export type ServerToClientEvents = {
   tradeExecuted: (data: { gold: number; inventory: InventorySlot[] }) => void;
   /** Server rejected the trade at execution time (e.g. stale/insufficient offer). */
   tradeFailed: (data: { reason: string }) => void;
+  /** Relayed to the invitee: someone wants them to join their party. */
+  partyInviteIncoming: (data: { fromId: UUID; fromName: string }) => void;
+  /** Relayed back to the inviter: accept/decline result. */
+  partyInviteResponse: (data: { accepted: boolean; partnerId: UUID; partnerName?: string; reason?: string }) => void;
+  /** Relayed roster sync — whichever client currently holds the authoritative
+   * client-composed roster (the one who just processed an accept/leave/kick)
+   * pushes it to the others. Not server-authoritative party state; see TECH_DEBT.md. */
+  partyRosterUpdate: (data: { partyId: string | null; leaderId: string | null; members: PartyMember[] }) => void;
   worldEvent: (event: WorldEvent) => void;
   chatMessage: (msg: ChatMessage) => void;
 };

@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { RoomService } from './room.service';
 import { TradeService } from './trade.service';
 import { QuestsService } from '../quests/quests.service';
-import type { Vec2, ChatMessage, BiomeType, Season, TradeOffer } from '@infinity-realms/shared/types';
+import type { Vec2, ChatMessage, BiomeType, Season, TradeOffer, PartyMember } from '@infinity-realms/shared/types';
 
 @WebSocketGateway({
   cors: {
@@ -265,5 +265,56 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const targetSocketId = this.roomService.getSocketId(data.targetId);
     if (!targetSocketId) return;
     this.server.to(targetSocketId).emit('tradePartnerCancelled', {});
+  }
+
+  // ─── Party ───────────────────────────────────────────────────
+  // Same consent-gated relay pattern as trading: the invitee must
+  // explicitly accept before anything changes, replacing what used to be
+  // a fake auto-accepted invite with no other player involved at all.
+  // Roster composition itself is still client-side (not server-authoritative
+  // party membership) — see TECH_DEBT.md.
+
+  @SubscribeMessage('partyInviteRequest')
+  handlePartyInviteRequest(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { fromId: string; fromName: string; targetId: string },
+  ) {
+    const targetSocketId = this.roomService.getSocketId(data.targetId);
+    if (!targetSocketId) {
+      client.emit('partyInviteResponse', { accepted: false, partnerId: data.targetId, reason: 'Player is not online' });
+      return;
+    }
+    this.server.to(targetSocketId).emit('partyInviteIncoming', { fromId: data.fromId, fromName: data.fromName });
+  }
+
+  @SubscribeMessage('partyInviteResponse')
+  handlePartyInviteResponse(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { requesterId: string; accepted: boolean; responderId: string; responderName: string },
+  ) {
+    const requesterSocketId = this.roomService.getSocketId(data.requesterId);
+    if (!requesterSocketId) return;
+    this.server.to(requesterSocketId).emit('partyInviteResponse', {
+      accepted: data.accepted,
+      partnerId: data.responderId,
+      partnerName: data.responderName,
+    });
+  }
+
+  @SubscribeMessage('partySync')
+  handlePartySync(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetIds: string[]; partyId: string | null; leaderId: string | null; members: PartyMember[] },
+  ) {
+    for (const targetId of data.targetIds) {
+      const socketId = this.roomService.getSocketId(targetId);
+      if (socketId) {
+        this.server.to(socketId).emit('partyRosterUpdate', {
+          partyId: data.partyId,
+          leaderId: data.leaderId,
+          members: data.members,
+        });
+      }
+    }
   }
 }

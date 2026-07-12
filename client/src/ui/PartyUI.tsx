@@ -3,7 +3,7 @@ import { useGameStore } from '@stores/useGameStore';
 import { Users, Crown, LogOut, UserX } from 'lucide-react';
 
 export function PartyUI() {
-  const { partyId, leaderId, members, removeMember, clearParty } = usePartyStore();
+  const { partyId, leaderId, members, leaveParty, kickMember } = usePartyStore();
   const { player } = useGameStore();
 
   if (!partyId || members.length === 0) return null;
@@ -11,13 +11,11 @@ export function PartyUI() {
   const isLeader = player?.id === leaderId;
 
   const handleLeave = () => {
-    // In a real implementation, send a socket event to server to leave party
-    clearParty();
+    leaveParty();
   };
 
   const handleKick = (memberId: string) => {
-    // In a real implementation, send a socket event to server to kick member
-    removeMember(memberId);
+    kickMember(memberId);
   };
 
   return (

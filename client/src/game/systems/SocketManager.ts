@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import type { Vec2, ChatMessage, TradeOffer, InventorySlot } from '@shared/types';
+import type { Vec2, ChatMessage, TradeOffer, InventorySlot, PartyMember } from '@shared/types';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -76,6 +76,18 @@ export class SocketManager {
 
     this.socket.on('tradeFailed', (data: { reason: string }) => {
       this.emitLocal('tradeFailed', data);
+    });
+
+    this.socket.on('partyInviteIncoming', (data: { fromId: string; fromName: string }) => {
+      this.emitLocal('partyInviteIncoming', data);
+    });
+
+    this.socket.on('partyInviteResponse', (data: { accepted: boolean; partnerId: string; partnerName?: string; reason?: string }) => {
+      this.emitLocal('partyInviteResponse', data);
+    });
+
+    this.socket.on('partyRosterUpdate', (data: { partyId: string | null; leaderId: string | null; members: PartyMember[] }) => {
+      this.emitLocal('partyRosterUpdate', data);
     });
   }
 
@@ -192,6 +204,28 @@ export class SocketManager {
 
   sendTradeCancel(targetId: string) {
     this.socket?.emit('tradeCancel', { targetId });
+  }
+
+  sendPartyInviteRequest(targetId: string) {
+    const player = useGameStore.getState().player;
+    if (!player) return;
+    this.socket?.emit('partyInviteRequest', { fromId: player.id, fromName: player.name, targetId });
+  }
+
+  respondPartyInvite(requesterId: string, accepted: boolean) {
+    const player = useGameStore.getState().player;
+    if (!player) return;
+    this.socket?.emit('partyInviteResponse', {
+      requesterId,
+      accepted,
+      responderId: player.id,
+      responderName: player.name,
+    });
+  }
+
+  sendPartySync(targetIds: string[], partyId: string | null, leaderId: string | null, members: PartyMember[]) {
+    if (targetIds.length === 0) return;
+    this.socket?.emit('partySync', { targetIds, partyId, leaderId, members });
   }
 
   on(event: string, callback: (data: any) => void) {
