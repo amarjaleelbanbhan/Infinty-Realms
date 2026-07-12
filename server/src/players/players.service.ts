@@ -1,10 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { Player, OfflineReport } from '@infinity-realms/shared/types';
 
 @Injectable()
 export class PlayersService {
+  /** playerId -> count of rejected saves, in-memory (resets on restart). Used to
+   * distinguish a one-off legitimate spike (e.g. a big boss kill) from a
+   * repeat offender worth escalating on in a real moderation pipeline. */
+  private violationCounts = new Map<string, number>();
+
   constructor(private prisma: PrismaService) {}
+
+  getViolationCount(playerId: string): number {
+    return this.violationCounts.get(playerId) ?? 0;
+  }
+
+  private flagViolation(playerId: string, field: string, delta: number, allowed: number): number {
+    const count = (this.violationCounts.get(playerId) ?? 0) + 1;
+    this.violationCounts.set(playerId, count);
+    console.warn(
+      `[AntiCheat] Player ${playerId} rejected for ${field} manipulation (delta ${delta}, allowed ${allowed.toFixed(2)}, violation #${count}).`,
+    );
+    return count;
+  }
 
   async findById(id: string) {
     const p = await this.prisma.player.findUnique({ where: { id } });
@@ -67,27 +85,30 @@ export class PlayersService {
     if (partial.inventory) data.inventoryJson = JSON.stringify(partial.inventory);
     if (partial.equipment) data.equipmentJson = JSON.stringify(partial.equipment);
 
-    // Anti-Cheat: Validate Gold & XP Deltas
+    // Anti-Cheat: Validate Gold & XP Deltas. A violation rejects the whole
+    // save (not just the offending field) — previously this silently
+    // dropped the field and returned success, so a modified client had no
+    // idea (and no record was kept) that anything was rejected at all.
     const timeSinceLastUpdate = (new Date().getTime() - currentPlayer.updatedAt.getTime()) / 1000;
-    
+
     if (partial.gold !== undefined) {
       const goldDelta = partial.gold - currentPlayer.gold;
-      // Allow max 100 gold per second (generous for boss kills)
-      if (goldDelta > 0 && goldDelta > timeSinceLastUpdate * 100) {
-        console.warn(`[AntiCheat] Player ${playerId} flagged for gold manipulation. Delta: ${goldDelta}, Time: ${timeSinceLastUpdate}s`);
-      } else {
-        data.gold = partial.gold;
+      const allowed = timeSinceLastUpdate * 100; // max 100 gold/sec, generous for boss kills
+      if (goldDelta > 0 && goldDelta > allowed) {
+        this.flagViolation(playerId, 'gold', goldDelta, allowed);
+        throw new ForbiddenException('Gold delta exceeds the allowed rate.');
       }
+      data.gold = partial.gold;
     }
-    
+
     if (partial.experience !== undefined) {
       const xpDelta = partial.experience - currentPlayer.experience;
-      // Allow max 500 xp per second
-      if (xpDelta > 0 && xpDelta > timeSinceLastUpdate * 500) {
-        console.warn(`[AntiCheat] Player ${playerId} flagged for xp manipulation. Delta: ${xpDelta}, Time: ${timeSinceLastUpdate}s`);
-      } else {
-        data.experience = partial.experience;
+      const allowed = timeSinceLastUpdate * 500; // max 500 xp/sec
+      if (xpDelta > 0 && xpDelta > allowed) {
+        this.flagViolation(playerId, 'experience', xpDelta, allowed);
+        throw new ForbiddenException('Experience delta exceeds the allowed rate.');
       }
+      data.experience = partial.experience;
     }
 
     if (partial.level !== undefined) data.level = partial.level;
