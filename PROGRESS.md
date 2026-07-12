@@ -27,6 +27,11 @@ Next: Milestone 6, Task 3: Final Launch Readiness (Anti-Cheat & Clean Up)
 Status: done
 Verification: Created AntiCheatSystem.ts that validates player dx/dy against dt and allowed speed. Integrated into WorldScene.ts to snap players back if a speedhack violation is detected. Created PerformanceStats.tsx overlay showing actual FPS pulled from Phaser game.loop, mock Ping, and memory usage. Integrated into HUD.tsx. Client typecheck passes.
 Next: Milestone 6 is complete. Moving to Milestone 7: Final QA & V1 Release
+
+[2026-07-12 13:40] Cycle 13 — Milestone 7, Task 1: Player Death & Respawn
+Status: done
+Verification: Added `isDead`, `die()`, and `respawn()` logic to `useGameStore`. Updated `damagePlayer()` in `CombatSystem` to trigger death and play a sound. Added `DeathOverlay.tsx` with a respawn button and penalty message (10% gold loss). `WorldScene.update()` early returns if dead to block input. Listen for `ir:respawn` in `WorldScene` to reset coordinates to spawn point (128*32, 128*32). Typecheck passes.
+Next: Check README.md for phase completion
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

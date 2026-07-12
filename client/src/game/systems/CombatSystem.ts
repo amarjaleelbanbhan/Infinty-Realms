@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSettingsStore } from '@stores/useSettingsStore';
+import { soundSystem } from '@game/systems/SoundSystem';
 import type { PlayerStats } from '@shared/types';
 
 export interface CombatEntity {
@@ -53,7 +54,8 @@ export class CombatSystem {
     gameStore.updatePlayerStats({ hp: newHp });
 
     if (newHp <= 0) {
-      useUIStore.getState().addToast('You have fallen!', 'error');
+      soundSystem.playHit(); // fallback for death sound
+      gameStore.die();
     }
   }
 

@@ -10,6 +10,7 @@ interface GameState {
 
   // Player
   player: Partial<Player> | null;
+  isDead: boolean;
 
   // World
   worldState: Partial<WorldState> | null;
@@ -37,6 +38,8 @@ interface GameState {
   setToken: (token: string) => void;
   ascend: (perkId: string) => void;
   castGodIntervention: (type: string) => void;
+  die: () => void;
+  respawn: () => void;
   reset: () => void;
 }
 
@@ -54,6 +57,7 @@ export const useGameStore = create<GameState>()(
       sessionStarted: false,
       playerToken: null,
       player: null,
+      isDead: false,
       worldState: null,
       currentWeather: 'clear',
 
@@ -399,7 +403,57 @@ export const useGameStore = create<GameState>()(
         const { player } = get();
         if (!player) return;
         window.dispatchEvent(new CustomEvent('ir:god_intervention_cast', { detail: { type, casterName: player.name } }));
+        set((state) => {
+          if (!state.player) return state;
+          const power = type === 'heal' ? 1000 : 50;
+          return {
+            player: {
+              ...state.player,
+              stats: {
+                ...state.player.stats!,
+                hp: type === 'heal' ? state.player.stats!.maxHp : state.player.stats!.hp,
+              },
+            },
+          };
+        });
       },
+
+      die: () =>
+        set((state) => {
+          if (!state.player) return state;
+          
+          // Penalty: Lose 10% of gold
+          const newGold = Math.floor(state.player.gold! * 0.9);
+          
+          return {
+            isDead: true,
+            player: {
+              ...state.player,
+              gold: newGold,
+              stats: {
+                ...state.player.stats!,
+                hp: 0,
+              },
+            }
+          };
+        }),
+
+      respawn: () =>
+        set((state) => {
+          if (!state.player) return state;
+          return {
+            isDead: false,
+            player: {
+              ...state.player,
+              x: 128 * 32, // Respawn to initial coords
+              y: 128 * 32,
+              stats: {
+                ...state.player.stats!,
+                hp: Math.max(1, Math.floor(state.player.stats!.maxHp * 0.5)),
+              }
+            }
+          };
+        }),
 
       reset: () =>
         set({
@@ -408,6 +462,7 @@ export const useGameStore = create<GameState>()(
           playerToken: null,
           player: null,
           worldState: null,
+          isDead: false,
         }),
     }),
     {

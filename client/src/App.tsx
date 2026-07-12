@@ -35,6 +35,7 @@ import { DungeonEntryUI } from '@ui/DungeonEntryUI';
 import { DungeonHUD } from '@ui/DungeonHUD';
 import { PartyUI } from '@ui/PartyUI';
 import { PartyContextMenu } from '@ui/PartyContextMenu';
+import { DeathOverlay } from '@ui/DeathOverlay';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -150,6 +151,7 @@ export default function App() {
             <GodInterventionUI />
             <AuctionHouseUI />
             <SkillTree />
+            <DeathOverlay />
           </>
         )}
 

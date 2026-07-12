@@ -262,6 +262,7 @@ export class WorldScene extends Phaser.Scene {
     window.addEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);
     window.addEventListener('ir:siege_invasion', this.handleSiegeEvent);
     window.addEventListener('ir:god_intervention_cast', this.handleGodIntervention);
+    window.addEventListener('ir:respawn', this.handleRespawn);
 
     console.log(`[WorldScene] World ready! Cities: ${this.world.cities.length}`);
   }
@@ -891,6 +892,7 @@ export class WorldScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     if (useUIStore.getState().currentScreen !== 'game') return;
+    if (useGameStore.getState().isDead) return;
 
     const dt = delta / 1000;
     this.handlePlayerInput(dt);
@@ -1984,7 +1986,23 @@ export class WorldScene extends Phaser.Scene {
     window.removeEventListener('ir:siege_invasion', this.handleSiegeEvent);
     window.removeEventListener('ir:god_intervention_cast', this.handleGodIntervention);
     window.removeEventListener('enter-house', this.handleEnterHouse);
+    window.removeEventListener('ir:respawn', this.handleRespawn);
   }
+
+  private handleRespawn = (() => {
+    // Reset position to center for now
+    this.player.setPosition(128 * 32, 128 * 32);
+    
+    const p = this.add.particles(this.player.x, this.player.y, 'fx-pixel', {
+      color: [0xffffff, 0x00ffff],
+      lifespan: 1000,
+      speed: { min: 50, max: 200 },
+      scale: { start: 1, end: 0 },
+      blendMode: 'ADD',
+      emitting: false
+    });
+    p.explode(50);
+  }) as EventListener;
 }
 
 // Fix TS import for NPC role
