@@ -48,4 +48,9 @@ Next: Milestone 5, Task 2: Player Housing (Instanced Zones)
 Status: done
 Verification: Updated HousingScene to properly persist return coordinates (rx, ry) so leaving the house returns the player to where they were in the world. Added a 'Return Home' button to the HUD to teleport the player from WorldScene to HousingScene. Added enter-house event listener. Client typecheck passes.
 Next: Milestone 5, Task 3: Economy (Marketplace UI and Trading)
+
+[2026-07-12 13:05] Cycle 8 — Milestone 5, Task 3: Economy (Marketplace UI and Trading)
+Status: done
+Verification: Created useMarketStore.ts to manage items for sale and buying/selling logic. Fully implemented MarketplaceUI.tsx with split panes for buying items from merchants and selling items from the player's inventory for gold. Build passes.
+Next: Milestone 5, Task 4: Guild System & Roster
 ```

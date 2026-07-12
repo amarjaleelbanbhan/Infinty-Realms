@@ -1,103 +1,117 @@
-import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
-import { useUIStore } from '@stores/useUIStore';
-import { Flame, Snowflake, Shield, FlaskConical, Sword, Store, Coins, X } from 'lucide-react';
-
-interface Listing {
-  id: string;
-  name: string;
-  type: string;
-  price: number;
-  seller: string;
-  icon: string;
-}
-
-const DEFAULT_MARKET_ITEMS: Listing[] = [
-  { id: '1', name: 'Leyline Fire Essence', type: 'material', price: 25, seller: 'Merchant Eldrin', icon: 'flame' },
-  { id: '2', name: 'Frost Crystal', type: 'material', price: 40, seller: 'Alchemist Vane', icon: 'snowflake' },
-  { id: '3', name: 'Iron Breastplate', type: 'armor', price: 150, seller: 'Smith Thorin', icon: 'shield' },
-  { id: '4', name: 'Elixir of Great Health', type: 'consumable', price: 60, seller: 'Healer Lyra', icon: 'flask' },
-  { id: '5', name: 'Ancient Runed Sword', type: 'weapon', price: 350, seller: 'Ranger Kael', icon: 'sword' },
-];
-
-const renderIcon = (iconName: string) => {
-  switch (iconName) {
-    case 'flame': return <Flame className="w-6 h-6 text-orange-400" />;
-    case 'snowflake': return <Snowflake className="w-6 h-6 text-blue-400" />;
-    case 'shield': return <Shield className="w-6 h-6 text-gray-300" />;
-    case 'flask': return <FlaskConical className="w-6 h-6 text-green-400" />;
-    case 'sword': return <Sword className="w-6 h-6 text-slate-300" />;
-    default: return null;
-  }
-};
+import { useMarketStore } from '@stores/useMarketStore';
+import { X, Coins, ShoppingBag } from 'lucide-react';
 
 export function MarketplaceUI({ onClose }: { onClose: () => void }) {
-  const { player, addGold } = useGameStore();
-  const { addToast } = useUIStore();
-  const [listings] = useState<Listing[]>(DEFAULT_MARKET_ITEMS);
+  const { marketItems, buyItem, sellItem } = useMarketStore();
+  const { player } = useGameStore();
 
-  const handleBuy = (item: Listing) => {
-    const gold = player?.gold ?? 0;
-    if (gold < item.price) {
-      addToast('Not enough gold!', 'error');
-      return;
-    }
-
-    addGold(-item.price);
-    addToast(`Bought ${item.name} for ${item.price}g!`, 'gold');
-  };
+  if (!player) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content glass p-6 w-full max-w-lg mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-realm-border pb-3 mb-4">
-          <h2 className="font-game text-xl text-white flex items-center gap-2"><Store className="w-5 h-5 text-realm-accent" /> Realm Bazaar</h2>
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-sm text-realm-gold flex items-center gap-1"><Coins className="w-4 h-4" /> {player?.gold ?? 0}g</span>
-            <button onClick={onClose} className="text-realm-text-muted hover:text-white"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto">
+      <div className="premium-glass premium-border w-full max-w-4xl max-h-[85vh] flex flex-col rounded-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden relative">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
+          <div className="flex items-center gap-3">
+            <ShoppingBag className="w-6 h-6 text-realm-gold" />
+            <h2 className="font-game tracking-wider text-xl text-white drop-shadow-md uppercase">Marketplace</h2>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-realm-gold/20">
+              <Coins className="w-5 h-5 text-realm-gold" />
+              <span className="font-mono text-realm-gold text-lg">{player.gold ?? 0}</span>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
-        <p className="text-xs text-realm-text-muted font-ui mb-4">
-          Trade goods, materials, and equipment across the shared realm economy.
-        </p>
-
-        {/* Listings */}
-        <div className="space-y-2 max-h-72 overflow-y-auto mb-4">
-          {listings.map((item) => (
-            <div
-              key={item.id}
-              className="bg-realm-surface border border-realm-border rounded-lg p-3 flex items-center justify-between hover:border-realm-accent/50 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded glass flex items-center justify-center bg-black/40 border border-realm-border/50">
-                  {renderIcon(item.icon)}
-                </div>
-                <div>
-                  <div className="font-game text-sm text-white">{item.name}</div>
-                  <div className="text-xs text-realm-text-muted font-ui">Seller: {item.seller}</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-sm text-realm-gold font-bold">{item.price}g</span>
-                <button
-                  onClick={() => handleBuy(item)}
-                  className="btn-gold text-xs py-1.5 px-3"
-                >
-                  Buy
-                </button>
-              </div>
+        {/* Content */}
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+          
+          {/* Left: Buy Items (Merchant Stock) */}
+          <div className="flex-1 border-r border-white/10 flex flex-col bg-black/20">
+            <div className="p-4 border-b border-white/5 bg-white/5 text-center font-game text-sm text-realm-text tracking-widest uppercase">
+              Items for Sale
             </div>
-          ))}
-        </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              {marketItems.map((marketItem) => (
+                <div key={marketItem.item.id} className="glass p-3 rounded-xl border-white/10 hover:border-realm-gold/40 transition-colors flex items-center gap-4 group">
+                  <div className="w-12 h-12 bg-black/50 rounded-lg flex items-center justify-center text-2xl border border-white/5">
+                    {marketItem.item.icon}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-game text-white text-sm">{marketItem.item.name}</div>
+                    <div className="font-ui text-xs text-realm-text-muted mt-1 line-clamp-1">{marketItem.item.description}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-1 font-mono text-realm-gold font-bold">
+                      <Coins className="w-3 h-3" /> {marketItem.price}
+                    </div>
+                    <button
+                      onClick={() => buyItem(marketItem.item.id, 1)}
+                      className="px-3 py-1 bg-realm-gold/20 hover:bg-realm-gold/40 text-realm-gold border border-realm-gold/50 rounded text-xs font-mono transition-colors uppercase font-bold"
+                    >
+                      Buy
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <button className="btn-secondary w-full text-xs" onClick={onClose}>
-          Close
-        </button>
+          {/* Right: Sell Items (Player Inventory) */}
+          <div className="flex-1 flex flex-col bg-black/10">
+            <div className="p-4 border-b border-white/5 bg-white/5 text-center font-game text-sm text-realm-text tracking-widest uppercase">
+              Your Inventory
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              {(!player.inventory || player.inventory.length === 0) ? (
+                <div className="text-center text-realm-text-muted font-ui py-8 text-sm">
+                  Your inventory is empty.
+                </div>
+              ) : (
+                player.inventory.map((slot) => {
+                  const sellPrice = Math.max(1, Math.floor((slot.item.value || 1) * 0.5));
+                  return (
+                    <div key={slot.item.id} className="glass p-3 rounded-xl border-white/10 hover:border-realm-mana/40 transition-colors flex items-center gap-4 group">
+                      <div className="w-12 h-12 bg-black/50 rounded-lg flex items-center justify-center text-2xl border border-white/5 relative">
+                        {slot.item.icon}
+                        <span className="absolute -bottom-1 -right-1 bg-black text-white text-[10px] font-mono px-1 rounded-sm border border-white/20">
+                          x{slot.quantity}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-game text-white text-sm flex items-center gap-2">
+                          {slot.item.name}
+                        </div>
+                        <div className="font-ui text-xs text-realm-text-muted mt-1 line-clamp-1">{slot.item.description}</div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-1 font-mono text-realm-text-muted text-xs">
+                          Sell for <Coins className="w-3 h-3 text-realm-gold" /> {sellPrice}
+                        </div>
+                        <button
+                          onClick={() => sellItem(slot.item.id, 1)}
+                          className="px-3 py-1 bg-realm-mana/20 hover:bg-realm-mana/40 text-realm-mana border border-realm-mana/50 rounded text-xs font-mono transition-colors uppercase font-bold"
+                        >
+                          Sell
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+          
+        </div>
       </div>
     </div>
   );
