@@ -487,6 +487,10 @@ export type ServerToClientEvents = {
   playerMoved: (data: { id: UUID; x: number; y: number }) => void;
   /** Server rejected a movement update as an impossible speed/teleport; client should snap to `pos`. */
   movementRejected: (data: { pos?: Vec2 }) => void;
+  /** Server-authoritative trade result for *this* client: apply directly, don't recompute locally. */
+  tradeExecuted: (data: { gold: number; inventory: InventorySlot[] }) => void;
+  /** Server rejected the trade at execution time (e.g. stale/insufficient offer). */
+  tradeFailed: (data: { reason: string }) => void;
   worldEvent: (event: WorldEvent) => void;
   chatMessage: (msg: ChatMessage) => void;
 };

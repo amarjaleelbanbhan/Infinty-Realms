@@ -42,7 +42,7 @@ import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 import { useTradeStore } from '@stores/useTradeStore';
 import { socketManager } from '@game/systems/SocketManager';
-import type { TradeOffer } from '@shared/types';
+import type { TradeOffer, InventorySlot } from '@shared/types';
 
 export default function App() {
   const {
@@ -95,12 +95,17 @@ export default function App() {
       useTradeStore.getState().updatePartnerOffer(data.offer);
     const onTradePartnerLocked = () => useTradeStore.getState().setPartnerLocked(true);
     const onTradePartnerCancelled = () => useTradeStore.getState().handlePartnerCancelled();
+    const onTradeExecuted = (data: { gold: number; inventory: InventorySlot[] }) =>
+      useTradeStore.getState().applyTradeExecuted(data);
+    const onTradeFailed = (data: { reason: string }) => useTradeStore.getState().handleTradeFailed(data.reason);
 
     socketManager.on('tradeRequestIncoming', onTradeRequestIncoming);
     socketManager.on('tradeRequestResponse', onTradeRequestResponse);
     socketManager.on('tradePartnerOfferUpdate', onTradePartnerOfferUpdate);
     socketManager.on('tradePartnerLocked', onTradePartnerLocked);
     socketManager.on('tradePartnerCancelled', onTradePartnerCancelled);
+    socketManager.on('tradeExecuted', onTradeExecuted);
+    socketManager.on('tradeFailed', onTradeFailed);
 
     return () => {
       window.removeEventListener('resize', checkMobile);
@@ -111,6 +116,8 @@ export default function App() {
       socketManager.off('tradePartnerOfferUpdate', onTradePartnerOfferUpdate);
       socketManager.off('tradePartnerLocked', onTradePartnerLocked);
       socketManager.off('tradePartnerCancelled', onTradePartnerCancelled);
+      socketManager.off('tradeExecuted', onTradeExecuted);
+      socketManager.off('tradeFailed', onTradeFailed);
     };
   }, []);
 

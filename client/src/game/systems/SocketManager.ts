@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import type { Vec2, ChatMessage, TradeOffer } from '@shared/types';
+import type { Vec2, ChatMessage, TradeOffer, InventorySlot } from '@shared/types';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -68,6 +68,14 @@ export class SocketManager {
 
     this.socket.on('tradePartnerCancelled', () => {
       this.emitLocal('tradePartnerCancelled', {});
+    });
+
+    this.socket.on('tradeExecuted', (data: { gold: number; inventory: InventorySlot[] }) => {
+      this.emitLocal('tradeExecuted', data);
+    });
+
+    this.socket.on('tradeFailed', (data: { reason: string }) => {
+      this.emitLocal('tradeFailed', data);
     });
   }
 

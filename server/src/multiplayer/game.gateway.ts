@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RoomService } from './room.service';
+import { TradeService } from './trade.service';
 import { QuestsService } from '../quests/quests.service';
 import type { Vec2, ChatMessage, BiomeType, Season, TradeOffer } from '@infinity-realms/shared/types';
 
@@ -23,6 +24,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private roomService: RoomService,
+    private tradeService: TradeService,
     private questsService: QuestsService,
   ) {}
 
@@ -207,19 +209,47 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { targetId: string; offer: TradeOffer },
   ) {
+    const fromId = client.data.playerId as string | undefined;
+    if (fromId) {
+      this.tradeService.recordOffer(fromId, data.targetId, data.offer);
+    }
+
     const targetSocketId = this.roomService.getSocketId(data.targetId);
     if (!targetSocketId) return;
     this.server.to(targetSocketId).emit('tradePartnerOfferUpdate', { offer: data.offer });
   }
 
   @SubscribeMessage('tradeLock')
-  handleTradeLock(
+  async handleTradeLock(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { targetId: string },
   ) {
+    const fromId = client.data.playerId as string | undefined;
     const targetSocketId = this.roomService.getSocketId(data.targetId);
-    if (!targetSocketId) return;
-    this.server.to(targetSocketId).emit('tradePartnerLocked', {});
+    if (targetSocketId) {
+      this.server.to(targetSocketId).emit('tradePartnerLocked', {});
+    }
+    if (!fromId) return;
+
+    const bothLocked = this.tradeService.recordLock(fromId, data.targetId);
+    if (!bothLocked) return;
+
+    // Both sides locked — this is the only place a trade actually executes.
+    // Everything before this point was UI relay; the mutation itself is
+    // validated and applied atomically against persisted state.
+    const result = await this.tradeService.executeTrade(fromId, data.targetId);
+    const fromSocketId = this.roomService.getSocketId(fromId);
+
+    if (result.success && result.results) {
+      const fromResult = result.results.get(fromId);
+      const targetResult = result.results.get(data.targetId);
+      if (fromSocketId && fromResult) this.server.to(fromSocketId).emit('tradeExecuted', fromResult);
+      if (targetSocketId && targetResult) this.server.to(targetSocketId).emit('tradeExecuted', targetResult);
+    } else {
+      const reason = result.reason ?? 'Trade failed.';
+      if (fromSocketId) this.server.to(fromSocketId).emit('tradeFailed', { reason });
+      if (targetSocketId) this.server.to(targetSocketId).emit('tradeFailed', { reason });
+    }
   }
 
   @SubscribeMessage('tradeCancel')
@@ -227,6 +257,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { targetId: string },
   ) {
+    const fromId = client.data.playerId as string | undefined;
+    if (fromId) {
+      this.tradeService.clearSession(fromId, data.targetId);
+    }
+
     const targetSocketId = this.roomService.getSocketId(data.targetId);
     if (!targetSocketId) return;
     this.server.to(targetSocketId).emit('tradePartnerCancelled', {});

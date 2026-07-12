@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Item, TradeOffer } from '@shared/types';
+import type { Item, TradeOffer, InventorySlot } from '@shared/types';
 import { useGameStore } from './useGameStore';
 import { useUIStore } from './useUIStore';
 import { socketManager } from '@game/systems/SocketManager';
@@ -39,11 +39,12 @@ interface TradeState {
   updatePartnerOffer: (offer: TradeOffer) => void;
   setPartnerLocked: (locked: boolean) => void;
   handlePartnerCancelled: () => void;
+  applyTradeExecuted: (result: { gold: number; inventory: InventorySlot[] }) => void;
+  handleTradeFailed: (reason: string) => void;
 
   // Lifecycle
   lockTrade: () => void;
   cancelTrade: () => void;
-  completeTrade: () => void;
 }
 
 export const useTradeStore = create<TradeState>()((set, get) => ({
@@ -170,11 +171,10 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
   },
 
   setPartnerLocked: (locked) => {
+    // Execution is server-driven now: once both sides have sent tradeLock,
+    // the server validates and applies the trade and pushes tradeExecuted/
+    // tradeFailed back. The client no longer decides when to "complete."
     set({ isPartnerLocked: locked });
-    // If both locked, we complete
-    if (locked && get().isLocked) {
-      get().completeTrade();
-    }
   },
 
   handlePartnerCancelled: () => {
@@ -189,10 +189,6 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
     if (!partnerId) return;
     set({ isLocked: true });
     socketManager.sendTradeLock(partnerId);
-
-    if (get().isPartnerLocked) {
-      get().completeTrade();
-    }
   },
 
   cancelTrade: () => {
@@ -202,34 +198,24 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
     useUIStore.getState().closeTrade();
   },
 
-  completeTrade: () => {
-    const state = get();
-    if (!state.isActive) return;
-
+  applyTradeExecuted: (result) => {
+    if (!get().isActive) return;
     const gameStore = useGameStore.getState();
     const uiStore = useUIStore.getState();
 
-    // Deduct my offer
-    state.myOffer.items.forEach(offered => {
-      gameStore.removeFromInventory(offered.item.id, offered.quantity);
-    });
-    if (state.myOffer.gold > 0) {
-       // A bit hacky since there is no removeGold, we'll use a negative addGold or just update it
-       const currentGold = gameStore.player?.gold || 0;
-       gameStore.updatePlayerStats({} as any); // Force a re-render if needed
-       gameStore.setPlayer({ ...gameStore.player, gold: Math.max(0, currentGold - state.myOffer.gold) });
-    }
-
-    // Add partner offer
-    state.partnerOffer.items.forEach(received => {
-      gameStore.addToInventory(received.item, received.quantity);
-    });
-    if (state.partnerOffer.gold > 0) {
-      gameStore.addGold(state.partnerOffer.gold);
-    }
+    // Authoritative — replace local gold/inventory with exactly what the
+    // server computed, rather than recomputing the trade math client-side.
+    gameStore.setPlayer({ ...gameStore.player, gold: result.gold, inventory: result.inventory });
 
     uiStore.addToast('Trade completed successfully.', 'success');
-    set({ isActive: false, isLocked: false, isPartnerLocked: false });
+    set({ isActive: false, isLocked: false, isPartnerLocked: false, partnerId: null, partnerName: null });
     uiStore.closeTrade();
-  }
+  },
+
+  handleTradeFailed: (reason) => {
+    if (!get().isActive) return;
+    useUIStore.getState().addToast(reason || 'Trade failed.', 'error');
+    set({ isActive: false, isLocked: false, isPartnerLocked: false, partnerId: null, partnerName: null });
+    useUIStore.getState().closeTrade();
+  },
 }));
