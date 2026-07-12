@@ -22,9 +22,10 @@ A **never-ending browser RPG** with procedurally generated worlds, AI-driven NPC
 | 💾 Auto-save (localStorage → server sync) | ✅ MVP |
 | 🌦️ Dynamic weather system | ✅ MVP |
 | 🎒 Inventory & loot system | ✅ MVP |
-| 👥 Multiplayer (room codes) | 🔜 Phase 2 |
-| 🏙️ Living world (villages destroyed, refugees, new cities) | 🔜 Phase 3 |
-| 🎭 AI Dungeon Master | 🔜 Phase 4 |
+| 👥 Multiplayer (room codes) & Trading | ✅ Phase 2 |
+| 🏙️ Living world (Guilds, Dynamic Economy) | ✅ Phase 3 |
+| 🎭 AI Dungeon Master & Seasonal Events | ✅ Phase 4 |
+| 🌐 Localization & Creator Tools | ✅ Phase 5 |
 
 ---
 
@@ -128,10 +129,10 @@ Biomes: Ocean · Beach · Plains · Forest · Desert · Snow · Volcano · Swamp
 ## 🛣️ Roadmap
 
 - **Phase 1 (MVP)** — Procedural world, movement, combat, AI quests, solo play ✅
-- **Phase 2** — Multiplayer, room codes, trading, chat
-- **Phase 3** — AI NPCs with memory, dynamic economy, procedural dungeons, guilds
-- **Phase 4** — Massive shared world, seasonal events, AI Dungeon Master, marketplace
-- **Phase 5** — Mobile app, localization, creator tools, modding API
+- **Phase 2** — Multiplayer, room codes, trading, chat ✅
+- **Phase 3** — AI NPCs with memory, dynamic economy, procedural dungeons, guilds ✅
+- **Phase 4** — Massive shared world, seasonal events, AI Dungeon Master, marketplace ✅
+- **Phase 5** — Mobile app, localization, creator tools, modding API ✅
 
 ---
 
