@@ -1,136 +1,108 @@
-# 🌌 Infinity Realms — Grand Master Plan & Technical Roadmap
+# Infinity Realms — Roadmap
 
-*A living, procedural sandbox RPG built for the web. Driven by player choice, dynamic ecosystems, magical automation, and the AI Dungeon Master.*
+> Supersedes the previous "Grand Master Plan" phase numbering in this file.
+> That content (leyline automation, citadel sieges, pet taming, etc.) is
+> preserved at the bottom as a **deferred backlog** — genuinely interesting
+> ideas, not started, not to be worked on until Phases 0-2 below are real.
+> See `GAME_DESIGN_BIBLE.md` for the full critique of why that backlog was
+> cut from the near-term plan.
 
----
-
-## 💡 The Design Philosophy: emergent & Sandbox Play
-To create a award-winning RPG, we reject generic clones in favor of a **living simulation** that combines deep mechanical loops. The gameplay is built around **three pillars of emergence**:
-1. **The Environment Reacts**: Magic changes behavior based on biomes; ecosystems shift based on player actions (e.g., overhunting).
-2. **Magical Automation**: Players build networks to extract, route, and forge elemental materials, turning the wilderness into a production powerhouse.
-3. **AI-Driven Storytelling**: The world is not filled with static quests. An AI Dungeon Master and persistent NPC memories shape a narrative unique to every seed.
-
----
-
-## 🗺️ Step-by-Step Feature Implementation Roadmap
-
-### 📦 Phase 3: Seeded Sandbox Mechanics & Automation (Current focus)
-
-#### 3.1 Procedural Crypts & Dungeons
-- **Mechanic**: Convert dungeon entrances into loading triggers for underground maps.
-- **Generator**: Use cellular automata to carve organic caves and binary space partitioning (BSP) to build grid-based stone crypts.
-- **Gameplay**:
-  - Implement locked doors requiring colored keys (Red, Blue, Gold) found on enemies or chests.
-  - Spawn unique Biome Bosses guarding regional artifacts.
-  - Implement dungeon chests with randomized loot tables.
-
-#### 3.2 Leyline Energy Networks & Golem Logistics
-- **Mechanic**: Allow placed Leyline Nodes (collectors, relays, forges) to connect together.
-- **Energy Grid**: Relays route magical current back to cities or player Guild Halls.
-- **Golem Caravans**: Players construct automated Golems that walk between nodes to transport essence, carrying inventory that must be protected from bandit raids.
-- **Arcane Refining**: Build an upgrade shop interface at Arcane Forges allowing players to refine raw essence into legendary gear.
-
-#### 3.3 Dynamic Regional Trade & Scarcity
-- **Mechanic**: Prices at city merchants change based on regional supply and scarcity.
-- **Pricing Engine**:
-  - Iron is cheap in Mountain/Volcano towns but expensive in Desert/Swamp cities.
-  - Herbals are cheap in Forests but highly priced in frozen Snow biomes.
-  - Merchants keep track of inventory; selling 100 swords to a single merchant crashes the resale value locally, forcing players to run merchant caravans to distant cities.
+Status legend: **DONE** (implemented, tested, verified) · **PARTIAL**
+(implemented with a stated known gap) · **PLANNED** (not started). No phase
+starts before the previous one reaches at least PARTIAL with no boot-blocking
+gaps.
 
 ---
 
-### 🌋 Phase 4: AI Dungeon Master Catalyst & Shared Worlds
+## Phase 0 — Truth Pass
+**Status: DONE**
 
-#### 4.1 AI Dungeon Master (Emergent Crises)
-- **Mechanic**: A background service monitors player metrics (XP rate, clear speed, health safety).
-- **Emergent Crises**:
-  - **Bandit Seige**: A neighboring city is blockaded by bandits. Merchant prices soar, and quests change to defensive skirmishes.
-  - **Abyssal Corruption**: A void rift opens in a forest biome, turning wild animals hostile and blocking leyline transmission until the rift is sealed.
-  - **World Storms**: Biome-wide weather events (e.g. Acid Rain, Ice Storms) that modify player stats and spell casting values.
+Audited the actual codebase against README/PROGRESS.md claims. Found the
+server never booted (build + DI errors), trading was 100% fake, movement/
+combat had no server validation, zero automated tests existed. Full findings
+in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 
-#### 4.2 Shared World Multiplayer Lobby
-- **Mechanic**: Replace room-code typing with a public lobby search registry.
-- **Multiplayer Hub**:
-  - A persistent central town where players can meet, chat, group up, and trade items directly.
-  - Group dungeons where monster difficulty scales with player counts.
+## Phase 1 — Foundation
+**Status: PARTIAL** — no new gameplay features until this reaches DONE.
 
----
+| Item | Status |
+|---|---|
+| Fix monorepo build paths so `npm run dev`/`npm run build` actually work | DONE |
+| Fix NestJS DI errors preventing server boot | DONE |
+| Server test infrastructure (jest) | DONE |
+| Server-authoritative movement validation | DONE |
+| Real (socket-relayed) P2P trading | PARTIAL — see PROGRESS.md 2026-07-12 20:45 entry for the exact gap |
+| Server-authoritative combat | PLANNED |
+| Inventory validation | PLANNED |
+| Server-authoritative trade completion (currently client-applied on both sides) | PLANNED |
+| Real persistence-on-write (currently 60s client-trusted push) | PLANNED |
+| CI (typecheck + test on every push) | PLANNED |
+| Client-side test infrastructure (currently none) | PLANNED |
 
-### 🎨 Phase 5: Creator Tools & Modding API
+## Phase 2 — Core Gameplay
+**Status: PLANNED**
 
-#### 5.1 In-Game Quest & Item Architect
-- **Mechanic**: Players can spend Guild Influence to author custom content.
-- **AI-Assisted Builder**:
-  - Prompt the AI in-game: *"Create a quest about finding a lost sword in a volcanic dungeon guarded by a magma golem."*
-  - The AI drafts the quest objectives, dialog, and custom item stats, posting it to the public board for other players in the realm to challenge.
-  - Creator players take a percentage tax of gold spent by challengers.
+Combat depth, movement feel, skills, equipment, loot, crafting, quests,
+bosses, progression. Not started — do not start until Phase 1 is fully DONE.
 
----
+## Phase 3 — World
+**Status: PLANNED**
 
----
+Procedural generation is already the strongest existing subsystem (real
+simplex-noise/biome/Poisson pipeline) — this phase deepens it: cities,
+villages, weather, day/night, exploration, hidden locations, events.
 
-### 🌾 Phase 6: Biome-Reactive Ecosystems & Farming
+## Phase 4 — AI
+**Status: PLANNED**
 
-#### 6.1 Ecosystem Balance & Depletion
-- **Mechanic**: Dynamic tracking of wildlife population and vegetation density per biome.
-- **Consequences**: Overhunting beasts or clear-cutting trees in a region temporarily reduces local spawn rates, causing soil erosion that halts essence generation.
+Replace mock-by-default with real NPC memory, AI dialogue/quests/rumors/
+books/merchants/companions, with an explicit offline fallback (not the
+current "silently falls back to mock on any error" behavior). `AI_PROVIDER`
+currently defaults to `mock` in both `.env` files — flip this only once a
+real provider path is verified end-to-end, not before.
 
-#### 6.2 Leyline-Infused Agriculture
-- **Mechanic**: Soil tilling and farming near active Leyline Nodes.
-- **Mutations**: Grow magical elemental plants that mutate depending on local biome elements (e.g. Emberbloom in Volcano areas, Frostberry in Snow areas) used for alchemy brewing.
+## Phase 5 — Multiplayer
+**Status: PLANNED** (builds on Phase 1's trading/movement foundation)
 
----
+Real trading is PARTIAL from Phase 1. This phase adds: guilds, party sync,
+server reconciliation, chat moderation, cross-session persistence.
 
-### 🏰 Phase 7: Guild Citadels & Siege Defenses
+## Phase 6 — Living World
+**Status: PLANNED**
 
-#### 7.1 Citadel Base Building
-- **Mechanic**: Guilds can claim sandbox zones and erect modular walls, gates, workshops, and energy hubs.
-- **Logistics**: Feed leyline currents directly into Guild Citadels to power defensive energy shields.
+NPC schedules, economy, relationships, factions, wars, ecosystems, dynamic
+events, history, reputation. The ecosystem-cascade idea from the old
+backlog belongs here — pick it as the *first* living-world system, finish
+it, then move to the next one at a time (not all simultaneously).
 
-#### 7.2 Siege Invasions
-- **Mechanic**: Emergent raid alerts where massive hordes of void monsters or outlaws march on Citadels.
-- **Tactics**: Construct defensive ballista turrets, lava traps, and oil cauldrons to survive.
+## Phase 7 — Creator Platform
+**Status: PLANNED**
 
----
+Visual/quest/dungeon/NPC editors, plugin API, mod support, asset pipeline.
+Do not start until Phases 1-2 have real, retained players — building a
+creator platform before there are creators to use it is the most common way
+small teams burn runway on unused infrastructure.
 
-### 🐾 Phase 8: Dynamic Pet & Mount Taming
+## Phase 8 — Infinite Game
+**Status: PLANNED, aspirational**
 
-#### 8.1 Wildlife Taming
-- **Mechanic**: Trap wild beasts using runic snares.
-- **Breeding**: Breed mounts to mix stats, speeds, and carry weight slots.
-
-#### 8.2 Runic Mutations
-- **Mechanic**: Infuse pets with concentrated Leyline Essence.
-- **Mutations**: Pets gain elemental combat skills and glowing cosmetics (e.g., flame paws, frost shields) to fight alongside the player.
-
----
-
-### 🔮 Phase 9: Legendary Relics & Spell Customization
-
-#### 9.1 Custom Spell Grimoire
-- **Mechanic**: Combine raw runes to craft bespoke active spells (e.g., lightning chain that heals players on bounce).
-- **Customization**: Tweak cast times, mana costs, and splash ranges.
-
-#### 9.2 Legendary Relic Forging
-- **Mechanic**: Recover shattered shards from dungeon boss chambers to re-forge ancient relics.
-- **Relic Passive**: Relics grant permanent global buffs (e.g., walk on water, immunity to acid storms).
-
----
-
-### 🌌 Phase 10: Realm Ascension & Seasonal Reset
-
-#### 10.1 Ascension Trials
-- **Mechanic**: A massive end-game challenge dungeon testing automation, combat, and puzzle-solving.
-- **Ascension**: Ascending grants permanent celestial titles, character aura cosmetics, and rare resource multipliers.
-
-#### 10.2 Global Realm Seasons
-- **Mechanic**: A server-wide season cycle that alters global resource pools, unlocks unique challenges, and rotates leaderboards.
+Player-driven economy, politics, kingdoms, player cities, legendary events,
+global history, seasonal content, AI world evolution. Long-horizon vision,
+not a near-term commitment.
 
 ---
 
-## 📈 Award-Winning Quality Checklist
-Before declaring a phase complete, verify it meets the following standards:
-- [ ] **Aesthetics**: Sleek void theme colors, custom glassmorphic styling, and glowing particle effects on casts.
-- [ ] **Controls**: responsive keyboard input (WASD, hotkeys, map shortcuts) and seamless mobile virtual joysticks.
-- [ ] **Performance**: 60 FPS rendering in the browser, minimal garbage collection pauses, and low bandwidth usage for socket packets.
-- [ ] **Emergence**: The system interacts with other systems (e.g., weather affects combat, combat affects economy).
+## Deferred Backlog (from the old roadmap — not started, not scheduled)
+
+These are preserved because some are genuinely good ideas, not because
+they're next in line. Each needs to be picked up **one at a time** inside
+Phase 6, fully finished and server-validated, before the next is started.
+
+- Leyline energy networks / golem logistics (Factorio-inspired automation) — cut from near-term plan; see GAME_DESIGN_BIBLE.md §3 for why
+- Guild citadels & siege defenses — cut; this is a separate game bolted onto an unrelated RPG at current team scale
+- Dynamic regional trade & scarcity pricing engine
+- Ecosystem cascade (overhunting -> refugees -> quests) — **recommended first pick** for Phase 6, cheapest to prototype and most original
+- Pet/mount taming, breeding, runic mutations — cut; full system on its own
+- Legendary relic forging, custom spell grimoire
+- Realm ascension trials, seasonal server-wide resets
+- In-game AI quest/dungeon architect with creator revenue share — premature before Phase 7 has real creators
