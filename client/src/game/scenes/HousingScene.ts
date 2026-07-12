@@ -10,8 +10,16 @@ export class HousingScene extends Phaser.Scene {
   private wasd!: any;
   private exitZone!: Phaser.GameObjects.Zone;
 
+  private returnX = 0;
+  private returnY = 0;
+
   constructor() {
     super('HousingScene');
+  }
+
+  init(data: { returnX: number; returnY: number }) {
+    this.returnX = data.returnX;
+    this.returnY = data.returnY;
   }
 
   preload() {
@@ -77,7 +85,7 @@ export class HousingScene extends Phaser.Scene {
 
     // Check exit
     if (this.player.y > 570 && Math.abs(this.player.x - 400) < 50) {
-      this.scene.start('WorldScene');
+      this.scene.start('WorldScene', { returnFromDungeon: true, rx: this.returnX, ry: this.returnY });
     }
   }
 }

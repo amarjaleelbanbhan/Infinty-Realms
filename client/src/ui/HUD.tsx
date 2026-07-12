@@ -107,10 +107,17 @@ export function HUD() {
         </div>
       </div>
 
-      {/* ── Top-right: Active quest ── */}
-      {activeQuest && (
-        <div className="absolute top-24 right-6 z-10 pointer-events-none select-none">
-          <div className="glass px-4 py-3 max-w-[240px] rounded-2xl shadow-lg border-white/10">
+      {/* ── Top-right: Active quest & Home ── */}
+      <div className="absolute top-24 right-6 z-10 pointer-events-auto flex flex-col gap-4 items-end">
+        <button
+          className="glass px-4 py-2 rounded-2xl shadow-lg border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 text-white/90"
+          onClick={() => window.dispatchEvent(new CustomEvent('enter-house'))}
+        >
+          <span>🏕️ Return Home</span>
+        </button>
+
+        {activeQuest && (
+          <div className="glass px-4 py-3 max-w-[240px] rounded-2xl shadow-lg border-white/10 select-none pointer-events-none">
             <div className="text-xs font-mono text-realm-accent mb-1 uppercase tracking-wider">Active Quest</div>
             <div className="font-game text-sm text-white mb-2">{activeQuest.title}</div>
             {activeQuest.objectives.slice(0, 2).map((obj, i) => (
@@ -120,8 +127,8 @@ export function HUD() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Top-center: Controls hint ── */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">

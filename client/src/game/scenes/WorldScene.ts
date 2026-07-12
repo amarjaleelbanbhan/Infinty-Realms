@@ -760,7 +760,14 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     });
+    
+    window.addEventListener('enter-house', this.handleEnterHouse);
   }
+
+  private handleEnterHouse = () => {
+    this.scene.start('HousingScene', { returnX: this.player.x, returnY: this.player.y });
+  };
+
 
   private setupTouchInput() {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -1963,6 +1970,7 @@ export class WorldScene extends Phaser.Scene {
     window.removeEventListener('ir:citadel_build_mode', this.handleBuildModeEvent);
     window.removeEventListener('ir:siege_invasion', this.handleSiegeEvent);
     window.removeEventListener('ir:god_intervention_cast', this.handleGodIntervention);
+    window.removeEventListener('enter-house', this.handleEnterHouse);
   }
 }
 

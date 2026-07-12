@@ -43,4 +43,9 @@ Next: Milestone 5, Task 1: Farming & Agriculture (Crop planting/harvesting)
 Status: done
 Verification: Rewired FarmingSystem to allow planting seeds directly on soil (plains/forest/swamp) instead of being restricted to Leyline nodes. Interacting with the ground while a Magic Seed is in the inventory will plant it. Crops render on the tilemap and can be harvested once mature. Build passes.
 Next: Milestone 5, Task 2: Player Housing (Instanced Zones)
+
+[2026-07-12 13:00] Cycle 7 — Milestone 5, Task 2: Player Housing
+Status: done
+Verification: Updated HousingScene to properly persist return coordinates (rx, ry) so leaving the house returns the player to where they were in the world. Added a 'Return Home' button to the HUD to teleport the player from WorldScene to HousingScene. Added enter-house event listener. Client typecheck passes.
+Next: Milestone 5, Task 3: Economy (Marketplace UI and Trading)
 ```
