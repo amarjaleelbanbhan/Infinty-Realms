@@ -17,9 +17,10 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
+    "rootDir": "./src",
     "paths": {
-      "@infinity-realms/shared/*": ["../shared/*"],
-      "@infinity-realms/ai": ["../ai/index.ts"]
+      "@infinity-realms/shared/*": ["../shared/dist/*"],
+      "@infinity-realms/ai": ["../ai/dist"]
     }
   }
 }

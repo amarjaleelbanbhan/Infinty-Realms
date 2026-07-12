@@ -9,11 +9,12 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "rootDir": "./",
     "baseUrl": ".",
     "paths": {
-      "@infinity-realms/shared/*": ["../shared/*"]
+      "@infinity-realms/shared/*": ["../shared/dist/*"]
     }
   },
-  "include": ["**/*.ts", "../shared/**/*.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
