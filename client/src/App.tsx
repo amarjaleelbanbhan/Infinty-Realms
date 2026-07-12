@@ -37,8 +37,12 @@ import { PartyUI } from '@ui/PartyUI';
 import { PartyContextMenu } from '@ui/PartyContextMenu';
 import { TradeUI } from '@ui/TradeUI';
 import { DeathOverlay } from '@ui/DeathOverlay';
+import { TradeRequestPrompt } from '@ui/TradeRequestPrompt';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
+import { useTradeStore } from '@stores/useTradeStore';
+import { socketManager } from '@game/systems/SocketManager';
+import type { TradeOffer } from '@shared/types';
 
 export default function App() {
   const {
@@ -82,10 +86,31 @@ export default function App() {
     const onToggleMap = () => setShowMap((v) => !v);
     window.addEventListener('ir:togglemap', onToggleMap);
 
+    // Real (socket-relayed) trade lifecycle events from a partner's client.
+    const onTradeRequestIncoming = (data: { fromId: string; fromName: string }) =>
+      useTradeStore.getState().receiveTradeRequest(data.fromId, data.fromName);
+    const onTradeRequestResponse = (data: { accepted: boolean; partnerId: string; partnerName?: string; reason?: string }) =>
+      useTradeStore.getState().handleRequestResponse(data.accepted, data.partnerId, data.partnerName, data.reason);
+    const onTradePartnerOfferUpdate = (data: { offer: TradeOffer }) =>
+      useTradeStore.getState().updatePartnerOffer(data.offer);
+    const onTradePartnerLocked = () => useTradeStore.getState().setPartnerLocked(true);
+    const onTradePartnerCancelled = () => useTradeStore.getState().handlePartnerCancelled();
+
+    socketManager.on('tradeRequestIncoming', onTradeRequestIncoming);
+    socketManager.on('tradeRequestResponse', onTradeRequestResponse);
+    socketManager.on('tradePartnerOfferUpdate', onTradePartnerOfferUpdate);
+    socketManager.on('tradePartnerLocked', onTradePartnerLocked);
+    socketManager.on('tradePartnerCancelled', onTradePartnerCancelled);
+
     return () => {
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('ir:togglemap', onToggleMap);
       eventSystem.stop();
+      socketManager.off('tradeRequestIncoming', onTradeRequestIncoming);
+      socketManager.off('tradeRequestResponse', onTradeRequestResponse);
+      socketManager.off('tradePartnerOfferUpdate', onTradePartnerOfferUpdate);
+      socketManager.off('tradePartnerLocked', onTradePartnerLocked);
+      socketManager.off('tradePartnerCancelled', onTradePartnerCancelled);
     };
   }, []);
 
@@ -152,6 +177,7 @@ export default function App() {
             <GodInterventionUI />
             <AuctionHouseUI />
             <TradeUI />
+            <TradeRequestPrompt />
             <SkillTree />
             <DeathOverlay />
           </>

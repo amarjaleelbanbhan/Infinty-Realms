@@ -3,7 +3,6 @@ import { usePartyStore } from '@stores/usePartyStore';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useTradeStore } from '@stores/useTradeStore';
-import { socketManager } from '@game/systems/SocketManager';
 
 export function PartyContextMenu() {
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, playerId: string, playerName: string } | null>(null);
@@ -55,15 +54,10 @@ export function PartyContextMenu() {
   };
 
   const handleTradeRequest = () => {
-    // Simulated trade request since we don't have a backend doing it yet
-    addToast(`Requested trade with ${contextMenu.playerName}...`, 'info');
+    // Sends a real 'tradeRequest' over the socket; the target's client shows a
+    // TradeRequestPrompt and only opens the trade window once they accept.
+    useTradeStore.getState().requestTrade(contextMenu.playerId, contextMenu.playerName);
     setContextMenu(null);
-    
-    // Auto-accept mock for local testing loop
-    setTimeout(() => {
-      useTradeStore.getState().initiateTrade(contextMenu.playerId, contextMenu.playerName);
-      addToast(`${contextMenu.playerName} accepted your trade request!`, 'success');
-    }, 1000);
   };
 
   return (

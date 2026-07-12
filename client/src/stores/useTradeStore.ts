@@ -1,34 +1,45 @@
 import { create } from 'zustand';
-import type { Item } from '@shared/types';
+import type { Item, TradeOffer } from '@shared/types';
 import { useGameStore } from './useGameStore';
 import { useUIStore } from './useUIStore';
+import { socketManager } from '@game/systems/SocketManager';
 
-export interface TradeOffer {
-  items: Array<{ item: Item, quantity: number }>;
-  gold: number;
+export type { TradeOffer };
+
+interface IncomingTradeRequest {
+  fromId: string;
+  fromName: string;
 }
 
 interface TradeState {
   isActive: boolean;
   partnerId: string | null;
   partnerName: string | null;
-  
+
+  incomingRequest: IncomingTradeRequest | null;
+
   myOffer: TradeOffer;
   partnerOffer: TradeOffer;
-  
+
   isLocked: boolean;
   isPartnerLocked: boolean;
-  
+
   // Actions
+  requestTrade: (partnerId: string, partnerName: string) => void;
+  receiveTradeRequest: (fromId: string, fromName: string) => void;
+  acceptIncomingRequest: () => void;
+  declineIncomingRequest: () => void;
+  handleRequestResponse: (accepted: boolean, partnerId: string, partnerName?: string, reason?: string) => void;
   initiateTrade: (partnerId: string, partnerName: string) => void;
   addItemToOffer: (item: Item, quantity: number) => void;
   removeItemFromOffer: (itemId: string, quantity: number) => void;
   setGoldOffer: (amount: number) => void;
-  
+
   // Socket updates
   updatePartnerOffer: (offer: TradeOffer) => void;
   setPartnerLocked: (locked: boolean) => void;
-  
+  handlePartnerCancelled: () => void;
+
   // Lifecycle
   lockTrade: () => void;
   cancelTrade: () => void;
@@ -39,12 +50,46 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
   isActive: false,
   partnerId: null,
   partnerName: null,
-  
+
+  incomingRequest: null,
+
   myOffer: { items: [], gold: 0 },
   partnerOffer: { items: [], gold: 0 },
-  
+
   isLocked: false,
   isPartnerLocked: false,
+
+  requestTrade: (partnerId, partnerName) => {
+    socketManager.sendTradeRequest(partnerId);
+    useUIStore.getState().addToast(`Trade request sent to ${partnerName}...`, 'info');
+  },
+
+  receiveTradeRequest: (fromId, fromName) => {
+    set({ incomingRequest: { fromId, fromName } });
+  },
+
+  acceptIncomingRequest: () => {
+    const request = get().incomingRequest;
+    if (!request) return;
+    socketManager.respondTradeRequest(request.fromId, true);
+    set({ incomingRequest: null });
+    get().initiateTrade(request.fromId, request.fromName);
+  },
+
+  declineIncomingRequest: () => {
+    const request = get().incomingRequest;
+    if (!request) return;
+    socketManager.respondTradeRequest(request.fromId, false);
+    set({ incomingRequest: null });
+  },
+
+  handleRequestResponse: (accepted, partnerId, partnerName, reason) => {
+    if (accepted && partnerName) {
+      get().initiateTrade(partnerId, partnerName);
+    } else {
+      useUIStore.getState().addToast(reason || `${partnerName || 'Player'} declined the trade.`, 'error');
+    }
+  },
 
   initiateTrade: (partnerId, partnerName) => {
     set({
@@ -60,8 +105,8 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
   },
 
   addItemToOffer: (item, quantity) => {
-    const { isLocked, myOffer } = get();
-    if (isLocked) return;
+    const { isLocked, myOffer, partnerId } = get();
+    if (isLocked || !partnerId) return;
 
     // Check if player actually has this item
     const player = useGameStore.getState().player;
@@ -71,7 +116,7 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
     if (!invItem || invItem.quantity < quantity) return;
 
     const existing = myOffer.items.find(i => i.item.id === item.id);
-    
+
     // We must ensure the offered amount doesn't exceed inventory amount
     const currentOffered = existing ? existing.quantity : 0;
     if (currentOffered + quantity > invItem.quantity) return;
@@ -83,15 +128,14 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
       newItems.push({ item, quantity });
     }
 
-    set({ myOffer: { ...myOffer, items: newItems } });
-    
-    // In real app, emit to socket: socketManager.sendTradeUpdate(get().myOffer)
-    window.dispatchEvent(new CustomEvent('ir:trade_update_local', { detail: get().myOffer }));
+    const newOffer = { ...myOffer, items: newItems };
+    set({ myOffer: newOffer });
+    socketManager.sendTradeOfferUpdate(partnerId, newOffer);
   },
 
   removeItemFromOffer: (itemId, quantity) => {
-    const { isLocked, myOffer } = get();
-    if (isLocked) return;
+    const { isLocked, myOffer, partnerId } = get();
+    if (isLocked || !partnerId) return;
 
     const existing = myOffer.items.find(i => i.item.id === itemId);
     if (!existing) return;
@@ -104,19 +148,21 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
       newItems[idx] = { ...existing, quantity: existing.quantity - quantity };
     }
 
-    set({ myOffer: { ...myOffer, items: newItems } });
-    window.dispatchEvent(new CustomEvent('ir:trade_update_local', { detail: get().myOffer }));
+    const newOffer = { ...myOffer, items: newItems };
+    set({ myOffer: newOffer });
+    socketManager.sendTradeOfferUpdate(partnerId, newOffer);
   },
 
   setGoldOffer: (amount) => {
-    const { isLocked, myOffer } = get();
-    if (isLocked) return;
-    
+    const { isLocked, myOffer, partnerId } = get();
+    if (isLocked || !partnerId) return;
+
     const player = useGameStore.getState().player;
     if (!player || (player.gold || 0) < amount) return;
 
-    set({ myOffer: { ...myOffer, gold: Math.max(0, amount) } });
-    window.dispatchEvent(new CustomEvent('ir:trade_update_local', { detail: get().myOffer }));
+    const newOffer = { ...myOffer, gold: Math.max(0, amount) };
+    set({ myOffer: newOffer });
+    socketManager.sendTradeOfferUpdate(partnerId, newOffer);
   },
 
   updatePartnerOffer: (offer) => {
@@ -127,22 +173,32 @@ export const useTradeStore = create<TradeState>()((set, get) => ({
     set({ isPartnerLocked: locked });
     // If both locked, we complete
     if (locked && get().isLocked) {
-      setTimeout(() => get().completeTrade(), 1000);
+      get().completeTrade();
     }
   },
 
+  handlePartnerCancelled: () => {
+    if (!get().isActive) return;
+    useUIStore.getState().addToast(`${get().partnerName || 'Your partner'} cancelled the trade.`, 'error');
+    set({ isActive: false, isLocked: false, isPartnerLocked: false, partnerId: null, partnerName: null });
+    useUIStore.getState().closeTrade();
+  },
+
   lockTrade: () => {
+    const { partnerId } = get();
+    if (!partnerId) return;
     set({ isLocked: true });
-    window.dispatchEvent(new CustomEvent('ir:trade_lock_local'));
-    
+    socketManager.sendTradeLock(partnerId);
+
     if (get().isPartnerLocked) {
-      setTimeout(() => get().completeTrade(), 1000);
+      get().completeTrade();
     }
   },
 
   cancelTrade: () => {
-    set({ isActive: false, isLocked: false, isPartnerLocked: false });
-    window.dispatchEvent(new CustomEvent('ir:trade_cancel_local'));
+    const { partnerId } = get();
+    if (partnerId) socketManager.sendTradeCancel(partnerId);
+    set({ isActive: false, isLocked: false, isPartnerLocked: false, partnerId: null, partnerName: null });
     useUIStore.getState().closeTrade();
   },
 

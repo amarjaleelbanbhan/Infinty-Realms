@@ -1,42 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTradeStore } from '@stores/useTradeStore';
 import { useGameStore } from '@stores/useGameStore';
-import { useUIStore } from '@stores/useUIStore';
 import { Coins, Check, X, ArrowRightLeft } from 'lucide-react';
 
 export function TradeUI() {
-  const { isActive, partnerName, myOffer, partnerOffer, isLocked, isPartnerLocked, lockTrade, cancelTrade, removeItemFromOffer, setGoldOffer, updatePartnerOffer, setPartnerLocked } = useTradeStore();
+  const { isActive, partnerName, myOffer, partnerOffer, isLocked, isPartnerLocked, lockTrade, cancelTrade, removeItemFromOffer, setGoldOffer } = useTradeStore();
   const { player } = useGameStore();
-  
+
   const [goldInput, setGoldInput] = useState('');
-
-  // --- Mock Partner Logic ---
-  useEffect(() => {
-    if (!isActive) return;
-
-    const handleUpdate = () => {
-      // If we are locked, partner will lock shortly after
-      if (isLocked && !isPartnerLocked) {
-        setTimeout(() => setPartnerLocked(true), 1500);
-      }
-      
-      // Mock partner throwing in random gold if we update
-      if (!isLocked && !isPartnerLocked && partnerOffer.gold === 0) {
-        setTimeout(() => {
-          updatePartnerOffer({ ...partnerOffer, gold: Math.floor(Math.random() * 100) + 10 });
-        }, 2000);
-      }
-    };
-
-    window.addEventListener('ir:trade_update_local', handleUpdate);
-    window.addEventListener('ir:trade_lock_local', handleUpdate);
-
-    return () => {
-      window.removeEventListener('ir:trade_update_local', handleUpdate);
-      window.removeEventListener('ir:trade_lock_local', handleUpdate);
-    };
-  }, [isActive, isLocked, isPartnerLocked, partnerOffer, setPartnerLocked, updatePartnerOffer]);
-  // --------------------------
 
   if (!isActive || !player) return null;
 

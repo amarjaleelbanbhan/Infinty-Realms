@@ -460,6 +460,13 @@ export interface WeatherEffect {
   modifier: number;    // multiplier
 }
 
+// ─── Trading (Phase 2) ─────────────────────────────────────────
+
+export interface TradeOffer {
+  items: Array<{ item: Item; quantity: number }>;
+  gold: number;
+}
+
 // ─── Multiplayer (Phase 2) ────────────────────────────────────
 
 export interface GameRoom {
@@ -478,6 +485,8 @@ export type ServerToClientEvents = {
   playerJoined: (player: Partial<Player>) => void;
   playerLeft: (playerId: UUID) => void;
   playerMoved: (data: { id: UUID; x: number; y: number }) => void;
+  /** Server rejected a movement update as an impossible speed/teleport; client should snap to `pos`. */
+  movementRejected: (data: { pos?: Vec2 }) => void;
   worldEvent: (event: WorldEvent) => void;
   chatMessage: (msg: ChatMessage) => void;
 };

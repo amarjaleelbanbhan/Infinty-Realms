@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import type { Vec2, ChatMessage } from '@shared/types';
+import type { Vec2, ChatMessage, TradeOffer } from '@shared/types';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -44,6 +44,30 @@ export class SocketManager {
 
     this.socket.on('chatMessage', (msg: ChatMessage) => {
       this.emitLocal('chatMessage', msg);
+    });
+
+    this.socket.on('movementRejected', (data: { pos?: Vec2 }) => {
+      this.emitLocal('movementRejected', data);
+    });
+
+    this.socket.on('tradeRequestIncoming', (data: { fromId: string; fromName: string }) => {
+      this.emitLocal('tradeRequestIncoming', data);
+    });
+
+    this.socket.on('tradeRequestResponse', (data: { accepted: boolean; partnerId: string; partnerName?: string; reason?: string }) => {
+      this.emitLocal('tradeRequestResponse', data);
+    });
+
+    this.socket.on('tradePartnerOfferUpdate', (data: { offer: TradeOffer }) => {
+      this.emitLocal('tradePartnerOfferUpdate', data);
+    });
+
+    this.socket.on('tradePartnerLocked', () => {
+      this.emitLocal('tradePartnerLocked', {});
+    });
+
+    this.socket.on('tradePartnerCancelled', () => {
+      this.emitLocal('tradePartnerCancelled', {});
     });
   }
 
@@ -131,6 +155,35 @@ export class SocketManager {
       message,
       channel,
     });
+  }
+
+  sendTradeRequest(targetId: string) {
+    const player = useGameStore.getState().player;
+    if (!player) return;
+    this.socket?.emit('tradeRequest', { fromId: player.id, fromName: player.name, targetId });
+  }
+
+  respondTradeRequest(requesterId: string, accepted: boolean) {
+    const player = useGameStore.getState().player;
+    if (!player) return;
+    this.socket?.emit('tradeRequestResponse', {
+      requesterId,
+      accepted,
+      responderId: player.id,
+      responderName: player.name,
+    });
+  }
+
+  sendTradeOfferUpdate(targetId: string, offer: TradeOffer) {
+    this.socket?.emit('tradeOfferUpdate', { targetId, offer });
+  }
+
+  sendTradeLock(targetId: string) {
+    this.socket?.emit('tradeLock', { targetId });
+  }
+
+  sendTradeCancel(targetId: string) {
+    this.socket?.emit('tradeCancel', { targetId });
   }
 
   on(event: string, callback: (data: any) => void) {

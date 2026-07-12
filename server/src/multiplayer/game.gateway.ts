@@ -10,7 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { RoomService } from './room.service';
 import { QuestsService } from '../quests/quests.service';
-import type { Vec2, ChatMessage, BiomeType, Season } from '@infinity-realms/shared/types';
+import type { Vec2, ChatMessage, BiomeType, Season, TradeOffer } from '@infinity-realms/shared/types';
 
 @WebSocketGateway({
   cors: {
@@ -34,6 +34,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`[WS] Client disconnected: ${client.id}`);
     const playerId = client.data.playerId as string | undefined;
     if (playerId) {
+      this.roomService.unregisterSocket(playerId);
       const { roomCode } = this.roomService.leaveRoom(playerId);
       if (roomCode) {
         this.server.to(roomCode).emit('playerLeft', { playerId });
@@ -47,6 +48,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { playerId: string; worldSeed: string; isPublic?: boolean },
   ) {
     client.data.playerId = data.playerId;
+    this.roomService.registerSocket(data.playerId, client.id);
     const room = this.roomService.createRoom(data.playerId, data.worldSeed, data.isPublic);
     client.join(room.id);
     return { success: true, room };
@@ -58,6 +60,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { roomCode: string; playerId: string; name: string },
   ) {
     client.data.playerId = data.playerId;
+    this.roomService.registerSocket(data.playerId, client.id);
     const result = this.roomService.joinRoom(data.roomCode, data.playerId);
 
     if (result.error || !result.room) {
@@ -80,13 +83,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomCode: string; playerId: string; pos: Vec2; direction: string },
   ) {
-    if (data.roomCode) {
-      client.to(data.roomCode).emit('playerMoved', {
-        playerId: data.playerId,
-        pos: data.pos,
-        direction: data.direction,
-      });
+    if (!data.roomCode) return;
+
+    const result = this.roomService.validateMovement(data.playerId, data.pos, Date.now());
+
+    if (!result.valid) {
+      // Snap the offending client back to its last known-good position instead
+      // of trusting (and propagating) an impossible teleport/speedhack.
+      client.emit('movementRejected', { pos: result.correctedPos });
+      return;
     }
+
+    client.to(data.roomCode).emit('playerMoved', {
+      playerId: data.playerId,
+      pos: data.pos,
+      direction: data.direction,
+    });
   }
 
   @SubscribeMessage('attack')
@@ -157,5 +169,66 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.error('[WS] Failed to generate quest:', err);
       return { success: false, error: 'Quest generation failed' };
     }
+  }
+
+  // ─── Trading ───────────────────────────────────────────────
+  // Relays between the two specific players trading, not the whole room —
+  // trade offers are private between the requester and the target.
+
+  @SubscribeMessage('tradeRequest')
+  handleTradeRequest(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { fromId: string; fromName: string; targetId: string },
+  ) {
+    const targetSocketId = this.roomService.getSocketId(data.targetId);
+    if (!targetSocketId) {
+      client.emit('tradeRequestResponse', { accepted: false, partnerId: data.targetId, reason: 'Player is not online' });
+      return;
+    }
+    this.server.to(targetSocketId).emit('tradeRequestIncoming', { fromId: data.fromId, fromName: data.fromName });
+  }
+
+  @SubscribeMessage('tradeRequestResponse')
+  handleTradeRequestResponse(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { requesterId: string; accepted: boolean; responderId: string; responderName: string },
+  ) {
+    const requesterSocketId = this.roomService.getSocketId(data.requesterId);
+    if (!requesterSocketId) return;
+    this.server.to(requesterSocketId).emit('tradeRequestResponse', {
+      accepted: data.accepted,
+      partnerId: data.responderId,
+      partnerName: data.responderName,
+    });
+  }
+
+  @SubscribeMessage('tradeOfferUpdate')
+  handleTradeOfferUpdate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetId: string; offer: TradeOffer },
+  ) {
+    const targetSocketId = this.roomService.getSocketId(data.targetId);
+    if (!targetSocketId) return;
+    this.server.to(targetSocketId).emit('tradePartnerOfferUpdate', { offer: data.offer });
+  }
+
+  @SubscribeMessage('tradeLock')
+  handleTradeLock(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetId: string },
+  ) {
+    const targetSocketId = this.roomService.getSocketId(data.targetId);
+    if (!targetSocketId) return;
+    this.server.to(targetSocketId).emit('tradePartnerLocked', {});
+  }
+
+  @SubscribeMessage('tradeCancel')
+  handleTradeCancel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { targetId: string },
+  ) {
+    const targetSocketId = this.roomService.getSocketId(data.targetId);
+    if (!targetSocketId) return;
+    this.server.to(targetSocketId).emit('tradePartnerCancelled', {});
   }
 }
