@@ -1,0 +1,54 @@
+# Security Report
+
+Generated from the Phase 0 Truth Pass (2026-07-12). This is an internal
+engineering security assessment, not a responsible-disclosure policy
+document. See `TECH_DEBT.md` for non-security debt and `GAME_DESIGN_BIBLE.md`
+for the full critique.
+
+## Fixed this pass
+
+- **Movement/speedhacking**: `GameGateway.handleMove` previously
+  re-broadcast any client-claimed position with zero validation — trivially
+  exploitable via devtools for teleport or speed hacks, and other players
+  would see the falsified position too. `RoomService.validateMovement` now
+  tracks each player's last known-good position server-side and rejects
+  updates implying an impossible speed (19 tests cover this).
+- **Fake trading was itself a trust problem**: the previous "trading"
+  system wasn't actually multiplayer at all (auto-accepted fake requests,
+  a fabricated fake partner), so it wasn't exploitable in the traditional
+  sense, but it also meant nothing about the trade UI could be trusted to
+  reflect real player-to-player state. Now real socket-relayed, though see
+  the remaining gap below.
+
+## Known vulnerabilities (not fixed this pass)
+
+| Issue | Severity | Detail |
+|---|---|---|
+| Client-authoritative trade completion | High | Each client applies its own inventory/gold deltas locally once both sides report "locked" — a modified client could report a fake offer or skip the deduction. No server-side transaction validates the trade. |
+| No server-side combat authority | High | Damage/HP is computed entirely client-side against client-only enemies. A modified client can claim arbitrary kills/loot/XP with nothing to check it. |
+| Weak gold/XP anti-cheat | Medium | `players.service.ts`'s rate-of-change heuristic only logs a warning and silently drops the field on the *next* save — it doesn't reject the request, flag the account, or alert anyone. Trivially defeated by editing slowly (under the per-second threshold). |
+| Client-trusted persistence | Medium | `SaveSystem` treats localStorage as the source of truth and pushes to the server every 60s. Between pushes, the server has no ground truth at all. |
+| Party invites still fully fake | Medium | No socket round-trip, no consent — the same trust-model gap trading had before this pass, not yet fixed for parties. |
+| Single in-memory process, no horizontal scaling | Low (today) | Not exploitable per se, but means there's no redundancy — a crash loses all room/socket-registry state instantly. Becomes a real availability concern only at higher player counts. |
+
+## Configuration / secrets hygiene
+
+- `JWT_SECRET` in `.env`/`.env.example` is a placeholder
+  (`"change-me-in-production-use-a-long-random-string"`) — confirm this is
+  actually rotated before any real deployment; it is **not** rotated as of
+  this pass.
+- `AI_PROVIDER=mock` by default is not a security issue, but note it here
+  since "AI-generated" marketing claims are currently false in the shipped
+  configuration — a reputational/legal concern more than a security one
+  (see `GAME_DESIGN_BIBLE.md` risk analysis).
+
+## Recommended next steps (priority order)
+
+1. Server-authoritative trade completion (DB transaction, not client-applied)
+2. Server-side combat/enemy simulation (bigger effort — needs design first)
+3. Reject (not just warn-and-drop) on anti-cheat heuristic violations, with
+   a persisted flag for repeat offenders
+4. Real party invite consent flow (same pattern as the trade-request fix)
+5. Rotate `JWT_SECRET` and confirm it's excluded from version control in
+   any real deployment (currently only `.env` itself is gitignored, not
+   `.env.example` — confirm `.env.example` never contains a real secret)
