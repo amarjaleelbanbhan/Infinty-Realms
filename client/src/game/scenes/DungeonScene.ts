@@ -19,6 +19,11 @@ interface EnemySprite extends Phaser.GameObjects.Container {
     defense: number;
     state: 'idle' | 'patrol' | 'chase' | 'attack' | 'dead';
     hpBar?: Phaser.GameObjects.Graphics;
+    
+    // Boss specific
+    isBoss?: boolean;
+    phase?: number;
+    abilityCooldowns?: Record<string, number>;
   };
 }
 
@@ -410,12 +415,15 @@ export class DungeonScene extends Phaser.Scene {
       id: `boss-${Date.now()}`,
       type: 'dragon',
       name: 'Dungeon Warden',
-      hp: 300,
-      maxHp: 300,
+      hp: 500, // Boosted for phases
+      maxHp: 500,
       speed: 60,
       attack: 30,
       defense: 25,
       state: 'idle',
+      isBoss: true,
+      phase: 1,
+      abilityCooldowns: { aoe: 0, summon: 0 },
     };
 
     this.enemies.push(container);
@@ -431,8 +439,43 @@ export class DungeonScene extends Phaser.Scene {
       const dy = this.player.y - enemy.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < 180) {
+      if (dist < 240) { // Increased aggro range slightly for boss rooms
         enemy.enemyData.state = 'chase';
+        
+        // Boss Mechanics
+        if (enemy.enemyData.isBoss) {
+          const hpPercent = enemy.enemyData.hp / enemy.enemyData.maxHp;
+          let currentPhase = 1;
+          if (hpPercent <= 0.3) currentPhase = 3;
+          else if (hpPercent <= 0.6) currentPhase = 2;
+
+          if (currentPhase !== enemy.enemyData.phase) {
+            enemy.enemyData.phase = currentPhase;
+            // Visual feedback for phase transition
+            const image = enemy.list[1] as Phaser.GameObjects.Image;
+            image.setTint(currentPhase === 3 ? 0xff0000 : 0xff4444);
+            enemy.enemyData.speed = currentPhase === 3 ? 90 : (currentPhase === 2 ? 75 : 60);
+          }
+
+          // Phase 2+ AoE Attacks
+          if (currentPhase >= 2 && enemy.enemyData.abilityCooldowns) {
+            enemy.enemyData.abilityCooldowns.aoe -= dt;
+            if (enemy.enemyData.abilityCooldowns.aoe <= 0) {
+              enemy.enemyData.abilityCooldowns.aoe = 4.0; // 4 second cooldown
+              this.castBossAoE(enemy);
+            }
+          }
+
+          // Phase 3 Summoning
+          if (currentPhase === 3 && enemy.enemyData.abilityCooldowns) {
+            enemy.enemyData.abilityCooldowns.summon -= dt;
+            if (enemy.enemyData.abilityCooldowns.summon <= 0) {
+              enemy.enemyData.abilityCooldowns.summon = 8.0;
+              this.summonMinions(enemy);
+            }
+          }
+        }
+
         const vx = (dx / dist) * enemy.enemyData.speed;
         const vy = (dy / dist) * enemy.enemyData.speed;
         body.setVelocity(vx, vy);
@@ -445,6 +488,79 @@ export class DungeonScene extends Phaser.Scene {
         body.setVelocity(0, 0);
       }
     });
+  }
+
+  private castBossAoE(boss: EnemySprite) {
+    const tx = this.player.x;
+    const ty = this.player.y;
+    
+    // Create telegraph graphic
+    const telegraph = this.add.graphics();
+    telegraph.lineStyle(2, 0xff0000, 0.8);
+    telegraph.fillStyle(0xff0000, 0.2);
+    telegraph.strokeCircle(tx, ty, 48);
+    telegraph.fillCircle(tx, ty, 48);
+    telegraph.setDepth(5);
+    
+    // Scale up tween to show impending doom
+    this.tweens.add({
+      targets: telegraph,
+      alpha: 0.5,
+      scale: 1.1,
+      duration: 1500,
+      onComplete: () => {
+        // Explode
+        telegraph.destroy();
+        
+        // Damage calculation if player is in range
+        const dx = this.player.x - tx;
+        const dy = this.player.y - ty;
+        if (Math.sqrt(dx * dx + dy * dy) < 48) {
+          this.combatSystem.damagePlayer(boss.enemyData.attack * 1.5);
+          useUIStore.getState().addToast('Hit by AoE!', 'error');
+        }
+        
+        // Explosion visual
+        const explosion = this.add.circle(tx, ty, 48, 0xff0000, 0.8);
+        this.tweens.add({
+          targets: explosion,
+          alpha: 0,
+          scale: 1.5,
+          duration: 300,
+          onComplete: () => explosion.destroy()
+        });
+      }
+    });
+  }
+
+  private summonMinions(boss: EnemySprite) {
+    for (let i = 0; i < 2; i++) {
+      const offsetX = (Math.random() - 0.5) * 100;
+      const offsetY = (Math.random() - 0.5) * 100;
+      
+      const body = this.add.image(0, 0, 'enemy-orc');
+      body.setTint(0xff8888);
+      const shadow = this.add.ellipse(0, 16, 20, 6, 0x000000, 0.4);
+      
+      const container = this.add.container(boss.x + offsetX, boss.y + offsetY, [shadow, body]) as EnemySprite;
+      container.setDepth(20);
+      this.physics.add.existing(container);
+      
+      container.enemyData = {
+        id: `minion-${Date.now()}-${i}`,
+        type: 'orc',
+        name: 'Warden Minion',
+        hp: 50,
+        maxHp: 50,
+        speed: 80,
+        attack: 10,
+        defense: 5,
+        state: 'chase'
+      };
+      
+      this.enemies.push(container);
+      this.entityLayer.add(container);
+    }
   }
 
   private enemyAttack(enemy: EnemySprite) {

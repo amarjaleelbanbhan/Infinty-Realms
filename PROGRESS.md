@@ -28,4 +28,9 @@ Next: Milestone 4: Dungeons & Bosses (Task 1: Procedural Dungeons)
 Status: done
 Verification: Created Dungeon HUD with minimap stats and Victory screen overlay. Updated DungeonScene to broadcast state and lock doors when enemies are in proximity (room lock mechanic). Removed red key requirement for doors. Client typecheck passes.
 Next: Milestone 4, Task 2: Boss Mechanics (AoE attacks, phases)
+
+[2026-07-12 12:45] Cycle 4 — Milestone 4, Task 2: Boss Mechanics
+Status: done
+Verification: Updated EnemySprite to track isBoss, phase, and abilityCooldowns. Added Boss phases (1, 2, 3) at HP thresholds. Implemented castBossAoE (red telegraph circle + explosion damage) and summonMinions abilities for phases 2 and 3. Client typecheck passes.
+Next: Milestone 4, Task 3: Party System
 ```
