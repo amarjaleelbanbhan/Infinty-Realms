@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { AiAgentService } from './ai-agent.service';
 import { AiGuardService } from './ai-guard.service';
@@ -7,9 +7,10 @@ import { AiLoreService } from './ai-lore.service';
 import { AiController } from './ai.controller';
 import { WorldModule } from '../world/world.module';
 import { NpcsModule } from '../npcs/npcs.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [WorldModule, NpcsModule],
+  imports: [PrismaModule, forwardRef(() => WorldModule), forwardRef(() => NpcsModule)],
   providers: [AiService, AiAgentService, AiGuardService, AiSimulatedPlayerService, AiLoreService],
   controllers: [AiController],
   exports: [AiService, AiAgentService, AiGuardService, AiSimulatedPlayerService, AiLoreService],
