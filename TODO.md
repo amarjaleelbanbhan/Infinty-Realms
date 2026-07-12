@@ -18,9 +18,14 @@ fully DONE — see the "Foundation-blocking" rule in `ROADMAP.md`.
 - [x] Reject (not just warn-and-log) anti-cheat violations in `players.service.ts`
 
 ## Should Have (Phase 1 hardening / early Phase 5)
-- [ ] Real party invite consent flow (same pattern as the trade-request fix)
+- [x] Real party invite consent flow (same pattern as the trade-request fix;
+      leave/kick sync fixed too — see SECURITY.md/TECH_DEBT.md)
+- [ ] Server-authoritative party membership (currently consent-gated but
+      client-composed roster, not validated server-side)
 - [ ] Rotate `JWT_SECRET` before any real deployment
 - [ ] Confirm no real secrets ever land in `.env.example`
+- [ ] `pretypecheck`/`pretest` script in `server/package.json` to auto-rebuild
+      `shared` — hit stale-shared-dist friction directly this pass
 
 ## Nice to Have (Phase 6, pick ONE at a time — do not start until Phase 1-2 are DONE)
 - [ ] Ecosystem cascade (overhunting -> refugees -> quests) — recommended

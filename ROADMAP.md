@@ -38,6 +38,7 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | CI (typecheck + test on every push) | DONE — CI already ran typecheck+build; added the missing test step |
 | Client-side test infrastructure | DONE (vitest) |
 | Anti-cheat rejects (not silently drops) gold/XP violations | DONE |
+| Real party invite consent + roster sync (leave/kick included) | DONE — not yet server-authoritative membership |
 
 ## Phase 2 — Core Gameplay
 **Status: PLANNED**

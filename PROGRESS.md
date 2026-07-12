@@ -292,3 +292,30 @@ for cross-session moderation. Persisting them is listed as a follow-up
 in SECURITY.md, not done here.
 Next: server-side combat/enemy authority; real persistence-on-write;
 real party invite consent flow.
+
+[2026-07-12 22:45] Phase 1 — Real party invite consent + roster sync
+Status: done
+Files changed: `server/src/multiplayer/game.gateway.ts`, `client/src/stores/usePartyStore.ts`, `client/src/stores/usePartyStore.test.ts` (new), `client/src/ui/PartyContextMenu.tsx`, `client/src/ui/PartyUI.tsx`, `client/src/ui/PartyInvitePrompt.tsx` (new), `client/src/App.tsx`, `client/src/game/systems/SocketManager.ts`, `shared/types/index.ts`
+Tests added: 11 cases in `usePartyStore.test.ts` (request/accept/decline,
+party creation vs. joining existing, roster sync on leave with
+leadership transfer, kick, decline never mutates state)
+Technical notes: `PartyContextMenu.handleInvite` used to auto-accept
+its own invite via a `setTimeout` with no other player involved —
+same bug class as pre-fix trading. `PartyUI`'s leave/kick handlers had
+comments literally saying "In a real implementation, send a socket
+event..." Added `partyInviteRequest`/`partyInviteResponse` relay
+(mirrors the trade-request fix) plus a `partySync` relay so whichever
+client holds the current roster after an accept/leave/kick pushes it to
+the others. Deliberately scoped smaller than the trade fix: this is
+consent-gated and synced, but not full server-authoritative party
+membership (no server-side PartyService validating who's in which
+party) — documented as a known gap in TECH_DEBT.md/SECURITY.md rather
+than silently left unmentioned.
+Verified: 59/59 tests passing (36 server + 23 client), client+server
+typecheck clean (had to rebuild `shared`'s dist after adding
+`PartyMember` to shared/types — server's tsconfig resolves shared types
+against compiled dist, not source, a friction point now noted in
+TECH_DEBT.md), full server rebuild boots with all three new socket
+handlers registered (confirmed in boot log).
+Next: server-side combat/enemy authority (biggest remaining gap, needs
+a design pass); real persistence-on-write; JWT_SECRET rotation.

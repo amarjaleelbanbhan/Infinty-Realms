@@ -22,6 +22,11 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
 - Anti-cheat gold/XP heuristic in `players.service.ts` used to silently
   drop the offending field and still return success. Now rejects the whole
   save (HTTP 403) and tracks a per-player violation count — see `SECURITY.md`.
+- Party invites were 100% fake (auto-accepted locally, no other player
+  involved). Now real request/accept/decline relay plus a roster sync —
+  see `SECURITY.md`. Leave/kick were also fake (comments said as much
+  directly in the old code) and are fixed the same way. Party membership
+  is still not server-authoritative — see below.
 
 ## Outstanding
 
@@ -38,12 +43,17 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
   mid-session loses anything not yet flushed. The anti-cheat check on that
   endpoint now rejects bad deltas outright (see above), but the underlying
   60s-delayed, client-computed save cadence itself is unchanged.
+- **Party membership is not server-authoritative.** Invite consent and
+  roster sync are now real (see "Fixed this pass"), but there is no
+  server-side `PartyService` validating who's actually in which party —
+  the roster is composed client-side by whichever client just processed
+  an accept/leave/kick and pushed via `partySync`. A modified client could
+  still push a fabricated roster to others. Lower risk than the trade/
+  combat gaps since party membership isn't directly a currency, but worth
+  closing if parties gain gameplay stakes (shared loot rules, instance
+  access, etc).
 
 ### Known-fake features not yet addressed
-- **Party invites are still fake** (`PartyContextMenu.tsx` `handleInvite`)
-  — the inviter's client fabricates party membership locally with no
-  socket round-trip and no consent from the invitee. Same category of bug
-  as the trading system was before this pass; not fixed yet.
 - Guilds, citadel sieges, leyline automation, NPC memory, ecosystem
   cascade, and most of `IDEAS.md`/old `ROADMAP.md` content exist only as
   documentation — no corresponding code was found anywhere in the repo.
@@ -69,3 +79,12 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
   `include` only covers `types/**/*.ts`). Harmless today because nothing
   imports the bare `@infinity-realms/shared` specifier, but a latent trap
   for future code that does.
+- The build-path fix earlier in this pass made `server/tsconfig.json`
+  resolve `@infinity-realms/shared/*` against `shared/dist` (compiled
+  output) instead of `shared` source, to avoid the outDir-mirroring bug.
+  Side effect: editing `shared/types/index.ts` and immediately running the
+  server's typecheck/tests sees stale types until `npm run build
+  --workspace=shared` is re-run. Hit this directly this pass. Worth a
+  `pretypecheck`/`pretest` script in `server/package.json` that rebuilds
+  shared automatically, or a `postinstall`/watch-mode setup, if this
+  friction recurs often.
