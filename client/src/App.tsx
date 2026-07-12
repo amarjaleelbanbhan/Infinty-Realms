@@ -33,6 +33,8 @@ import { CosmeticShopUI } from '@ui/CosmeticShopUI';
 import { CraftingUI } from '@ui/CraftingUI';
 import { DungeonEntryUI } from '@ui/DungeonEntryUI';
 import { DungeonHUD } from '@ui/DungeonHUD';
+import { PartyUI } from '@ui/PartyUI';
+import { PartyContextMenu } from '@ui/PartyContextMenu';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -114,6 +116,8 @@ export default function App() {
                 onOpenCreator={() => setShowCreator(true)}
               />
               <DungeonHUD />
+              <PartyUI />
+              <PartyContextMenu />
             </div>
 
             {/* Modals Layer */}

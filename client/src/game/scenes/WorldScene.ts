@@ -1613,6 +1613,18 @@ export class WorldScene extends Phaser.Scene {
 
     const container = this.add.container(x, y, [shadow, body, label]);
     container.setDepth(20);
+    container.setSize(24, 32);
+    container.setInteractive({ cursor: 'pointer' });
+    
+    // Right-click for Party Context Menu
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.rightButtonDown()) {
+        const mouseEvent = pointer.event as MouseEvent;
+        window.dispatchEvent(new CustomEvent('party-context-menu', {
+          detail: { x: mouseEvent.clientX, y: mouseEvent.clientY, playerId: data.playerId, playerName: data.name }
+        }));
+      }
+    });
 
     this.entityLayer.add(container);
     this.remotePlayers.set(data.playerId, container);

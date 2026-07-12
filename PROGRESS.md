@@ -33,4 +33,9 @@ Next: Milestone 4, Task 2: Boss Mechanics (AoE attacks, phases)
 Status: done
 Verification: Updated EnemySprite to track isBoss, phase, and abilityCooldowns. Added Boss phases (1, 2, 3) at HP thresholds. Implemented castBossAoE (red telegraph circle + explosion damage) and summonMinions abilities for phases 2 and 3. Client typecheck passes.
 Next: Milestone 4, Task 3: Party System
+
+[2026-07-12 12:50] Cycle 5 — Milestone 4, Task 3: Party System
+Status: done
+Verification: Created usePartyStore for state management. Built PartyUI to show party members, HP bars, and leader crown. Added PartyContextMenu for right-clicking remote players to invite them to party. Wired it into WorldScene remote player interactivity and App.tsx. Client typecheck passes.
+Next: Milestone 5, Task 1: Farming & Agriculture (Crop planting/harvesting)
 ```
