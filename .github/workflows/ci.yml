@@ -24,5 +24,11 @@ jobs:
       - name: Typecheck Workspaces
         run: npm run typecheck
 
+      - name: Generate Prisma Client
+        run: npm run prisma:generate --workspace=server
+
+      - name: Run Tests
+        run: npm run test
+
       - name: Build Workspaces
         run: npm run build

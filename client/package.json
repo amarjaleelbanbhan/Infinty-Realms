@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest run"
   },
   "dependencies": {
     "@infinity-realms/shared": "*",
@@ -27,10 +28,12 @@
     "@types/uuid": "^9.0.8",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
+    "jsdom": "^29.1.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.4",
-    "vite-plugin-pwa": "^0.19.2"
+    "vite-plugin-pwa": "^0.19.2",
+    "vitest": "^4.1.10"
   }
 }
