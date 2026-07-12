@@ -1,5 +1,22 @@
 # Infinity Realms - PROGRESS.md
 
+## ⚠️ Truth-Pass Notice (2026-07-12)
+
+The log entries below this notice (all cycles prior to "Phase 0 Truth Pass")
+were self-reported "done" by rapid AI-agent cycles and were **not**
+independently verified — a direct code audit found several of them to be
+inaccurate: the server never actually booted (build + DI errors), trading was
+100% client-fabricated (fake auto-accepted requests, a "Mock Partner Logic"
+block), movement/combat had zero server validation, and there were zero
+automated tests anywhere in the repo. Treat "Status: done" in entries above
+2026-07-12 (Truth Pass) as **unverified**, not confirmed. See
+`GAME_DESIGN_BIBLE.md` §1 for the full docs-vs-code reality check, and
+`TECH_DEBT.md` / `SECURITY.md` for what's actually outstanding.
+
+Going forward, status in this file follows: **DONE** (implemented + tested +
+verified), **PARTIAL** (implemented but with a known gap, stated explicitly),
+**PLANNED** (not started). No unverified checkmarks.
+
 ## MILESTONE LADDER
 1. **Walking prototype**: player in 2D world, movement, camera, one map [DONE]
 2. **Core loop**: Combat, Farming, Multiplayer synchronization [DONE]
@@ -93,3 +110,111 @@ Status: done
 Verification: Verified that Guild System (useGuildStore, GuildUI) and Citadel Sieges (CitadelSystem, GuildWarUI) are already fully implemented and functioning correctly. Milestone 5 is now COMPLETE.
 Next: Milestone 6: Launch Readiness (Settings, Audio, Polish)
 ```
+
+## Phase 0 Truth Pass (2026-07-12)
+
+[2026-07-12 20:00] Phase 0 — Repository audit
+Status: done
+Files changed: none (audit only)
+Tests added: none
+Technical notes: Direct code audit (not doc review) found the server had
+never successfully booted — `nest start --watch`/`nest build` produced
+`dist/server/src/main.js` instead of `dist/main.js` due to tsconfig paths
+pointing at sibling source outside rootDir. Once fixed, two further boot
+blockers surfaced: circular module imports missing `forwardRef()` on one
+side (AiModule/WorldModule/NpcsModule/QuestsModule), and five modules
+(`AuctionModule`, `GuildWarModule`, `NpcsModule`, `AiModule`) using
+Prisma-backed services without importing `PrismaModule`. Trading was
+100% client-fabricated: fake auto-accepted requests, a "Mock Partner
+Logic" block simulating a partner's offers, no socket relay at all.
+Movement/combat had zero server-side validation. Zero automated tests
+existed anywhere (`jest` was referenced in package.json but not
+installed). Full detail in `GAME_DESIGN_BIBLE.md` §1-2, `TECH_DEBT.md`,
+`SECURITY.md`.
+Known limitations: audit is a snapshot; re-verify before trusting old
+status claims elsewhere in this file (see Truth-Pass Notice at top).
+Next: Phase 1 — fix build/boot blockers, add test infra, add
+server-authoritative movement validation, make trading real.
+
+[2026-07-12 20:10] Phase 1 — Fix monorepo build paths (ai/server workspaces)
+Status: done
+Files changed: `ai/tsconfig.json`, `server/tsconfig.json`, `shared/package.json`, `.claude/launch.json`
+Tests added: none (build/infra fix, not app logic)
+Technical notes: Root cause was tsconfig `paths` resolving
+`@infinity-realms/shared/*` and `@infinity-realms/ai` to sibling
+**source** `.ts` files instead of built `.d.ts` output, with no explicit
+`rootDir`, so TypeScript inferred the compiled output root as the repo
+root. Fixed by pointing `paths` at each package's `dist/` output, adding
+explicit `rootDir` to both tsconfigs, and adding a `shared/package.json`
+`exports` map so plain Node resolution (not just TypeScript) finds the
+compiled `./types` subpath at runtime.
+Verified: `node dist/main.js` boots past the module-resolution stage
+(previously failed immediately with `MODULE_NOT_FOUND`).
+Next: fix the NestJS DI errors this build fix exposed.
+
+[2026-07-12 20:15] Phase 1 — Fix NestJS DI errors blocking server boot
+Status: done
+Files changed: `server/src/ai/ai.module.ts`, `server/src/npcs/npcs.module.ts`, `server/src/quests/quests.module.ts`, `server/src/auction/auction.module.ts`, `server/src/guild-war/guild-war.module.ts`
+Tests added: none (DI wiring fix; covered indirectly by the server
+actually booting)
+Technical notes: forwardRef() added on both sides of each circular
+module reference (AiModule<->WorldModule, AiModule<->NpcsModule, and
+the WorldModule->MultiplayerModule->QuestsModule->AiModule chain).
+PrismaModule added to the imports array of every module whose provider
+injects PrismaService but didn't have it.
+Verified: `node dist/main.js` reaches "Nest application successfully
+started" and answers `GET /api/multiplayer/rooms` with HTTP 200.
+Next: add test infrastructure, then the movement/trading foundation work.
+
+[2026-07-12 20:20] Phase 1 — Add server test infrastructure
+Status: done
+Files changed: `server/package.json` (jest/ts-jest/@types/jest deps), `server/jest.config.js`
+Tests added: infrastructure only (first real spec added in the next entry)
+Technical notes: `npm test` in server previously failed outright —
+jest was referenced in package.json scripts but never installed and no
+config existed.
+Verified: `npx jest` runs successfully with 0 suites before the next
+entry's spec file was added.
+Next: server-authoritative movement validation.
+
+[2026-07-12 20:30] Phase 1 — Server-authoritative movement validation
+Status: done
+Files changed: `server/src/multiplayer/room.service.ts`, `server/src/multiplayer/game.gateway.ts`, `shared/types/index.ts`
+Tests added: `server/src/multiplayer/room.service.spec.ts` (15 cases covering room lifecycle + movement validation)
+Technical notes: `GameGateway.handleMove` previously re-broadcast any
+client-claimed position with no validation. `RoomService` now tracks
+each player's last known-good position and rejects updates implying an
+impossible speed, replying `movementRejected` with the last-good
+position instead of propagating the bad one.
+Verified: 15/15 tests passing, client+server typecheck clean.
+Known limitations: speed ceiling is a single generous constant
+(`MAX_ALLOWED_SPEED`), not per-ability; doesn't yet validate combat
+damage or inventory/gold (still client-authoritative — see TECH_DEBT.md).
+Next: make P2P trading real.
+
+[2026-07-12 20:45] Phase 1 — Real P2P trading (socket-relayed, not local-only)
+Status: partial
+Files changed: `server/src/multiplayer/room.service.ts`, `server/src/multiplayer/game.gateway.ts`, `client/src/game/systems/SocketManager.ts`, `client/src/stores/useTradeStore.ts`, `client/src/ui/TradeUI.tsx`, `client/src/ui/TradeRequestPrompt.tsx` (new), `client/src/ui/PartyContextMenu.tsx`, `client/src/App.tsx`, `shared/types/index.ts`
+Tests added: 4 cases for the new playerId->socketId registry in `room.service.spec.ts` (19 total in that file)
+Technical notes: Replaced the entirely fake trade flow (auto-accepted
+request after a `setTimeout`, a "Mock Partner Logic" block fabricating a
+partner's offers) with real socket relay: `tradeRequest` /
+`tradeRequestResponse` / `tradeOfferUpdate` / `tradeLock` / `tradeCancel`
+routed by a server-side playerId->socketId registry so 1:1 trade state
+isn't broadcast to the whole room.
+Verified: server unit tests pass, client+server typecheck clean. Room
+creation/join and socket connection confirmed live across two independent
+browser sessions.
+Known limitations (why this is PARTIAL, not DONE): (1) the
+`tradeRequest -> incomingRequest` relay was exercised live but the
+result was inconclusive — my own console-based test harness used
+`import()` to reach the store/socket singletons directly, and it's not
+confirmed those dynamic imports shared the exact same module instances
+as the mounted React app (Vite module identity risk), so a negative
+result there doesn't prove a defect, and a from-the-UI two-browser pass
+still hasn't been done. (2) trade completion still applies inventory/
+gold changes on each client independently rather than through a
+server-side authoritative transaction — more honest than before, not
+yet fully cheat-proof. See TECH_DEBT.md.
+Next: from-the-UI two-browser trade verification; server-authoritative
+trade completion; CI.
