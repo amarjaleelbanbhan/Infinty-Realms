@@ -20,6 +20,7 @@ import { leylineSystem } from '@game/systems/LeylineSystem';
 import { farmingSystem } from '@game/systems/FarmingSystem';
 import { citadelSystem } from '@game/systems/CitadelSystem';
 import { MountSystem } from '@game/systems/MountSystem';
+import { antiCheatSystem } from '@game/systems/AntiCheatSystem';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -997,6 +998,12 @@ export class WorldScene extends Phaser.Scene {
     // Flip sprite based on direction
     if (vx < 0) this.playerBody.setFlipX(true);
     else if (vx > 0) this.playerBody.setFlipX(false);
+
+    // Anti-Cheat Validation
+    if (!antiCheatSystem.validateMovement(this.player.x, this.player.y, this.time.now, speed * sprintMult)) {
+      // Snap player back if violation
+      this.player.setPosition(this.lastSentPos.x, this.lastSentPos.y);
+    }
 
     // Attack
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) || (pad && pad.A)) {

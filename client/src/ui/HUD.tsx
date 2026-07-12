@@ -2,6 +2,7 @@ import { useGameStore } from '@stores/useGameStore';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
 import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle } from 'lucide-react';
+import { PerformanceStats } from './PerformanceStats';
 
 export function HUD() {
   const { player } = useGameStore();
@@ -141,6 +142,9 @@ export function HUD() {
           <span>Q Quests</span>
         </div>
       </div>
+      
+      {/* ── Performance & Anti-Cheat Monitor ── */}
+      <PerformanceStats />
     </>
   );
 }

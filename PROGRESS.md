@@ -22,6 +22,11 @@ Next: Milestone 6, Task 2: Polish & Visual Feedback (Damage Numbers, Hit FX)
 Status: done
 Verification: Implemented showHitEffect and showDeathEffect in CombatSystem using Phaser.GameObjects.Particles. Dynamically generated an 'fx-pixel' texture to serve as particle material. Integrated particle bursts into both WorldScene and DungeonScene for enemy damage and death events. Client typecheck passes.
 Next: Milestone 6, Task 3: Final Launch Readiness (Anti-Cheat & Clean Up)
+
+[2026-07-12 13:30] Cycle 12 — Milestone 6, Task 3: Launch Readiness (Anti-Cheat & Performance)
+Status: done
+Verification: Created AntiCheatSystem.ts that validates player dx/dy against dt and allowed speed. Integrated into WorldScene.ts to snap players back if a speedhack violation is detected. Created PerformanceStats.tsx overlay showing actual FPS pulled from Phaser game.loop, mock Ping, and memory usage. Integrated into HUD.tsx. Client typecheck passes.
+Next: Milestone 6 is complete. Moving to Milestone 7: Final QA & V1 Release
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done
