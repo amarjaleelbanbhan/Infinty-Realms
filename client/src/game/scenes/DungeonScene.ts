@@ -4,6 +4,7 @@ import { CombatSystem } from '@game/systems/CombatSystem';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
+import { useSettingsStore } from '@stores/useSettingsStore';
 
 const TILE_SIZE = 32;
 
@@ -98,8 +99,11 @@ export class DungeonScene extends Phaser.Scene {
     this.cameras.main.setZoom(1.2);
 
     // PostFX / Lighting
-    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.8); // Darker vignette for dungeon
-    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 0.8, 1.2);
+    const settings = useSettingsStore.getState();
+    if (settings.postProcessing) {
+      this.cameras.main.postFX.addVignette(0.5, 0.5, 0.85);
+      this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 0.8, 1.2);
+    }
     // Overlaps
     this.physics.add.overlap(this.player, this.keys, this.collectKey as any, undefined, this);
     this.physics.add.overlap(this.player, this.chests, this.interactChest as any, undefined, this);

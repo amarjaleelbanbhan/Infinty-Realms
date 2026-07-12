@@ -1,9 +1,12 @@
+import { useSettingsStore } from '@stores/useSettingsStore';
+
 // ============================================================
 // Sound System — Synth-based retro audio engine
 // ============================================================
 
 export class SoundSystem {
   private ctx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
   private enabled: boolean = true;
   private ambientOsc: OscillatorNode | null = null;
   private ambientGain: GainNode | null = null;
@@ -11,13 +14,25 @@ export class SoundSystem {
   constructor() {
     try {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.connect(this.ctx.destination);
+
+      // Subscribe to settings to update volume live
+      useSettingsStore.subscribe((state) => {
+        if (this.masterGain) {
+          this.masterGain.gain.value = state.masterVolume;
+        }
+      });
+      // Initial value
+      this.masterGain.gain.value = useSettingsStore.getState().masterVolume;
+      
     } catch (e) {
       console.warn('Web Audio API not supported', e);
     }
   }
 
   playAmbientDrone() {
-    if (!this.enabled || !this.ctx) return;
+    if (!this.enabled || !this.ctx || !this.masterGain) return;
     this.resume();
     if (this.ambientOsc) return; // Already playing
 
@@ -41,7 +56,7 @@ export class SoundSystem {
     this.ambientGain.gain.linearRampToValueAtTime(0.05, this.ctx.currentTime + 2); // Fade in
 
     this.ambientOsc.connect(this.ambientGain);
-    this.ambientGain.connect(this.ctx.destination);
+    this.ambientGain.connect(this.masterGain!);
 
     this.ambientOsc.start();
   }

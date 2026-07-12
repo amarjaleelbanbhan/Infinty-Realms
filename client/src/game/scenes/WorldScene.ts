@@ -13,6 +13,7 @@ import { questSystem } from '@game/systems/QuestSystem';
 import { soundSystem } from '@game/systems/SoundSystem';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+import { useSettingsStore } from '@stores/useSettingsStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
 import { socketManager } from '@game/systems/SocketManager';
 import { leylineSystem } from '@game/systems/LeylineSystem';
@@ -190,9 +191,12 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setZoom(1.2);
 
     // ── PostFX / Lighting ──
-    // Dark Fantasy atmosphere: strong dark vignette, glowing magical bloom
-    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.85); // Stronger vignette for mood
-    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.2, 1.5); // Softer, more diffuse glow
+    const settings = useSettingsStore.getState();
+    if (settings.postProcessing) {
+      // Dark Fantasy atmosphere: strong dark vignette, glowing magical bloom
+      this.cameras.main.postFX.addVignette(0.5, 0.5, 0.85); // Stronger vignette for mood
+      this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.2, 1.5); // Softer, more diffuse glow
+    }
 
     // ── Input ──
     this.setupInput();

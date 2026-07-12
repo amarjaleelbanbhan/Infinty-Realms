@@ -5,14 +5,19 @@
 2. **Core loop**: Combat, Farming, Multiplayer synchronization [DONE]
 3. **Systems Polish**: UI, Inventory, Skill Trees, AI Quests [IN PROGRESS]
 4. **Dungeons & Bosses**: Procedural dungeons, boss fights, party system [PENDING]
-5. **Economy & Guilds**: Marketplace, Guilds, Citadel Sieges [PENDING]
-6. **Launch Readiness**: Audio, Polish, Performance, Anti-cheat [PENDING]
+5. **Economy & Guilds**: Marketplace, Guilds, Citadel Sieges [DONE]
+6. **Launch Readiness**: Audio, Polish, Performance, Anti-cheat [IN PROGRESS]
 
 ## CURRENT STATE
-- **Current Milestone**: 3. Systems Polish
-- **Current Task**: Dynamic Quest Generation Engine (Backend AI hookups)
+- **Current Milestone**: 6. Launch Readiness
+- **Current Task**: Audio, Settings, and Polish
 
 ## LOGS
+```
+[2026-07-12 13:15] Cycle 10 — Milestone 6, Task 1: Settings UI & Polish
+Status: done
+Verification: Created useSettingsStore.ts with zustand/persist for saving to localStorage. Fully replaced old SettingsUI with new comprehensive SettingsUI featuring Master/Music/SFX volume sliders and Post-Processing & Screen Shake toggles. Wired SoundSystem to respect master volume using a master GainNode. Wired WorldScene and DungeonScene to conditionally apply bloom/vignette postFX based on settings. Wired CombatSystem to conditionally shake camera. Client typecheck passes.
+Next: Milestone 6, Task 2: Polish & Visual Feedback (Damage Numbers, Hit FX)
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done
@@ -53,4 +58,9 @@ Next: Milestone 5, Task 3: Economy (Marketplace UI and Trading)
 Status: done
 Verification: Created useMarketStore.ts to manage items for sale and buying/selling logic. Fully implemented MarketplaceUI.tsx with split panes for buying items from merchants and selling items from the player's inventory for gold. Build passes.
 Next: Milestone 5, Task 4: Guild System & Roster
+
+[2026-07-12 13:10] Cycle 9 — Milestone 5, Task 4: Guild System & Roster
+Status: done
+Verification: Verified that Guild System (useGuildStore, GuildUI) and Citadel Sieges (CitadelSystem, GuildWarUI) are already fully implemented and functioning correctly. Milestone 5 is now COMPLETE.
+Next: Milestone 6: Launch Readiness (Settings, Audio, Polish)
 ```

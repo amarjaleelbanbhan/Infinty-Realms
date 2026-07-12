@@ -5,6 +5,7 @@
 import Phaser from 'phaser';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+import { useSettingsStore } from '@stores/useSettingsStore';
 import type { PlayerStats } from '@shared/types';
 
 export interface CombatEntity {
@@ -98,7 +99,10 @@ export class CombatSystem {
 
   /** Shake camera for juicy impact */
   shakeCamera(duration = 100, intensity = 0.01) {
-    this.scene.cameras.main.shake(duration, intensity);
+    const settings = useSettingsStore.getState();
+    if (settings.screenShake) {
+      this.scene.cameras.main.shake(duration, intensity);
+    }
   }
 
   /** Brief time slow/pause for hit impact */
