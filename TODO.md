@@ -11,8 +11,9 @@ fully DONE — see the "Foundation-blocking" rule in `ROADMAP.md`.
 - [ ] Inventory validation server-side
 - [ ] From-the-UI two-browser trade verification (console-harness result
       was inconclusive this pass, see `PROGRESS.md` 2026-07-12 20:45 entry)
-- [ ] CI: run typecheck + test on every push
-- [ ] Client-side test infrastructure (vitest recommended — pairs with Vite)
+- [x] CI: run typecheck + test on every push (CI already existed for
+      typecheck+build; added the missing test step)
+- [x] Client-side test infrastructure (vitest, paired with existing Vite config)
 - [ ] Real persistence-on-write, not a 60s client-trusted push
 - [ ] Reject (not just warn-and-log) anti-cheat violations in `players.service.ts`
 

@@ -14,6 +14,11 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
 - Trading was 100% client-fabricated (now: real socket relay, and trade
   *completion* is now a server-authoritative Prisma transaction via
   `TradeService`, not client-applied — see `SECURITY.md`)
+- CI ran typecheck+build but never tests (`.github/workflows/ci.yml`
+  existed, this was a genuine gap, corrected — the earlier version of this
+  report incorrectly said "no CI" existed at all; it did, just without a
+  test step). Added client test infrastructure (vitest, since none existed
+  for the client workspace at all before this).
 
 ## Outstanding
 
@@ -31,8 +36,6 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
   (gold/XP-rate heuristic in `players.service.ts`) only logs a warning and
   silently drops the field — it doesn't reject the request or flag the
   account.
-- **No CI.** Nothing runs typecheck or tests automatically on push.
-- **No client-side test infrastructure at all** (no vitest/jest/testing-library).
 
 ### Known-fake features not yet addressed
 - **Party invites are still fake** (`PartyContextMenu.tsx` `handleInvite`)

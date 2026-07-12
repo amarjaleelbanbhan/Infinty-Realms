@@ -35,8 +35,8 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Server-authoritative combat | PLANNED |
 | Inventory validation | PARTIAL — validated at trade-execution time only, not for every mutation |
 | Real persistence-on-write (currently 60s client-trusted push) | PLANNED |
-| CI (typecheck + test on every push) | PLANNED |
-| Client-side test infrastructure (currently none) | PLANNED |
+| CI (typecheck + test on every push) | DONE — CI already ran typecheck+build; added the missing test step |
+| Client-side test infrastructure | DONE (vitest) |
 
 ## Phase 2 — Core Gameplay
 **Status: PLANNED**

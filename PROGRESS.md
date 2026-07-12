@@ -248,3 +248,25 @@ real two-browser click-through pass is still outstanding.
 Next: server-side combat/enemy authority (needs a design pass first —
 no shared server-side enemy state exists at all today), or CI, or
 client-side test infrastructure.
+
+[2026-07-12 22:20] Phase 1 — CI test step + client test infrastructure
+Status: done
+Files changed: `.github/workflows/ci.yml`, `client/package.json`, `client/vite.config.ts`, `client/src/stores/useTradeStore.test.ts` (new)
+Tests added: 12 cases for `useTradeStore` (request/accept/decline flow,
+inventory/gold offer caps, lock relays without local completion,
+server-authoritative `applyTradeExecuted`/`handleTradeFailed`)
+Technical notes: Correction to an earlier TECH_DEBT.md claim — CI
+already existed (`.github/workflows/ci.yml`) and ran typecheck+build,
+just never tests; the "No CI" wording in that report was itself
+inaccurate and has been fixed. Added a "Run Tests" step (plus Prisma
+client generation, needed for the server's Prisma-derived types to
+typecheck in CI) calling the existing root `npm run test`. Separately,
+the client workspace had no test infrastructure at all; added vitest +
+jsdom (pairs naturally with the existing Vite config) and a first real
+test suite for `useTradeStore`, not just scaffolding.
+Verified: `npm run test` at the repo root now runs both server (jest,
+29 tests) and client (vitest, 12 tests) successfully — confirmed
+locally before assuming it'll pass in CI. Client and server typecheck
+both clean with the new files in place.
+Next: server-side combat/enemy authority; real persistence-on-write;
+reject-not-warn anti-cheat; real party invite consent flow.
