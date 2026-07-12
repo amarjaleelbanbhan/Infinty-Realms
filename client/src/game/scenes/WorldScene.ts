@@ -719,6 +719,30 @@ export class WorldScene extends Phaser.Scene {
            return;
         }
 
+        // Check Farming on Dirt
+        const tx = Math.floor(worldX / TILE_SIZE);
+        const ty = Math.floor(worldY / TILE_SIZE);
+        const biome = this.world.tiles[ty]?.[tx]?.biome;
+        
+        if (biome === 'plains' || biome === 'forest' || biome === 'swamp') {
+            const pDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, worldX, worldY);
+            if (pDist <= this.INTERACT_RANGE) {
+               // Plant seed at grid center
+               const px = tx * TILE_SIZE + TILE_SIZE / 2;
+               const py = ty * TILE_SIZE + TILE_SIZE / 2;
+               // Check if plot already exists here
+               const existingPlot = farmingSystem.getPlots().find(p => p.x === px && p.y === py);
+               if (!existingPlot) {
+                   const store = useGameStore.getState();
+                   const hasSeed = store.player?.inventory?.some(s => s.item.id === 'magic-seed' && s.quantity > 0);
+                   if (hasSeed) {
+                       farmingSystem.plantSeed(px, py, biome);
+                       return;
+                   }
+               }
+            }
+        }
+        
         // Check Leylines
         const clickedNode = leylineSystem.getNodes().find(node => {
            return Phaser.Math.Distance.Between(worldX, worldY, node.x, node.y) < 32;
@@ -727,10 +751,8 @@ export class WorldScene extends Phaser.Scene {
         if (clickedNode) {
            const pDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, clickedNode.x, clickedNode.y);
            if (pDist <= this.INTERACT_RANGE) {
-               const tx = Math.floor(clickedNode.x / TILE_SIZE);
-               const ty = Math.floor(clickedNode.y / TILE_SIZE);
-               const biome = this.world.tiles[ty]?.[tx]?.biome ?? 'plains';
-               farmingSystem.plantSeed(clickedNode.x + (Math.random() * 40 - 20), clickedNode.y + (Math.random() * 40 - 20), biome);
+               // Instead of planting seed, just interact
+               useUIStore.getState().addToast('Leyline Node resonates with arcane power.', 'info');
            } else {
                useUIStore.getState().addToast('Too far to interact with node.', 'error');
            }

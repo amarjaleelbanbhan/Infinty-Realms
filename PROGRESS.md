@@ -38,4 +38,9 @@ Next: Milestone 4, Task 3: Party System
 Status: done
 Verification: Created usePartyStore for state management. Built PartyUI to show party members, HP bars, and leader crown. Added PartyContextMenu for right-clicking remote players to invite them to party. Wired it into WorldScene remote player interactivity and App.tsx. Client typecheck passes.
 Next: Milestone 5, Task 1: Farming & Agriculture (Crop planting/harvesting)
+
+[2026-07-12 12:55] Cycle 6 — Milestone 5, Task 1: Farming & Agriculture
+Status: done
+Verification: Rewired FarmingSystem to allow planting seeds directly on soil (plains/forest/swamp) instead of being restricted to Leyline nodes. Interacting with the ground while a Magic Seed is in the inventory will plant it. Crops render on the tilemap and can be harvested once mature. Build passes.
+Next: Milestone 5, Task 2: Player Housing (Instanced Zones)
 ```
