@@ -32,6 +32,11 @@ Next: Milestone 6 is complete. Moving to Milestone 7: Final QA & V1 Release
 Status: done
 Verification: Added `isDead`, `die()`, and `respawn()` logic to `useGameStore`. Updated `damagePlayer()` in `CombatSystem` to trigger death and play a sound. Added `DeathOverlay.tsx` with a respawn button and penalty message (10% gold loss). `WorldScene.update()` early returns if dead to block input. Listen for `ir:respawn` in `WorldScene` to reset coordinates to spawn point (128*32, 128*32). Typecheck passes.
 Next: Check README.md for phase completion
+
+[2026-07-12 14:00] Cycle 14 — Phase 2: Player-to-Player Trading
+Status: done
+Verification: Created useTradeStore.ts, TradeUI.tsx, and updated Inventory.tsx to support P2P trading. Hooked into PartyContextMenu for trade requests. Mocked partner trade logic for local loop testing. Client typecheck passes.
+Next: Phase 2 is mostly complete. Moving to remaining items or Phase 3.
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

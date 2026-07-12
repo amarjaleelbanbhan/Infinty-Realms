@@ -2,10 +2,12 @@ import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import type { InventorySlot, ItemRarity } from '@shared/types';
 import { Backpack, Coins, Sword, Shield, HardHat, Gem, FlaskConical, PackageOpen, X } from 'lucide-react';
+import { useTradeStore } from '@stores/useTradeStore';
 
 export function Inventory() {
-  const { isInventoryOpen, closeInventory } = useUIStore();
+  const { isInventoryOpen, closeInventory, isTradeOpen } = useUIStore();
   const { player, equipItem, unequipItem, consumeItem } = useGameStore();
+  const { addItemToOffer } = useTradeStore();
 
   if (!isInventoryOpen) return null;
 
@@ -95,7 +97,9 @@ export function Inventory() {
                 key={i}
                 onClick={() => {
                   if (slot) {
-                    if (['weapon', 'armor', 'helmet', 'accessory'].includes(slot.item.type)) {
+                    if (isTradeOpen) {
+                      addItemToOffer(slot.item, 1);
+                    } else if (['weapon', 'armor', 'helmet', 'accessory'].includes(slot.item.type)) {
                       equipItem(slot.item);
                       useUIStore.getState().addToast(`Equipped ${slot.item.name}`, 'success');
                     } else if (slot.item.type === 'consumable') {
@@ -106,7 +110,7 @@ export function Inventory() {
                 }}
                 className={`inventory-slot ${slot ? 'occupied hover:scale-110 hover:shadow-[0_0_15px_currentColor] cursor-pointer' : 'empty'} ${slot ? rarityBorder[slot.item.rarity] ?? 'border-gray-500' : ''}`}
                 style={slot ? { color: `var(--color-${slot.item.rarity === 'legendary' ? 'gold' : slot.item.rarity === 'epic' ? 'accent' : 'text'})` } : {}}
-                data-tooltip={slot ? `${slot.item.name} x${slot.quantity}\n${slot.item.description}${['weapon', 'armor', 'helmet', 'accessory'].includes(slot.item.type) ? '\n(Click to equip)' : slot.item.type === 'consumable' ? '\n(Click to consume)' : ''}` : undefined}
+                data-tooltip={slot ? `${slot.item.name} x${slot.quantity}\n${slot.item.description}${isTradeOpen ? '\n(Click to offer)' : ['weapon', 'armor', 'helmet', 'accessory'].includes(slot.item.type) ? '\n(Click to equip)' : slot.item.type === 'consumable' ? '\n(Click to consume)' : ''}` : undefined}
               >
                 {slot ? (
                   <>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { usePartyStore } from '@stores/usePartyStore';
 import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
+import { useTradeStore } from '@stores/useTradeStore';
+import { socketManager } from '@game/systems/SocketManager';
 
 export function PartyContextMenu() {
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, playerId: string, playerName: string } | null>(null);
@@ -52,6 +54,18 @@ export function PartyContextMenu() {
     setContextMenu(null);
   };
 
+  const handleTradeRequest = () => {
+    // Simulated trade request since we don't have a backend doing it yet
+    addToast(`Requested trade with ${contextMenu.playerName}...`, 'info');
+    setContextMenu(null);
+    
+    // Auto-accept mock for local testing loop
+    setTimeout(() => {
+      useTradeStore.getState().initiateTrade(contextMenu.playerId, contextMenu.playerName);
+      addToast(`${contextMenu.playerName} accepted your trade request!`, 'success');
+    }, 1000);
+  };
+
   return (
     <div 
       className="fixed z-50 bg-slate-900 border border-slate-700 rounded-md shadow-xl py-1 w-48 animate-in fade-in duration-100"
@@ -66,6 +80,12 @@ export function PartyContextMenu() {
         onClick={handleInvite}
       >
         Invite to Party
+      </button>
+      <button 
+        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-slate-800 transition-colors"
+        onClick={handleTradeRequest}
+      >
+        Request Trade
       </button>
       <button 
         className="w-full text-left px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"

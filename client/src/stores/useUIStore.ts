@@ -21,6 +21,7 @@ interface UIStore {
   isAuctionHouseOpen: boolean;
   isCraftingOpen: boolean;
   isSkillTreeOpen: boolean;
+  isTradeOpen: boolean;
   merchantNpcId: string | null;
   merchantBiome: string | null;
   currentBiome: string | null;
@@ -57,6 +58,8 @@ interface UIStore {
   closeCrafting: () => void;
   openSkillTree: () => void;
   closeSkillTree: () => void;
+  openTrade: () => void;
+  closeTrade: () => void;
   addToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
   setIsMobile: (mobile: boolean) => void;
@@ -75,6 +78,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isAuctionHouseOpen: false,
   isCraftingOpen: false,
   isSkillTreeOpen: false,
+  isTradeOpen: false,
   merchantNpcId: null,
   merchantBiome: null,
   currentBiome: null,
@@ -108,9 +112,11 @@ export const useUIStore = create<UIStore>((set, get) => ({
   openCrafting: () => set({ isCraftingOpen: true }),
   closeCrafting: () => set({ isCraftingOpen: false }),
 
-  openSkillTree: () => set({ isSkillTreeOpen: true, isInventoryOpen: false, isQuestLogOpen: false }),
+  openSkillTree: () => set({ isSkillTreeOpen: true, isInventoryOpen: false, isQuestLogOpen: false, isDialogueOpen: false, isMerchantShopOpen: false, isCraftingOpen: false, isTradeOpen: false }),
   closeSkillTree: () => set({ isSkillTreeOpen: false }),
-
+  openTrade: () => set({ isTradeOpen: true, isInventoryOpen: true, isQuestLogOpen: false, isDialogueOpen: false, isMerchantShopOpen: false, isCraftingOpen: false, isSkillTreeOpen: false }),
+  closeTrade: () => set({ isTradeOpen: false, isInventoryOpen: false }),
+  
   addToast: (message, type = 'info') => {
     const id = crypto.randomUUID();
     set((s) => ({ toasts: [...s.toasts, { id, message, type }] }));
