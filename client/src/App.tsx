@@ -32,6 +32,7 @@ import { HousingUI } from '@ui/HousingUI';
 import { CosmeticShopUI } from '@ui/CosmeticShopUI';
 import { CraftingUI } from '@ui/CraftingUI';
 import { DungeonEntryUI } from '@ui/DungeonEntryUI';
+import { DungeonHUD } from '@ui/DungeonHUD';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 
@@ -112,6 +113,7 @@ export default function App() {
                 onOpenMap={() => setShowMap(true)}
                 onOpenCreator={() => setShowCreator(true)}
               />
+              <DungeonHUD />
             </div>
 
             {/* Modals Layer */}

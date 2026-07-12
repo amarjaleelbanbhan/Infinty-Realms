@@ -103,6 +103,12 @@ export class DungeonScene extends Phaser.Scene {
     if (this.exitPortal) {
       this.physics.add.overlap(this.player, this.exitPortal, this.exitDungeon as any, undefined, this);
     }
+    
+    this.broadcastDungeonState();
+  }
+  
+  private broadcastDungeonState() {
+    window.dispatchEvent(new CustomEvent('dungeon-update', { detail: this.dungeonData }));
   }
 
   update(time: number, delta: number) {
@@ -468,6 +474,13 @@ export class DungeonScene extends Phaser.Scene {
       onComplete: () => {
         enemy.destroy();
         this.enemies = this.enemies.filter((e) => e !== enemy);
+        
+        if (enemy.enemyData.type === 'dragon') {
+          this.dungeonData.bossAlive = false;
+          useUIStore.getState().addToast('Dungeon Warden Defeated!', 'success');
+        }
+        
+        this.broadcastDungeonState();
       },
     });
 
@@ -525,19 +538,22 @@ export class DungeonScene extends Phaser.Scene {
   }
 
   private interactDoor(player: any, door: Phaser.Physics.Arcade.Sprite) {
-    if (this.hasRedKey) {
-      door.destroy();
-      this.doors = this.doors.filter((d) => d !== door);
-      this.hasRedKey = false; // consume key
-    } else {
+    // Check if there are enemies nearby (within 300 pixels = roughly 1 room size)
+    const enemiesNearby = this.enemies.some(e => {
+      const dx = e.x - door.x;
+      const dy = e.y - door.y;
+      return (dx * dx + dy * dy) < 300 * 300;
+    });
+
+    if (enemiesNearby) {
       // Bounce player back
       const body = this.player.body as Phaser.Physics.Arcade.Body;
       body.setVelocity(-body.velocity.x * 0.5, -body.velocity.y * 0.5);
 
-      const banner = this.add.text(this.player.x, this.player.y - 48, 'Requires Red Key!', {
+      const banner = this.add.text(this.player.x, this.player.y - 48, 'Locked by dark energy!', {
         fontFamily: 'Inter, sans-serif',
         fontSize: '11px',
-        color: '#ff4444',
+        color: '#a855f7',
         stroke: '#000000',
         strokeThickness: 2,
       }).setOrigin(0.5);
@@ -549,6 +565,10 @@ export class DungeonScene extends Phaser.Scene {
         duration: 1200,
         onComplete: () => banner.destroy(),
       });
+    } else {
+      // Unlock door
+      door.destroy();
+      this.doors = this.doors.filter((d) => d !== door);
     }
   }
 
