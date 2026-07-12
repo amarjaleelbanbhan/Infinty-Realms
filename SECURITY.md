@@ -17,14 +17,20 @@ for the full critique.
   system wasn't actually multiplayer at all (auto-accepted fake requests,
   a fabricated fake partner), so it wasn't exploitable in the traditional
   sense, but it also meant nothing about the trade UI could be trusted to
-  reflect real player-to-player state. Now real socket-relayed, though see
-  the remaining gap below.
+  reflect real player-to-player state. Now real socket-relayed.
+- **Client-authoritative trade completion (was High severity)**: each
+  client used to apply its own gold/inventory deltas locally once both
+  sides reported "locked." `TradeService` now executes the trade itself in
+  a single Prisma transaction once both sides lock, validating each side's
+  *persisted* gold/inventory actually covers what they offered before
+  mutating anything, and pushes the authoritative result back to both
+  clients (10 tests cover valid trades, insufficient gold/items, and
+  replay-after-completion).
 
 ## Known vulnerabilities (not fixed this pass)
 
 | Issue | Severity | Detail |
 |---|---|---|
-| Client-authoritative trade completion | High | Each client applies its own inventory/gold deltas locally once both sides report "locked" — a modified client could report a fake offer or skip the deduction. No server-side transaction validates the trade. |
 | No server-side combat authority | High | Damage/HP is computed entirely client-side against client-only enemies. A modified client can claim arbitrary kills/loot/XP with nothing to check it. |
 | Weak gold/XP anti-cheat | Medium | `players.service.ts`'s rate-of-change heuristic only logs a warning and silently drops the field on the *next* save — it doesn't reject the request, flag the account, or alert anyone. Trivially defeated by editing slowly (under the per-second threshold). |
 | Client-trusted persistence | Medium | `SaveSystem` treats localStorage as the source of truth and pushes to the server every 60s. Between pushes, the server has no ground truth at all. |
@@ -44,11 +50,10 @@ for the full critique.
 
 ## Recommended next steps (priority order)
 
-1. Server-authoritative trade completion (DB transaction, not client-applied)
-2. Server-side combat/enemy simulation (bigger effort — needs design first)
-3. Reject (not just warn-and-drop) on anti-cheat heuristic violations, with
+1. Server-side combat/enemy simulation (bigger effort — needs design first)
+2. Reject (not just warn-and-drop) on anti-cheat heuristic violations, with
    a persisted flag for repeat offenders
-4. Real party invite consent flow (same pattern as the trade-request fix)
-5. Rotate `JWT_SECRET` and confirm it's excluded from version control in
+3. Real party invite consent flow (same pattern as the trade-request fix)
+4. Rotate `JWT_SECRET` and confirm it's excluded from version control in
    any real deployment (currently only `.env` itself is gitignored, not
    `.env.example` — confirm `.env.example` never contains a real secret)

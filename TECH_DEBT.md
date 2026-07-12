@@ -11,17 +11,13 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
   never actually booted before this)
 - No test infrastructure for server (jest referenced but not installed)
 - No server-side movement validation (now: `RoomService.validateMovement`)
-- Trading was 100% client-fabricated (now: real socket relay — see
-  remaining gap below)
+- Trading was 100% client-fabricated (now: real socket relay, and trade
+  *completion* is now a server-authoritative Prisma transaction via
+  `TradeService`, not client-applied — see `SECURITY.md`)
 
 ## Outstanding
 
 ### Foundation-blocking (Phase 1)
-- **Trade completion is still client-applied on both sides**, not a
-  server-side authoritative transaction. Each client independently deducts
-  its own offer and adds the partner's offer once both are locked — more
-  honest than before (real sync) but a modified client could still lie
-  about what it "offered."
 - **Combat has zero server authority.** `CombatSystem.ts` computes damage
   entirely client-side against client-only Enemy sprites; there is no
   shared server-side enemy state at all. Making this real requires

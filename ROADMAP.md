@@ -31,10 +31,9 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Fix NestJS DI errors preventing server boot | DONE |
 | Server test infrastructure (jest) | DONE |
 | Server-authoritative movement validation | DONE |
-| Real (socket-relayed) P2P trading | PARTIAL — see PROGRESS.md 2026-07-12 20:45 entry for the exact gap |
+| Real (socket-relayed) P2P trading, server-authoritative completion | DONE |
 | Server-authoritative combat | PLANNED |
-| Inventory validation | PLANNED |
-| Server-authoritative trade completion (currently client-applied on both sides) | PLANNED |
+| Inventory validation | PARTIAL — validated at trade-execution time only, not for every mutation |
 | Real persistence-on-write (currently 60s client-trusted push) | PLANNED |
 | CI (typecheck + test on every push) | PLANNED |
 | Client-side test infrastructure (currently none) | PLANNED |

@@ -218,3 +218,33 @@ server-side authoritative transaction — more honest than before, not
 yet fully cheat-proof. See TECH_DEBT.md.
 Next: from-the-UI two-browser trade verification; server-authoritative
 trade completion; CI.
+
+[2026-07-12 21:00] Phase 1 — Server-authoritative trade completion
+Status: done
+Files changed: `server/src/multiplayer/trade.service.ts` (new), `server/src/multiplayer/trade.service.spec.ts` (new), `server/src/multiplayer/multiplayer.module.ts`, `server/src/multiplayer/game.gateway.ts`, `client/src/stores/useTradeStore.ts`, `client/src/game/systems/SocketManager.ts`, `client/src/App.tsx`, `shared/types/index.ts`
+Tests added: 10 cases in `trade.service.spec.ts` (successful gold-only
+trade, successful item swap, insufficient gold, insufficient item
+quantity, missing offer, session-replay prevention, lock/unlock-on-
+offer-change semantics)
+Technical notes: Closes the gap flagged in the previous entry.
+`TradeService` records each side's offer as `tradeOfferUpdate` messages
+arrive, and once both players send `tradeLock`, the server (not the
+client) executes the trade inside a single `prisma.$transaction` —
+re-validating each side's *persisted* gold and inventory actually cover
+what they offered before mutating anything. Both clients receive their
+own authoritative post-trade `{gold, inventory}` via a new
+`tradeExecuted` event and apply it directly (`gameStore.setPlayer`)
+instead of recomputing the trade locally; a failed validation sends
+`tradeFailed` with a human-readable reason and mutates nothing.
+Verified: 29/29 server tests passing (19 room.service + 10
+trade.service), client+server typecheck clean, confirmed by rebuilding
+and booting the compiled server end-to-end (reaches "Nest application
+successfully started", serves `GET /api/multiplayer/rooms` with 200).
+Known limitations: still no from-the-UI two-browser confirmation of the
+full request->accept->offer->lock->execute path (see previous entry's
+note on the console-harness module-identity risk) — the server-side
+logic is unit-tested and the wiring is code-reviewed correct, but a
+real two-browser click-through pass is still outstanding.
+Next: server-side combat/enemy authority (needs a design pass first —
+no shared server-side enemy state exists at all today), or CI, or
+client-side test infrastructure.

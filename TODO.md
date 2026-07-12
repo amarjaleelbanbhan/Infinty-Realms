@@ -5,8 +5,7 @@ of 2026-07-12. Nothing here is scheduled beyond Phase 1 until Phase 1 is
 fully DONE — see the "Foundation-blocking" rule in `ROADMAP.md`.
 
 ## Must Have (finishes Phase 1)
-- [ ] Server-authoritative trade completion (DB transaction; currently
-      client-applied on both sides — see `SECURITY.md`)
+- [x] Server-authoritative trade completion (DB transaction via `TradeService`)
 - [ ] Server-side combat/enemy authority (needs a design pass first — no
       shared server-side enemy state exists at all today)
 - [ ] Inventory validation server-side
