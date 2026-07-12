@@ -13,11 +13,15 @@
 - **Current Task**: Audio, Settings, and Polish
 
 ## LOGS
-```
 [2026-07-12 13:15] Cycle 10 — Milestone 6, Task 1: Settings UI & Polish
 Status: done
 Verification: Created useSettingsStore.ts with zustand/persist for saving to localStorage. Fully replaced old SettingsUI with new comprehensive SettingsUI featuring Master/Music/SFX volume sliders and Post-Processing & Screen Shake toggles. Wired SoundSystem to respect master volume using a master GainNode. Wired WorldScene and DungeonScene to conditionally apply bloom/vignette postFX based on settings. Wired CombatSystem to conditionally shake camera. Client typecheck passes.
 Next: Milestone 6, Task 2: Polish & Visual Feedback (Damage Numbers, Hit FX)
+
+[2026-07-12 13:20] Cycle 11 — Milestone 6, Task 2: Polish & Visual Feedback
+Status: done
+Verification: Implemented showHitEffect and showDeathEffect in CombatSystem using Phaser.GameObjects.Particles. Dynamically generated an 'fx-pixel' texture to serve as particle material. Integrated particle bursts into both WorldScene and DungeonScene for enemy damage and death events. Client typecheck passes.
+Next: Milestone 6, Task 3: Final Launch Readiness (Anti-Cheat & Clean Up)
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

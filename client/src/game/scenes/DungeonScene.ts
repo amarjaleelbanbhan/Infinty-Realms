@@ -353,11 +353,15 @@ export class DungeonScene extends Phaser.Scene {
         enemy.enemyData.hp = Math.max(0, enemy.enemyData.hp - damage);
         this.combatSystem.showDamageNumber(enemy.x, enemy.y - 12, damage, isCrit);
 
+        this.combatSystem.showHitEffect(enemy.x, enemy.y, 0xff0000);
+
         if (enemy.enemyData.hp <= 0) {
           this.handleEnemyDeath(enemy);
         } else {
           enemy.enemyData.state = 'chase';
           const body = enemy.list[1] as Phaser.GameObjects.Image;
+          body.setTintFill(0xffffff);
+          this.time.delayedCall(80, () => body.clearTint());
           this.tweens.add({
             targets: body,
             x: { from: 2, to: 0 },
@@ -583,6 +587,7 @@ export class DungeonScene extends Phaser.Scene {
 
   private handleEnemyDeath(enemy: EnemySprite) {
     enemy.enemyData.state = 'dead';
+    this.combatSystem.showDeathEffect(enemy.x, enemy.y);
     (enemy.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
     (enemy.body as Phaser.Physics.Arcade.Body).enable = false;
 

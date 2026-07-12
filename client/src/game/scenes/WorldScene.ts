@@ -1141,12 +1141,14 @@ export class WorldScene extends Phaser.Scene {
         this.updateEnemyHPBar(enemy);
         soundSystem.playHit();
 
-        // Hit flash
+        // Hit flash & particles
         const bodyImg = enemy.list[1] as Phaser.GameObjects.Image;
         bodyImg.setTintFill(0xffffff); // Flash solid white
         this.time.delayedCall(80, () => {
           bodyImg.clearTint();
         });
+        
+        this.combatSystem.showHitEffect(enemy.x, enemy.y, 0xff0000);
 
         if (enemy.enemyData.hp <= 0) {
           this.killEnemy(enemy);

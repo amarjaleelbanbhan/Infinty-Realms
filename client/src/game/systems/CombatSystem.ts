@@ -120,6 +120,54 @@ export class CombatSystem {
     });
   }
 
+  showHitEffect(x: number, y: number, color: number = 0xff0000) {
+    const particles = this.scene.add.particles(x, y, 'hit-particle', {
+      color: [color, 0xffffff],
+      colorEase: 'quad.out',
+      lifespan: 300,
+      angle: { min: 0, max: 360 },
+      speed: { min: 50, max: 150 },
+      scale: { start: 0.5, end: 0 },
+      blendMode: 'ADD',
+      emitting: false,
+    });
+    
+    // We don't have a 'hit-particle' texture, so we can draw one or use a rectangle texture.
+    // Let's create a small white rectangle texture dynamically if it doesn't exist
+    if (!this.scene.textures.exists('fx-pixel')) {
+      const g = this.scene.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('fx-pixel', 4, 4);
+    }
+    
+    particles.setTexture('fx-pixel');
+    particles.explode(8); // emit 8 particles
+  }
+
+  showDeathEffect(x: number, y: number) {
+    if (!this.scene.textures.exists('fx-pixel')) {
+      const g = this.scene.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('fx-pixel', 4, 4);
+    }
+
+    const particles = this.scene.add.particles(x, y, 'fx-pixel', {
+      color: [0x8a2be2, 0x4b0082, 0x000000], // Purple death effect
+      colorEase: 'quad.out',
+      lifespan: 800,
+      angle: { min: 0, max: 360 },
+      speed: { min: 50, max: 250 },
+      scale: { start: 1, end: 0 },
+      alpha: { start: 1, end: 0 },
+      blendMode: 'SCREEN',
+      emitting: false,
+    });
+
+    particles.explode(30);
+  }
+
   /** Check if two rectangles overlap (attack hitbox check) */
   hitboxCheck(
     ax: number, ay: number, aw: number, ah: number,
