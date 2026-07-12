@@ -1,6 +1,7 @@
 import { useGameStore } from '@stores/useGameStore';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
+import { useI18nStore } from '@stores/useI18nStore';
 import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle } from 'lucide-react';
 import { PerformanceStats } from './PerformanceStats';
 
@@ -8,6 +9,7 @@ export function HUD() {
   const { player } = useGameStore();
   const { quests } = useQuestStore();
   const { currentScreen, addToast } = useUIStore();
+  const { t } = useI18nStore();
 
   if (!player || currentScreen !== 'game') return null;
 
@@ -37,7 +39,7 @@ export function HUD() {
                 </span>
               ) : null}
               <span className="font-game text-xs text-realm-gold bg-realm-gold/10 px-2 py-0.5 rounded-full border border-realm-gold/30">
-                Lv.{level}
+                {t('hud.level')}.{level}
               </span>
             </div>
           </div>
@@ -45,7 +47,7 @@ export function HUD() {
           {/* HP bar */}
           <div className={`mb-3 ${hp / maxHp < 0.25 ? 'animate-pulse-slow' : ''}`}>
             <div className="flex justify-between items-center mb-1 drop-shadow-md">
-              <span className="font-mono text-realm-hp flex items-center gap-1 font-bold text-xs"><Heart className="w-4 h-4" /> HP</span>
+              <span className="font-mono text-realm-hp flex items-center gap-1 font-bold text-xs"><Heart className="w-4 h-4" /> {t('hud.hp')}</span>
               <span className="font-mono text-white/90 text-xs font-bold">{hp}/{maxHp}</span>
             </div>
             <div className="bar-track">
@@ -59,7 +61,7 @@ export function HUD() {
           {/* Mana bar */}
           <div className="mb-3">
             <div className="flex justify-between items-center mb-1 drop-shadow-md">
-              <span className="font-mono text-realm-mana flex items-center gap-1 font-bold text-xs"><Droplet className="w-4 h-4" /> MP</span>
+              <span className="font-mono text-realm-mana flex items-center gap-1 font-bold text-xs"><Droplet className="w-4 h-4" /> {t('hud.mp')}</span>
               <span className="font-mono text-white/90 text-xs font-bold">{mana}/{maxMana}</span>
             </div>
             <div className="bar-track">
@@ -88,7 +90,7 @@ export function HUD() {
           <div className="mt-4 pt-3 border-t border-realm-border/50 flex items-center gap-2 drop-shadow-md bg-black/20 rounded px-3 py-2">
             <Coins className="w-5 h-5 text-realm-gold" />
             <span className="font-game text-base text-realm-gold">{gold ?? 0}</span>
-            <span className="font-mono text-xs text-realm-text-muted uppercase tracking-widest mt-1">gold</span>
+            <span className="font-mono text-xs text-realm-text-muted uppercase tracking-widest mt-1">{t('hud.gold')}</span>
           </div>
         </div>
       </div>

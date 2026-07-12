@@ -42,6 +42,11 @@ Next: Phase 2 is mostly complete. Moving to remaining items or Phase 3.
 Status: done
 Verification: Enhanced EventSystem.ts to dispatch global window events when World Events start/end. Wired WorldScene.ts to listen to these events and apply a ColorMatrix night FX during dragon attacks. Wired CombatSystem to apply a global 25% damage buff to enemies against players during dragon attacks. Client typecheck passes.
 Next: Phase 4 features are largely complete. Moving to Phase 5 or polishing remaining systems.
+
+[2026-07-12 15:00] Cycle 16 — Phase 5: Localization
+Status: done
+Verification: Created useI18nStore.ts to manage localization state with persistent storage. Added English and Spanish translation dictionaries. Integrated a language dropdown into SettingsUI.tsx. Translated key labels in HUD.tsx and MainMenu.tsx. Client typecheck passes.
+Next: All major roadmap phases (1 through 5) have initial implementations. Ready for final polish, balancing, or release candidate preparations.
 ```
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

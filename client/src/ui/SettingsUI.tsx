@@ -1,6 +1,8 @@
 import { useSettingsStore } from '@stores/useSettingsStore';
 import { Settings, X, Volume2, Monitor, Activity } from 'lucide-react';
 import { useUIStore } from '@stores/useUIStore';
+import { useI18nStore } from '@stores/useI18nStore';
+import { Globe } from 'lucide-react';
 
 export function SettingsUI({ onClose }: { onClose: () => void }) {
   const { 
@@ -12,6 +14,7 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
   } = useSettingsStore();
   
   const { addToast } = useUIStore();
+  const { language, setLanguage, t } = useI18nStore();
 
   const handleSave = () => {
     addToast('Settings updated!', 'success');
@@ -25,7 +28,7 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
           <div className="flex items-center gap-3">
             <Settings className="w-6 h-6 text-realm-accent" />
-            <h2 className="font-game tracking-wider text-xl text-white drop-shadow-md uppercase">Settings</h2>
+            <h2 className="font-game tracking-wider text-xl text-white drop-shadow-md uppercase">{t('settings.title')}</h2>
           </div>
           <button 
             onClick={onClose}
@@ -41,12 +44,12 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
           {/* Audio Section */}
           <div className="space-y-4">
             <h3 className="font-game text-sm text-realm-accent uppercase tracking-widest flex items-center gap-2 mb-2">
-              <Volume2 className="w-4 h-4" /> Audio
+              <Volume2 className="w-4 h-4" /> {t('settings.audio')}
             </h3>
             
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-ui text-white">
-                <span>Master Volume</span>
+                <span>{t('settings.masterVolume')}</span>
                 <span>{Math.round(masterVolume * 100)}%</span>
               </div>
               <input 
@@ -59,7 +62,7 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-ui text-white">
-                <span>Music</span>
+                <span>{t('settings.musicVolume')}</span>
                 <span>{Math.round(musicVolume * 100)}%</span>
               </div>
               <input 
@@ -72,7 +75,7 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-ui text-white">
-                <span>SFX</span>
+                <span>{t('settings.sfxVolume')}</span>
                 <span>{Math.round(sfxVolume * 100)}%</span>
               </div>
               <input 
@@ -87,13 +90,13 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
           {/* Graphics Section */}
           <div className="space-y-4">
             <h3 className="font-game text-sm text-realm-accent uppercase tracking-widest flex items-center gap-2 mb-2">
-              <Monitor className="w-4 h-4" /> Graphics
+              <Monitor className="w-4 h-4" /> {t('settings.video')}
             </h3>
             
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-ui text-sm text-white">Post-Processing</div>
-                <div className="text-xs text-realm-text-muted">Bloom & Vignette (Heavy)</div>
+                <div className="font-ui text-sm text-white">{t('settings.postProcessing')}</div>
+                <div className="text-xs text-realm-text-muted">Bloom & Vignette</div>
               </div>
               <button 
                 onClick={() => setPostProcessing(!postProcessing)}
@@ -107,12 +110,12 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
           {/* Gameplay Section */}
           <div className="space-y-4">
             <h3 className="font-game text-sm text-realm-accent uppercase tracking-widest flex items-center gap-2 mb-2">
-              <Activity className="w-4 h-4" /> Gameplay
+              <Activity className="w-4 h-4" /> {t('settings.gameplay')}
             </h3>
             
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-ui text-sm text-white">Screen Shake</div>
+                <div className="font-ui text-sm text-white">{t('settings.cameraShake')}</div>
                 <div className="text-xs text-realm-text-muted">Camera impacts in combat</div>
               </div>
               <button 
@@ -124,15 +127,36 @@ export function SettingsUI({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
+          {/* Localization Section */}
+          <div className="space-y-4">
+            <h3 className="font-game text-sm text-realm-accent uppercase tracking-widest flex items-center gap-2 mb-2">
+              <Globe className="w-4 h-4" /> {t('settings.language')}
+            </h3>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-ui text-sm text-white">{t('settings.language')}</div>
+              </div>
+              <select 
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'es')}
+                className="bg-black/50 text-white font-ui text-sm border border-white/20 rounded-lg px-3 py-1 outline-none focus:border-realm-accent"
+              >
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+          </div>
+
         </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-white/10 bg-black/40 flex justify-end">
           <button 
+            className="btn-gold py-2 px-8 text-sm"
             onClick={handleSave}
-            className="px-6 py-2 bg-realm-accent text-white font-game rounded shadow hover:bg-realm-accent/80 transition-colors"
           >
-            Save & Close
+            {t('settings.save')}
           </button>
         </div>
       </div>

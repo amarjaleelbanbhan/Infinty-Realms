@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGameStore } from '@stores/useGameStore';
+import { useI18nStore } from '@stores/useI18nStore';
 import { startWorld } from '@game/PhaserGame';
 import { saveSystem } from '@game/systems/SaveSystem';
 import { Sparkles, Play, Users, Settings, Palette, Star, Globe, Bot, Infinity as InfinityIcon, Sword, Wand2, Crosshair, Target } from 'lucide-react';
@@ -28,6 +29,7 @@ export function MainMenu({ onStart }: MainMenuProps) {
   const [showCreator, setShowCreator] = useState(false);
   const [loading, setLoading] = useState(false);
   const { startSession } = useGameStore();
+  const { t } = useI18nStore();
   const saveMeta = saveSystem.getSaveMeta();
 
   const handleNewGame = async () => {
@@ -77,7 +79,7 @@ export function MainMenu({ onStart }: MainMenuProps) {
               className="btn-gold text-lg py-4 shadow-[0_0_40px_rgba(255,215,0,0.5)] hover:scale-105 transition-transform duration-300 rounded-xl flex items-center justify-center gap-2"
               onClick={() => setScreen('new')}
             >
-              <Sparkles className="w-5 h-5" /> NEW ADVENTURE
+              <Sparkles className="w-5 h-5" /> {t('menu.play')}
             </button>
 
             {saveMeta && (
@@ -101,7 +103,7 @@ export function MainMenu({ onStart }: MainMenuProps) {
                 className="btn-secondary flex-1 text-sm py-3 rounded-xl hover:bg-white/5 transition-colors duration-300 border-white/20 hover:border-realm-accent flex items-center justify-center gap-2"
                 onClick={() => setShowSettings(true)}
               >
-                <Settings className="w-4 h-4" /> Settings
+                <Settings className="w-4 h-4" /> {t('menu.settings')}
               </button>
 
               <button
