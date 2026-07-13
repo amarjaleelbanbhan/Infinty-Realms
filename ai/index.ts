@@ -145,8 +145,8 @@ export async function generateDialogue(req: DialogueGenerationRequest): Promise<
 
   try {
     if (PROVIDER === 'ollama') {
-      // Placeholder for ollama until implemented
-      return mockDialogue(req, callId);
+      const { generateDialogueOllama } = await import('./providers/ollama');
+      return await generateDialogueOllama(req);
     }
     if (PROVIDER === 'openai') {
       const { generateDialogueOpenAI } = await import('./providers/openai');

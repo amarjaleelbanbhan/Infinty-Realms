@@ -8,7 +8,8 @@ import { QUEST_SYSTEM_PROMPT, buildQuestPrompt } from '../prompts/quest';
 import { NPC_SYSTEM_PROMPT, buildNPCPrompt } from '../prompts/npc';
 import { EVENT_SYSTEM_PROMPT, buildEventPrompt } from '../prompts/event';
 import { DIALOGUE_SYSTEM_PROMPT, buildDialoguePrompt } from '../prompts/dialogue';
-import type { QuestGenerationRequest, NPCGenerationRequest, EventGenerationRequest, DialogueGenerationRequest } from '@infinity-realms/shared/types';
+import { ITEM_SYSTEM_PROMPT, buildItemPrompt } from '../prompts/item';
+import type { QuestGenerationRequest, NPCGenerationRequest, EventGenerationRequest, DialogueGenerationRequest, ItemGenerationRequest } from '@infinity-realms/shared/types';
 
 const OPENAI_BASE = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
 const OPENAI_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
@@ -82,4 +83,9 @@ export async function generateEventOpenAI(req: EventGenerationRequest): Promise<
 
 export async function generateDialogueOpenAI(req: DialogueGenerationRequest): Promise<string> {
   return chatText(DIALOGUE_SYSTEM_PROMPT, buildDialoguePrompt(req));
+}
+
+export async function generateItemOpenAI(req: ItemGenerationRequest): Promise<object> {
+  const raw = await chat(ITEM_SYSTEM_PROMPT, buildItemPrompt(req));
+  return JSON.parse(raw);
 }
