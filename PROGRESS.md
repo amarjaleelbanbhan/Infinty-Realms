@@ -102,9 +102,32 @@ Verification:
 - Added Jest unit tests for `CombatService` (41/41 passing).
 - Added Vitest unit tests for `combatApi.ts` (25/25 passing).
 - Run global workspace typecheck successfully.
-Next: Phase 1: Inventory validation server-side.
+[2026-07-13 20:35] Cycle 18 — Phase 1: Server-Authoritative Inventory Validation & Shop Transactions
+Status: DONE
+Files changed:
+- `server/src/players/items.catalog.ts` (created)
+- `server/src/players/inventory.service.ts` (created)
+- `server/src/players/inventory.controller.ts` (created)
+- `server/src/players/players.module.ts`
+- `server/src/players/players.service.ts`
+- `client/src/stores/useGameStore.ts`
+- `client/src/stores/useMarketStore.ts`
+- `client/src/ui/MerchantShopUI.tsx`
+- `client/src/game/systems/FarmingSystem.ts`
+- `client/src/game/systems/LeylineSystem.ts`
+- `server/src/players/inventory.service.spec.ts` (created)
+- `client/src/stores/useGameStore.test.ts` (created)
+Verification:
+- Created server-side `ITEM_CATALOG` to map item IDs to attributes.
+- Implemented `InventoryService` handling equips, unequips, consuming items, shop buy/sell calculations (biome & saturation pricing), and harvests.
+- Ignored client-supplied inventory/equipment payloads in `PlayersService.saveState` to enforce server authority.
+- Updated client stores and UI (`useGameStore`, `useMarketStore`, `MerchantShopUI`, `FarmingSystem`, and `LeylineSystem`) to query the backend endpoints for mutations, falling back to local simulation if offline.
+- Created Jest tests for `InventoryService` (50/50 passing on server).
+- Created Vitest tests for `useGameStore` inventory actions (28/28 passing on client).
+- Verified global workspace typecheck completed successfully.
+- Phase 1 - Foundation is officially complete.
+Next: Phase 2: Core Gameplay depth.
 
-`
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done
 Verification: Built UI for inventory equip/consume and skill node unlocking. Typecheck passes.

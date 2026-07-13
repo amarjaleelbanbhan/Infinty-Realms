@@ -7,13 +7,13 @@ fully DONE — see the "Foundation-blocking" rule in `ROADMAP.md`.
 ## Must Have (finishes Phase 1)
 - [x] Server-authoritative trade completion (DB transaction via `TradeService`)
 - [/] Server-side combat/enemy authority (DONE for kill validation and rewards authority; full server-side enemy simulation is PLANNED)
-- [ ] Inventory validation server-side
+- [x] Inventory validation server-side
 - [ ] From-the-UI two-browser trade verification (console-harness result
       was inconclusive this pass, see `PROGRESS.md` 2026-07-12 20:45 entry)
 - [x] CI: run typecheck + test on every push (CI already existed for
       typecheck+build; added the missing test step)
 - [x] Client-side test infrastructure (vitest, paired with existing Vite config)
-- [/] Real persistence-on-write, not a 60s client-trusted push (DONE for combat rewards and guilds; general stats still use the 60s push)
+- [x] Real persistence-on-write, not a 60s client-trusted push (DONE for combat rewards, shops, inventory updates, and guilds)
 - [x] Reject (not just warn-and-log) anti-cheat violations in `players.service.ts`
 
 ## Should Have (Phase 1 hardening / early Phase 5)

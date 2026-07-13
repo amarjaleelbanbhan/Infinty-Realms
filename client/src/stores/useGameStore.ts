@@ -26,9 +26,9 @@ interface GameState {
   addExperience: (amount: number) => void;
   addToInventory: (item: Item, quantity: number) => void;
   removeFromInventory: (itemId: string, quantity: number) => boolean;
-  equipItem: (item: Item) => void;
-  unequipItem: (slot: 'weapon' | 'armor' | 'helmet' | 'accessory') => void;
-  consumeItem: (item: Item) => void;
+  equipItem: (item: Item) => Promise<void>;
+  unequipItem: (slot: 'weapon' | 'armor' | 'helmet' | 'accessory') => Promise<void>;
+  consumeItem: (item: Item) => Promise<void>;
   unlockSkill: (skillId: string, cost: number, subclass: SubclassType) => void;
   setWorldState: (world: Partial<WorldState>) => void;
   setCurrentWeather: (weather: string) => void;
@@ -293,75 +293,147 @@ export const useGameStore = create<GameState>()(
         return removed;
       },
 
-      equipItem: (item) => set((s) => {
-        if (!s.player || !s.player.equipment) return {};
+      equipItem: async (item) => {
+        const { playerToken, player } = get();
+        if (!player) return;
         const slot = item.type as 'weapon' | 'armor' | 'helmet' | 'accessory';
-        if (!['weapon', 'armor', 'helmet', 'accessory'].includes(slot)) return {};
-        
-        const currentEquip = s.player.equipment[slot];
-        const newPlayer = { ...s.player, equipment: { ...s.player.equipment, [slot]: item } };
-        
-        // Remove new equip from inventory
-        const newInv = [...(s.player.inventory || [])];
-        const idx = newInv.findIndex(x => x.item.id === item.id);
-        if (idx >= 0) {
-          if (newInv[idx].quantity > 1) {
-            newInv[idx] = { ...newInv[idx], quantity: newInv[idx].quantity - 1 };
-          } else {
-            newInv.splice(idx, 1);
+        if (!['weapon', 'armor', 'helmet', 'accessory'].includes(slot)) return;
+
+        if (playerToken) {
+          try {
+            const res = await fetch('/api/inventory/equip', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${playerToken}`,
+              },
+              body: JSON.stringify({ itemId: item.id, slot }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              set((s) => ({
+                player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats } : null
+              }));
+              return;
+            }
+          } catch (e) {
+            console.error('[Inventory] Server error equipping item, falling back to local simulation:', e);
           }
         }
-        
-        // Put old equip back to inventory
-        if (currentEquip) {
+
+        // Local fallback
+        set((s) => {
+          if (!s.player || !s.player.equipment) return {};
+          const currentEquip = s.player.equipment[slot];
+          const newPlayer = { ...s.player, equipment: { ...s.player.equipment, [slot]: item } };
+          const newInv = [...(s.player.inventory || [])];
+          const idx = newInv.findIndex(x => x.item.id === item.id);
+          if (idx >= 0) {
+            if (newInv[idx].quantity > 1) {
+              newInv[idx] = { ...newInv[idx], quantity: newInv[idx].quantity - 1 };
+            } else {
+              newInv.splice(idx, 1);
+            }
+          }
+          if (currentEquip) {
+            const existIdx = newInv.findIndex(x => x.item.id === currentEquip.id);
+            if (existIdx >= 0) {
+              newInv[existIdx] = { ...newInv[existIdx], quantity: newInv[existIdx].quantity + 1 };
+            } else {
+              newInv.push({ item: currentEquip, quantity: 1 });
+            }
+          }
+          newPlayer.inventory = newInv;
+          return { player: newPlayer };
+        });
+      },
+
+      unequipItem: async (slot) => {
+        const { playerToken, player } = get();
+        if (!player) return;
+
+        if (playerToken) {
+          try {
+            const res = await fetch('/api/inventory/unequip', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${playerToken}`,
+              },
+              body: JSON.stringify({ slot }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              set((s) => ({
+                player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats } : null
+              }));
+              return;
+            }
+          } catch (e) {
+            console.error('[Inventory] Server error unequipping item, falling back to local simulation:', e);
+          }
+        }
+
+        // Local fallback
+        set((s) => {
+          if (!s.player || !s.player.equipment || !s.player.equipment[slot]) return {};
+          const currentEquip = s.player.equipment[slot]!;
+          const newPlayer = { ...s.player, equipment: { ...s.player.equipment } };
+          delete newPlayer.equipment[slot];
+          const newInv = [...(s.player.inventory || [])];
           const existIdx = newInv.findIndex(x => x.item.id === currentEquip.id);
           if (existIdx >= 0) {
             newInv[existIdx] = { ...newInv[existIdx], quantity: newInv[existIdx].quantity + 1 };
           } else {
             newInv.push({ item: currentEquip, quantity: 1 });
           }
-        }
-        newPlayer.inventory = newInv;
-        return { player: newPlayer };
-      }),
+          newPlayer.inventory = newInv;
+          return { player: newPlayer };
+        });
+      },
 
-      unequipItem: (slot) => set((s) => {
-        if (!s.player || !s.player.equipment || !s.player.equipment[slot]) return {};
-        const currentEquip = s.player.equipment[slot]!;
-        
-        const newPlayer = { ...s.player, equipment: { ...s.player.equipment } };
-        delete newPlayer.equipment[slot];
-        
-        const newInv = [...(s.player.inventory || [])];
-        const existIdx = newInv.findIndex(x => x.item.id === currentEquip.id);
-        if (existIdx >= 0) {
-          newInv[existIdx] = { ...newInv[existIdx], quantity: newInv[existIdx].quantity + 1 };
-        } else {
-          newInv.push({ item: currentEquip, quantity: 1 });
-        }
-        
-        newPlayer.inventory = newInv;
-        return { player: newPlayer };
-      }),
+      consumeItem: async (item) => {
+        const { playerToken, player } = get();
+        if (!player || item.type !== 'consumable') return;
 
-      consumeItem: (item) => set((s) => {
-        if (!s.player || item.type !== 'consumable') return {};
-        const newInv = [...(s.player.inventory || [])];
-        const idx = newInv.findIndex(x => x.item.id === item.id);
-        if (idx < 0) return {};
-        
-        if (newInv[idx].quantity > 1) {
-          newInv[idx] = { ...newInv[idx], quantity: newInv[idx].quantity - 1 };
-        } else {
-          newInv.splice(idx, 1);
+        if (playerToken) {
+          try {
+            const res = await fetch('/api/inventory/consume', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${playerToken}`,
+              },
+              body: JSON.stringify({ itemId: item.id }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              set((s) => ({
+                player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats } : null
+              }));
+              return;
+            }
+          } catch (e) {
+            console.error('[Inventory] Server error consuming item, falling back to local simulation:', e);
+          }
         }
 
-        // Apply effect (simple HP heal for now)
-        const stats = s.player.stats ? { ...s.player.stats } : { ...DEFAULT_PLAYER_STATS };
-        stats.hp = Math.min(stats.maxHp, stats.hp + (item.value || 20));
-
-        return { player: { ...s.player, inventory: newInv, stats } as Partial<Player> };
-      }),
+        // Local fallback
+        set((s) => {
+          if (!s.player) return {};
+          const newInv = [...(s.player.inventory || [])];
+          const idx = newInv.findIndex(x => x.item.id === item.id);
+          if (idx < 0) return {};
+          if (newInv[idx].quantity > 1) {
+            newInv[idx] = { ...newInv[idx], quantity: newInv[idx].quantity - 1 };
+          } else {
+            newInv.splice(idx, 1);
+          }
+          const stats = s.player.stats ? { ...s.player.stats } : { ...DEFAULT_PLAYER_STATS };
+          stats.hp = Math.min(stats.maxHp, stats.hp + (item.value || 20));
+          return { player: { ...s.player, inventory: newInv, stats } as Partial<Player> };
+        });
+      },
 
       unlockSkill: (skillId, cost, subclass) => set((s) => {
         if (!s.player) return {};

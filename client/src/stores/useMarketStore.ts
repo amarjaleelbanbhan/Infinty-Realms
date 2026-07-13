@@ -14,8 +14,8 @@ interface MarketState {
   marketItems: MarketItem[];
   openMarket: (items: MarketItem[]) => void;
   closeMarket: () => void;
-  buyItem: (itemId: string, quantity?: number) => void;
-  sellItem: (itemId: string, quantity?: number) => void;
+  buyItem: (itemId: string, quantity?: number) => Promise<void>;
+  sellItem: (itemId: string, quantity?: number) => Promise<void>;
 }
 
 const DEFAULT_MARKET_ITEMS: MarketItem[] = [
@@ -40,42 +40,112 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   openMarket: (items) => set({ isOpen: true, marketItems: items?.length ? items : DEFAULT_MARKET_ITEMS }),
   closeMarket: () => set({ isOpen: false }),
 
-  buyItem: (itemId, quantity = 1) => {
+  buyItem: async (itemId, quantity = 1) => {
     const state = get();
     const marketItem = state.marketItems.find(m => m.item.id === itemId);
     if (!marketItem) return;
 
     const gameStore = useGameStore.getState();
+    const uiStore = useUIStore.getState();
+    const token = gameStore.playerToken;
+
+    if (token) {
+      try {
+        const res = await fetch('/api/inventory/shop-transaction', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'buy',
+            itemId,
+            quantity,
+            biome: 'plains',
+            saturation: 0,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          useGameStore.setState(s => ({
+            player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats, gold: data.gold } : null
+          }));
+          uiStore.addToast(`Bought ${quantity}x ${marketItem.item.name}`, 'success');
+          return;
+        } else {
+          const err = await res.json().catch(() => ({ message: 'Transaction failed.' }));
+          uiStore.addToast(err.message ?? 'Transaction failed.', 'error');
+          return;
+        }
+      } catch (e) {
+        console.error('[Market] Server error buying item, falling back to local:', e);
+      }
+    }
+
     const totalCost = marketItem.price * quantity;
     const playerGold = gameStore.player?.gold ?? 0;
 
     if (playerGold >= totalCost) {
-      // Deduct gold
       gameStore.addGold(-totalCost);
-      // Add item
       gameStore.addToInventory(marketItem.item, quantity);
-      useUIStore.getState().addToast(`Bought ${quantity}x ${marketItem.item.name}`, 'success');
+      uiStore.addToast(`Bought ${quantity}x ${marketItem.item.name}`, 'success');
     } else {
-      useUIStore.getState().addToast("Not enough gold!", 'error');
+      uiStore.addToast("Not enough gold!", 'error');
     }
   },
 
-  sellItem: (itemId, quantity = 1) => {
+  sellItem: async (itemId, quantity = 1) => {
     const gameStore = useGameStore.getState();
+    const uiStore = useUIStore.getState();
     const inventoryItem = gameStore.player?.inventory?.find(i => i.item.id === itemId);
     
     if (!inventoryItem || inventoryItem.quantity < quantity) {
-      useUIStore.getState().addToast("You don't have enough of this item.", 'error');
+      uiStore.addToast("You don't have enough of this item.", 'error');
       return;
     }
 
-    // Sell price is usually half the item's base value
+    const token = gameStore.playerToken;
+    if (token) {
+      try {
+        const res = await fetch('/api/inventory/shop-transaction', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'sell',
+            itemId,
+            quantity,
+            biome: 'plains',
+            saturation: 0,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          useGameStore.setState(s => ({
+            player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats, gold: data.gold } : null
+          }));
+          uiStore.addToast(`Sold ${quantity}x ${inventoryItem.item.name}`, 'success');
+          return;
+        } else {
+          const err = await res.json().catch(() => ({ message: 'Transaction failed.' }));
+          uiStore.addToast(err.message ?? 'Transaction failed.', 'error');
+          return;
+        }
+      } catch (e) {
+        console.error('[Market] Server error selling item, falling back to local:', e);
+      }
+    }
+
     const sellPrice = Math.max(1, Math.floor((inventoryItem.item.value || 1) * 0.5));
     const totalRevenue = sellPrice * quantity;
 
     if (gameStore.removeFromInventory(itemId, quantity)) {
       gameStore.addGold(totalRevenue);
-      useUIStore.getState().addToast(`Sold ${quantity}x ${inventoryItem.item.name} for ${totalRevenue}g`, 'success');
+      uiStore.addToast(`Sold ${quantity}x ${inventoryItem.item.name} for ${totalRevenue}g`, 'success');
     }
   }
 }));

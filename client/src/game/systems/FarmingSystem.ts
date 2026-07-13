@@ -86,7 +86,7 @@ export class FarmingSystem {
     return plot;
   }
 
-  harvestPlot(id: string): boolean {
+  async harvestPlot(id: string): Promise<boolean> {
     const idx = this.plots.findIndex(p => p.id === id);
     if (idx === -1) return false;
     
@@ -96,12 +96,43 @@ export class FarmingSystem {
       return false;
     }
 
-    // Give item
+    const gameStore = useGameStore.getState();
+    const uiStore = useUIStore.getState();
+    const token = gameStore.playerToken;
     const cropItem = Object.values(CROP_ITEMS).find(c => c.id === plot.cropType) ?? CROP_ITEMS.plains;
-    useGameStore.getState().addToInventory(cropItem, 1);
-    useUIStore.getState().addToast(`Harvested 1x ${cropItem.name}`, 'success');
 
-    // Remove plot
+    if (token) {
+      try {
+        const res = await fetch('/api/inventory/harvest-crop', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ biome: plot.biome }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          useGameStore.setState(s => ({
+            player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats } : null
+          }));
+          uiStore.addToast(`Harvested 1x ${cropItem.name}`, 'success');
+          this.plots.splice(idx, 1);
+          return true;
+        } else {
+          const err = await res.json().catch(() => ({ message: 'Harvest failed.' }));
+          uiStore.addToast(err.message ?? 'Harvest failed.', 'error');
+          return false;
+        }
+      } catch (e) {
+        console.error('[Farming] Server error harvesting, falling back to local:', e);
+      }
+    }
+
+    // Local fallback
+    gameStore.addToInventory(cropItem, 1);
+    uiStore.addToast(`Harvested 1x ${cropItem.name}`, 'success');
     this.plots.splice(idx, 1);
     return true;
   }

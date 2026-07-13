@@ -90,7 +90,7 @@ export class LeylineSystem {
     return node;
   }
 
-  harvestNode(nodeId: string): number {
+  async harvestNode(nodeId: string): Promise<number> {
     const node = this.nodes.find((n) => n.id === nodeId);
     if (!node) return 0;
 
@@ -99,8 +99,41 @@ export class LeylineSystem {
     node.lastHarvestAt = Date.now();
 
     if (harvested > 0) {
-      useGameStore.getState().addToInventory(LEYLINE_ESSENCE_ITEM, harvested);
-      useUIStore.getState().addToast(`Harvested ${harvested} Leyline Essence into inventory!`, 'success');
+      const gameStore = useGameStore.getState();
+      const uiStore = useUIStore.getState();
+      const token = gameStore.playerToken;
+
+      if (token) {
+        try {
+          const res = await fetch('/api/inventory/harvest-leyline', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ amount: harvested }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            useGameStore.setState(s => ({
+              player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats } : null
+            }));
+            uiStore.addToast(`Harvested ${harvested} Leyline Essence into inventory!`, 'success');
+            return harvested;
+          } else {
+            const err = await res.json().catch(() => ({ message: 'Harvest failed.' }));
+            uiStore.addToast(err.message ?? 'Harvest failed.', 'error');
+            return 0;
+          }
+        } catch (e) {
+          console.error('[Leyline] Server error harvesting node, falling back to local:', e);
+        }
+      }
+
+      // Local fallback
+      gameStore.addToInventory(LEYLINE_ESSENCE_ITEM, harvested);
+      uiStore.addToast(`Harvested ${harvested} Leyline Essence into inventory!`, 'success');
     }
 
     return harvested;

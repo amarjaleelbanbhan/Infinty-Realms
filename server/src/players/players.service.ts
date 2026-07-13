@@ -82,8 +82,6 @@ export class PlayersService {
 
     const data: Record<string, unknown> = { updatedAt: new Date() };
     if (partial.stats) data.statsJson = JSON.stringify(partial.stats);
-    if (partial.inventory) data.inventoryJson = JSON.stringify(partial.inventory);
-    if (partial.equipment) data.equipmentJson = JSON.stringify(partial.equipment);
 
     // Anti-Cheat: Validate Gold & XP Deltas. A violation rejects the whole
     // save (not just the offending field) — previously this silently

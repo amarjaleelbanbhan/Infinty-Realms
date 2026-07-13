@@ -62,8 +62,44 @@ export function MerchantShopUI() {
     };
   };
 
-  const handleBuy = (item: ShopItem) => {
+  const handleBuy = async (item: ShopItem) => {
+    const token = useGameStore.getState().playerToken;
     const { price } = getItemPrice(item, false);
+
+    if (token) {
+      try {
+        const res = await fetch('/api/inventory/shop-transaction', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'buy',
+            itemId: item.id,
+            quantity: 1,
+            biome: currentBiome,
+            saturation: saturation[item.id] ?? 0,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          useGameStore.setState(s => ({
+            player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats, gold: data.gold } : null
+          }));
+          addToast(`Bought ${item.name} for ${price}g`, 'success');
+          return;
+        } else {
+          const err = await res.json().catch(() => ({ message: 'Purchase failed.' }));
+          addToast(err.message ?? 'Purchase failed.', 'error');
+          return;
+        }
+      } catch (e) {
+        console.error('[Shop] Server error buying item, falling back to local:', e);
+      }
+    }
+
     const gold = player.gold ?? 0;
 
     if (gold < price) {
@@ -86,7 +122,7 @@ export function MerchantShopUI() {
     addToast(`Bought ${item.name} for ${price}g`, 'success');
   };
 
-  const handleSell = (item: ShopItem) => {
+  const handleSell = async (item: ShopItem) => {
     const inventory = player.inventory ?? [];
     const slot = inventory.find((s) => s.item.id === item.id);
 
@@ -96,6 +132,45 @@ export function MerchantShopUI() {
     }
 
     const { price } = getItemPrice(item, true);
+    const token = useGameStore.getState().playerToken;
+
+    if (token) {
+      try {
+        const res = await fetch('/api/inventory/shop-transaction', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'sell',
+            itemId: item.id,
+            quantity: 1,
+            biome: currentBiome,
+            saturation: saturation[item.id] ?? 0,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          useGameStore.setState(s => ({
+            player: s.player ? { ...s.player, inventory: data.inventory, equipment: data.equipment, stats: data.stats, gold: data.gold } : null
+          }));
+          setSaturation((prev) => ({
+            ...prev,
+            [item.id]: (prev[item.id] ?? 0) + 1,
+          }));
+          addToast(`Sold ${item.name} for ${price}g`, 'gold');
+          return;
+        } else {
+          const err = await res.json().catch(() => ({ message: 'Sale failed.' }));
+          addToast(err.message ?? 'Sale failed.', 'error');
+          return;
+        }
+      } catch (e) {
+        console.error('[Shop] Server error selling item, falling back to local:', e);
+      }
+    }
 
     // Remove from inventory and add gold
     const success = removeFromInventory(item.id, 1);

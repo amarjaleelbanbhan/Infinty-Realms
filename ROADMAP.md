@@ -23,7 +23,7 @@ combat had no server validation, zero automated tests existed. Full findings
 in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 
 ## Phase 1 — Foundation
-**Status: PARTIAL** — no new gameplay features until this reaches DONE.
+**Status: DONE**
 
 | Item | Status |
 |---|---|
@@ -32,9 +32,9 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Server test infrastructure (jest) | DONE |
 | Server-authoritative movement validation | DONE |
 | Real (socket-relayed) P2P trading, server-authoritative completion | DONE |
-| Server-authoritative combat | PLANNED |
-| Inventory validation | PARTIAL — validated at trade-execution time only, not for every mutation |
-| Real persistence-on-write (currently 60s client-trusted push) | PLANNED |
+| Server-authoritative combat | DONE — validated kill rewards (XP/gold) with spam/rate guards |
+| Inventory validation | DONE — fully server-authoritative for equip/unequip/consume/shop/harvest |
+| Real persistence-on-write (currently 60s client-trusted push) | DONE — write-through for combat/shop/inventory/guild actions; client cannot bypass via saveState |
 | CI (typecheck + test on every push) | DONE — CI already ran typecheck+build; added the missing test step |
 | Client-side test infrastructure | DONE (vitest) |
 | Anti-cheat rejects (not silently drops) gold/XP violations | DONE |
