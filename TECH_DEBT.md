@@ -54,9 +54,9 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
   access, etc).
 
 ### Known-fake features not yet addressed
-- Guilds, citadel sieges, leyline automation, NPC memory, ecosystem
-  cascade, and most of `IDEAS.md`/old `ROADMAP.md` content exist only as
-  documentation — no corresponding code was found anywhere in the repo.
+- Guilds: CRUD now server-backed (create/join/leave/browse via Prisma + REST). Member roster stored in `bankJson` as a temporary workaround — needs a proper `GuildMember` join table for integrity and querying.
+- Guild Wars (`GuildWarService`) exist server-side but have no real client gameplay loop — still PARTIAL.
+- Citadel sieges, leyline automation, NPC memory (`memoryJson` column exists, nothing reads/writes it), ecosystem cascade, and most of `IDEAS.md`/old `ROADMAP.md` content remain PLANNED with no corresponding code.
 
 ### Architecture
 - Single in-memory NestJS process — `RoomService` uses plain `Map`s, no

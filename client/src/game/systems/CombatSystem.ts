@@ -40,14 +40,6 @@ export class CombatSystem {
     const variance = 0.8 + Math.random() * 0.4; // 80–120% variance
     let rawDamage = Math.max(1, attacker.attack * variance - defender.defense * 0.5);
     
-    // AI Dungeon Master Buffs
-    const eventStore = useEventStore.getState();
-    if (eventStore.activeEvent?.type === 'dragon_attack') {
-      // Are we checking if attacker is enemy? Actually, dragon_attack buffs enemies!
-      // In this function we don't know who is who just by stats, so we rely on the caller or just buff everything globally for chaos.
-      // Wait, we DO know who is who based on if the caller is `damagePlayer` or `damageEnemy`.
-    }
-
     const critChance = Math.min(0.4, 0.05 + luck * 0.01);
     const isCrit = Math.random() < critChance;
     const damage = Math.round(isCrit ? rawDamage * 1.8 : rawDamage);

@@ -39,6 +39,7 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Client-side test infrastructure | DONE (vitest) |
 | Anti-cheat rejects (not silently drops) gold/XP violations | DONE |
 | Real party invite consent + roster sync (leave/kick included) | DONE — not yet server-authoritative membership |
+| Guild CRUD (create/join/leave/browse) backed by server | DONE — member roster not yet a separate table (stored in bankJson) |
 
 ## Phase 2 — Core Gameplay
 **Status: PLANNED**

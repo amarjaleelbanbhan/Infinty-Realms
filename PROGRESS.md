@@ -63,8 +63,26 @@ Next: Phase 4 features are largely complete. Moving to Phase 5 or polishing rema
 [2026-07-12 15:00] Cycle 16 — Phase 5: Localization
 Status: done
 Verification: Created useI18nStore.ts to manage localization state with persistent storage. Added English and Spanish translation dictionaries. Integrated a language dropdown into SettingsUI.tsx. Translated key labels in HUD.tsx and MainMenu.tsx. Client typecheck passes.
-Next: All major roadmap phases (1 through 5) have initial implementations. Ready for final polish, balancing, or release candidate preparations.
-```
+
+[2026-07-13 19:00] Phase 0 Truth Pass — Full Codebase Audit
+Status: DONE
+Files audited: all /server/src/**, /client/src/**, /shared/**, prisma/schema.prisma, TECH_DEBT.md, SECURITY.md, ROADMAP.md
+Findings:
+- Server boots. Socket.IO infra is real. World generator is real. Trade execution is server-authoritative.
+- Combat is 100% client-authoritative (no server enemy state). CRITICAL defect. Recorded in TECH_DEBT.md.
+- 60s save cadence is client-trusted. HIGH severity. Recorded in TECH_DEBT.md.
+- Guild feature was schema-only (zero endpoints, zero client calls to server). FALSE claim corrected.
+- NPC memory column exists in schema, zero code reads/writes it. Still PLANNED.
+- AI defaults to mock in both .env files. Claimed as "AI-generated" is template content.
+- Dead if-block in CombatSystem.calculateDamage() removed (commented its own logic, did nothing).
+- GuildsService + GuildsController created (create/join/leave/browse backed by Prisma).
+- useGuildStore rewritten to call server REST endpoints instead of fabricating local IDs.
+- GuildUI rewritten to match new store shape, adds Browse Guilds tab.
+- TECH_DEBT.md, ROADMAP.md updated to reflect actual status.
+Technical notes: Member roster stored in bankJson as interim workaround. Proper GuildMember join table needed.
+Next: Phase 1 highest priority: Server-authoritative combat. Enemy kills must be server-validated.
+
+`
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done
 Verification: Built UI for inventory equip/consume and skill node unlocking. Typecheck passes.
