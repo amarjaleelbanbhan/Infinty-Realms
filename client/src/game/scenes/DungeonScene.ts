@@ -6,6 +6,7 @@ import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
 import { useSettingsStore } from '@stores/useSettingsStore';
 import { claimKillReward } from '@game/systems/combatApi';
+import { soundSystem } from '@game/systems/SoundSystem';
 
 const TILE_SIZE = 32;
 
@@ -26,6 +27,15 @@ interface EnemySprite extends Phaser.GameObjects.Container {
     isBoss?: boolean;
     phase?: number;
     abilityCooldowns?: Record<string, number>;
+    
+    // Status effects
+    stunTimer?: number;
+    slowTimer?: number;
+    burnTimer?: number;
+    poisonTimer?: number;
+    dotTickTimer?: number;
+    burnDamage?: number;
+    poisonDamage?: number;
   };
 }
 
@@ -376,25 +386,125 @@ export class DungeonScene extends Phaser.Scene {
 
   private castDamageSpell(val: number) {
     const gameStore = useGameStore.getState();
-    if (!gameStore.player || !gameStore.player.stats) return;
+    const playerStats = gameStore.player?.stats;
+    if (!playerStats || !gameStore.player) return;
+
+    const biome = this.dungeonData?.biome ?? 'dungeon';
+
+    // Define colors & sound based on biome
+    let particleColor = 0xff00ff; // default purple
+    if (biome === 'plains') {
+      particleColor = 0x88ffff; // cyan
+      soundSystem.playWind();
+    } else if (biome === 'forest') {
+      particleColor = 0x44ff44; // green
+      soundSystem.playNature();
+    } else if (biome === 'desert') {
+      particleColor = 0xeedda8; // sand yellow
+      soundSystem.playSand();
+    } else if (biome === 'volcano') {
+      particleColor = 0xff4400; // orange/red
+      soundSystem.playFire();
+    } else if (biome === 'snow') {
+      particleColor = 0xddf0ff; // icy ice blue
+      soundSystem.playIce();
+    } else if (biome === 'swamp') {
+      particleColor = 0x9932cc; // dark orchid purple/poison
+      soundSystem.playPoison();
+    } else { // default or dungeon
+      particleColor = 0x4b0082; // indigo void
+      soundSystem.playSpell();
+    }
+
+    // Spell particle explosion effect
+    const particles = this.add.particles(this.player.x, this.player.y, 'fx-pixel', {
+      speed: { min: 60, max: 220 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 1.5, end: 0 },
+      tint: particleColor,
+      blendMode: 'ADD',
+      lifespan: 500,
+      quantity: 20,
+      emitting: false
+    });
+    particles.setDepth(99);
+    particles.explode();
+
+    // Clean up temporary particle emitters
+    this.time.delayedCall(600, () => particles.destroy());
 
     const hitbox = this.combatSystem.getMeleeHitbox(this.player.x, this.player.y, this.playerDirection as any, this.ATTACK_RANGE * 2.0);
 
     for (const enemy of this.enemies) {
       if (enemy.enemyData.state === 'dead') continue;
       if (hitbox.contains(enemy.x, enemy.y)) {
+        // Void/dungeon gets 25% crit chance boost
+        const critMultiplier = biome === 'dungeon' ? 1.25 : 1.0;
+        const luckValue = playerStats.luck * critMultiplier;
         const { damage, isCrit } = this.combatSystem.calculateDamage(
-          gameStore.player.stats,
+          playerStats,
           { hp: enemy.enemyData.hp, maxHp: enemy.enemyData.maxHp, mana: 0, maxMana: 0, attack: enemy.enemyData.attack, defense: enemy.enemyData.defense, speed: enemy.enemyData.speed, luck: 5 },
-          gameStore.player.stats.luck
+          luckValue
         );
 
         const spellDamage = Math.round(damage * (1 + val / 100));
         enemy.enemyData.hp = Math.max(0, enemy.enemyData.hp - spellDamage);
         this.combatSystem.showDamageNumber(enemy.x, enemy.y - 12, spellDamage, isCrit);
 
+        const bodyImg = enemy.list[1] as Phaser.GameObjects.Image;
+        this.tweens.add({
+          targets: bodyImg,
+          tint: { from: particleColor, to: 0xffffff },
+          duration: 120,
+          yoyo: true,
+        });
+
+        // Apply biome-reactive status effects
+        if (biome === 'plains') {
+          // Wind/Kinetic: Knockback enemy by 40px away from the player
+          const dx = enemy.x - this.player.x;
+          const dy = enemy.y - this.player.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 0) {
+            const pushX = (dx / dist) * 40;
+            const pushY = (dy / dist) * 40;
+            this.tweens.add({
+              targets: enemy,
+              x: enemy.x + pushX,
+              y: enemy.y + pushY,
+              duration: 150,
+              ease: 'Quad.easeOut'
+            });
+          }
+        } else if (biome === 'forest') {
+          // Forest: Entangling/Leech (heal player for 25% of damage dealt)
+          const healAmount = Math.round(spellDamage * 0.25);
+          if (healAmount > 0) {
+            this.combatSystem.healPlayer(healAmount);
+            this.combatSystem.showDamageNumber(this.player.x, this.player.y, healAmount, false, true);
+          }
+        } else if (biome === 'desert') {
+          // Desert: Quicksand/Slow 50% for 3 seconds
+          enemy.enemyData.slowTimer = 3.0;
+        } else if (biome === 'volcano') {
+          // Volcano: 4-sec Burn DOT (10% of spell damage per second)
+          enemy.enemyData.burnTimer = 4.0;
+          enemy.enemyData.burnDamage = Math.round(spellDamage * 0.10);
+          enemy.enemyData.dotTickTimer = 0;
+        } else if (biome === 'snow') {
+          // Snow: 2-sec freezing Stun
+          enemy.enemyData.stunTimer = 2.0;
+        } else if (biome === 'swamp') {
+          // Swamp: 5-sec Poison DOT (15% of spell damage per second)
+          enemy.enemyData.poisonTimer = 5.0;
+          enemy.enemyData.poisonDamage = Math.round(spellDamage * 0.15);
+          enemy.enemyData.dotTickTimer = 0;
+        }
+
         if (enemy.enemyData.hp <= 0) {
           this.handleEnemyDeath(enemy);
+        } else {
+          enemy.enemyData.state = 'chase';
         }
       }
     }
@@ -443,6 +553,56 @@ export class DungeonScene extends Phaser.Scene {
     this.enemies.forEach((enemy) => {
       if (enemy.enemyData.state === 'dead') return;
 
+      const ed = enemy.enemyData;
+
+      // Update status effect timers
+      if (ed.stunTimer && ed.stunTimer > 0) ed.stunTimer = Math.max(0, ed.stunTimer - dt);
+      if (ed.slowTimer && ed.slowTimer > 0) ed.slowTimer = Math.max(0, ed.slowTimer - dt);
+      if (ed.burnTimer && ed.burnTimer > 0) ed.burnTimer = Math.max(0, ed.burnTimer - dt);
+      if (ed.poisonTimer && ed.poisonTimer > 0) ed.poisonTimer = Math.max(0, ed.poisonTimer - dt);
+
+      // Handle sprite tinting
+      const bodyImage = enemy.list[1] as Phaser.GameObjects.Image;
+      if (ed.stunTimer && ed.stunTimer > 0) {
+        bodyImage.setTint(0x88ccff); // Icy blue for frozen/stunned
+      } else if (ed.poisonTimer && ed.poisonTimer > 0) {
+        bodyImage.setTint(0x32cd32); // Green for poison
+      } else if (ed.burnTimer && ed.burnTimer > 0) {
+        bodyImage.setTint(0xff8800); // Orange for burn
+      } else if (ed.slowTimer && ed.slowTimer > 0) {
+        bodyImage.setTint(0xd2b48c); // Brown for slow
+      } else if (!ed.isBoss) {
+        bodyImage.clearTint();
+      } else {
+        // Keep the boss tint based on phase
+        bodyImage.setTint(ed.phase === 3 ? 0xff0000 : (ed.phase === 2 ? 0xff4444 : 0xff8888));
+      }
+
+      // Handle Damage-Over-Time (DOT) ticks
+      if ((ed.burnTimer && ed.burnTimer > 0) || (ed.poisonTimer && ed.poisonTimer > 0)) {
+        if (ed.dotTickTimer === undefined) ed.dotTickTimer = 0;
+        ed.dotTickTimer += dt;
+        if (ed.dotTickTimer >= 1.0) {
+          ed.dotTickTimer -= 1.0;
+          let tickDamage = 0;
+          if (ed.burnTimer && ed.burnTimer > 0 && ed.burnDamage) {
+            tickDamage += ed.burnDamage;
+          }
+          if (ed.poisonTimer && ed.poisonTimer > 0 && ed.poisonDamage) {
+            tickDamage += ed.poisonDamage;
+          }
+          if (tickDamage > 0) {
+            ed.hp = Math.max(0, ed.hp - tickDamage);
+            this.combatSystem.showDamageNumber(enemy.x, enemy.y - 12, tickDamage, false);
+
+            if (ed.hp <= 0) {
+              this.handleEnemyDeath(enemy);
+              return;
+            }
+          }
+        }
+      }
+
       const body = enemy.body as Phaser.Physics.Arcade.Body;
       const dx = this.player.x - enemy.x;
       const dy = this.player.y - enemy.y;
@@ -462,7 +622,7 @@ export class DungeonScene extends Phaser.Scene {
             enemy.enemyData.phase = currentPhase;
             // Visual feedback for phase transition
             const image = enemy.list[1] as Phaser.GameObjects.Image;
-            image.setTint(currentPhase === 3 ? 0xff0000 : 0xff4444);
+            image.setTint(currentPhase === 3 ? 0xff0000 : (currentPhase === 2 ? 0xff4444 : 0xff8888));
             enemy.enemyData.speed = currentPhase === 3 ? 90 : (currentPhase === 2 ? 75 : 60);
           }
 
@@ -485,8 +645,19 @@ export class DungeonScene extends Phaser.Scene {
           }
         }
 
-        const vx = (dx / dist) * enemy.enemyData.speed;
-        const vy = (dy / dist) * enemy.enemyData.speed;
+        if (ed.stunTimer && ed.stunTimer > 0) {
+          // Stunned! Skip movement and attacks
+          body.setVelocity(0, 0);
+          return;
+        }
+
+        let speedMult = 1.0;
+        if (ed.slowTimer && ed.slowTimer > 0) {
+          speedMult = 0.5; // 50% slow
+        }
+
+        const vx = (dx / dist) * enemy.enemyData.speed * speedMult;
+        const vy = (dy / dist) * enemy.enemyData.speed * speedMult;
         body.setVelocity(vx, vy);
         (enemy.list[1] as Phaser.GameObjects.Image).setFlipX(vx < 0);
 
