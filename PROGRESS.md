@@ -126,7 +126,32 @@ Verification:
 - Created Vitest tests for `useGameStore` inventory actions (28/28 passing on client).
 - Verified global workspace typecheck completed successfully.
 - Phase 1 - Foundation is officially complete.
-Next: Phase 2: Core Gameplay depth.
+[2026-07-13 21:05] Cycle 19 — Phase 2: Biome-Reactive Magic Grimoire
+Status: DONE
+Files changed:
+- `client/src/game/systems/SoundSystem.ts`
+- `client/src/game/scenes/WorldScene.ts`
+- `client/src/game/scenes/DungeonScene.ts`
+- `client/src/game/systems/combatBiome.test.ts` (created)
+- `ai/prompts/item.ts` (created)
+- `ai/providers/openai.ts`
+- `ai/providers/ollama.ts`
+- `ai/index.ts`
+Verification:
+- Integrated OpenAI/Ollama item prompts and generation handlers.
+- Created 6 custom synthesizer sounds for biome elements (Wind, Nature, Sand, Fire, Ice, Poison).
+- Implemented biome-reactive magic triggers inside `WorldScene.ts` and `DungeonScene.ts` (`castDamageSpell`):
+  - Plains: Wind particles, swoosh sound, 40px knockback.
+  - Forest: Leaf particles, nature chime sound, 25% healing leech.
+  - Desert: Sand particles, sand sound, 50% speed slow for 3.0s.
+  - Volcano: Flame particles, fire sound, 10% damage/sec burn DOT for 4.0s.
+  - Snow: Ice particles, ice chime sound, 2.0s stun.
+  - Swamp: Poison bubbles, toxic sizzle sound, 15% damage/sec poison DOT for 5.0s.
+  - Dungeon: Void particles, spell sound, 25% critical strike chance multiplier.
+- Added status effect tick updates, stun motion bypasses, and slow multipliers to `updateEnemies()` in both scenes.
+- Added unit tests in `combatBiome.test.ts` verifying slow, stun, DOT tick damage, and enemy death resolution (100% passing).
+- Verified global workspace typecheck compiles successfully.
+Next: Phase 2: Movement feel & dodge rolling.
 
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

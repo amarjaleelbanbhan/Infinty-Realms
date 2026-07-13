@@ -42,10 +42,10 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Guild CRUD (create/join/leave/browse) backed by server | DONE — member roster not yet a separate table (stored in bankJson) |
 
 ## Phase 2 — Core Gameplay
-**Status: PLANNED**
+**Status: PARTIAL** — Biome-reactive magic grimoire is fully DONE.
 
 Combat depth, movement feel, skills, equipment, loot, crafting, quests,
-bosses, progression. Not started — do not start until Phase 1 is fully DONE.
+bosses, progression.
 
 ## Phase 3 — World
 **Status: PLANNED**
