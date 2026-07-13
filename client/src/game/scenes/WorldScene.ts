@@ -21,6 +21,7 @@ import { farmingSystem } from '@game/systems/FarmingSystem';
 import { citadelSystem } from '@game/systems/CitadelSystem';
 import { MountSystem } from '@game/systems/MountSystem';
 import { antiCheatSystem } from '@game/systems/AntiCheatSystem';
+import { claimKillReward } from '@game/systems/combatApi';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -1292,11 +1293,12 @@ export class WorldScene extends Phaser.Scene {
       },
     });
 
-    // Rewards
-    const gameStore = useGameStore.getState();
-    gameStore.addExperience(enemy.enemyData.experienceReward);
-    gameStore.addGold(enemy.enemyData.goldReward);
-    useUIStore.getState().addToast(`+${enemy.enemyData.goldReward} gold`, 'gold');
+    // Server-authoritative rewards: POST the kill to the server, which validates
+    // the claim against its own reward table and rate limits, then writes XP+gold
+    // to the DB. The returned values are applied here — not the client's own computation.
+    const enemyType = enemy.enemyData.type ?? 'skeleton';
+    const enemyLevel = (enemy.enemyData as any).level ?? 1;
+    claimKillReward(enemyType, enemyLevel);
   }
 
   private updateEnemyHPBar(enemy: EnemySprite) {

@@ -80,7 +80,29 @@ Findings:
 - GuildUI rewritten to match new store shape, adds Browse Guilds tab.
 - TECH_DEBT.md, ROADMAP.md updated to reflect actual status.
 Technical notes: Member roster stored in bankJson as interim workaround. Proper GuildMember join table needed.
-Next: Phase 1 highest priority: Server-authoritative combat. Enemy kills must be server-validated.
+[2026-07-13 20:20] Cycle 17 — Phase 1: Server-Authoritative Combat & Session Persistence
+Status: DONE
+Files changed:
+- `server/src/players/combat.service.ts` (created)
+- `server/src/players/combat.controller.ts` (created)
+- `server/src/players/players.module.ts`
+- `client/src/game/systems/combatApi.ts` (created)
+- `client/src/game/scenes/WorldScene.ts`
+- `client/src/game/scenes/DungeonScene.ts`
+- `client/src/stores/useGameStore.ts`
+- `client/src/game/systems/SaveSystem.ts`
+- `server/src/players/combat.service.spec.ts` (created)
+- `client/src/game/systems/combatApi.test.ts` (created)
+Verification:
+- Created server-authoritative `CombatService.claimKill` which calculates experience and gold rewards server-side.
+- Added rate-limiting constraints: minimum 300ms interval and maximum 60 kills per rolling 60-second window.
+- Added write-through persistence to write validated combat rewards immediately to the DB.
+- Modified `useGameStore.startSession` and `SaveSystem.restoreFromSave` to support session resuming, calling `/api/players/me` with the persisted token to load/restore server state, or registering and uploading local progress to a new server profile on first resume.
+- Wired `claimKillReward` into `WorldScene.ts` and `DungeonScene.ts` on enemy deaths.
+- Added Jest unit tests for `CombatService` (41/41 passing).
+- Added Vitest unit tests for `combatApi.ts` (25/25 passing).
+- Run global workspace typecheck successfully.
+Next: Phase 1: Inventory validation server-side.
 
 `
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic

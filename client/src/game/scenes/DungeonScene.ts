@@ -5,6 +5,7 @@ import { useGameStore } from '@stores/useGameStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useSkillStore } from '@game/systems/SkillSystem';
 import { useSettingsStore } from '@stores/useSettingsStore';
+import { claimKillReward } from '@game/systems/combatApi';
 
 const TILE_SIZE = 32;
 
@@ -609,9 +610,7 @@ export class DungeonScene extends Phaser.Scene {
       },
     });
 
-    const store = useGameStore.getState();
-    store.addExperience(40);
-    store.addGold(15);
+    claimKillReward(enemy.enemyData.type ?? 'dungeon_mob', (enemy.enemyData as any).level ?? 1);
   }
 
   private collectKey(player: any, key: Phaser.Physics.Arcade.Sprite) {

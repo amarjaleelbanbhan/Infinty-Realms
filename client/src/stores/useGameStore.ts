@@ -18,7 +18,7 @@ interface GameState {
 
   // Actions
   setLoaded: (loaded: boolean) => void;
-  startSession: (playerName: string) => Promise<void>;
+  startSession: (playerName: string, isResume?: boolean) => Promise<void>;
   setPlayer: (player: Partial<Player>) => void;
   updatePlayerPosition: (x: number, y: number) => void;
   updatePlayerStats: (stats: Partial<Player['stats']>) => void;
@@ -63,8 +63,8 @@ export const useGameStore = create<GameState>()(
 
       setLoaded: (loaded) => set({ isLoaded: loaded }),
 
-      startSession: async (playerName) => {
-        let guestToken = '';
+      startSession: async (playerName, isResume = false) => {
+        let guestToken = isResume ? get().playerToken : '';
         let playerId = crypto.randomUUID();
         let finalName = playerName;
         let worldSeed = `realm-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -74,21 +74,11 @@ export const useGameStore = create<GameState>()(
         let worldDayTime = 8;
         let worldAge = 0;
 
-        try {
-          const response = await fetch('/api/auth/guest', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name: playerName }),
-          });
+        let loadedPlayer: any = null;
 
-          if (response.ok) {
-            const data = await response.json();
-            guestToken = data.token;
-            playerId = data.playerId;
-            finalName = data.name;
-
+        // If resuming and have an existing token, try to load from the server first
+        if (isResume && guestToken) {
+          try {
             const playerResponse = await fetch('/api/players/me', {
               method: 'GET',
               headers: {
@@ -98,32 +88,89 @@ export const useGameStore = create<GameState>()(
 
             if (playerResponse.ok) {
               const playerData = await playerResponse.json();
-              if (playerData.worldSeed) {
-                worldSeed = playerData.worldSeed;
+              if (playerData && playerData.player) {
+                loadedPlayer = playerData.player;
+                playerId = loadedPlayer.id;
+                finalName = loadedPlayer.name;
+                worldSeed = loadedPlayer.worldSeed ?? worldSeed;
               }
+            } else {
+              // Token invalid/expired - clear it to force a new guest session creation
+              guestToken = '';
             }
+          } catch (err) {
+            console.error('[Session] Failed to fetch existing player, falling back to local save details:', err);
+          }
+        }
 
-            const worldResponse = await fetch(`/api/world/${worldSeed}`, {
-              method: 'GET',
+        // If no token, create a new guest session
+        if (!guestToken) {
+          try {
+            const response = await fetch('/api/auth/guest', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ name: playerName }),
             });
 
-            if (worldResponse.ok) {
-              const worldData = await worldResponse.json();
-              worldWidth = worldData.width ?? 256;
-              worldHeight = worldData.height ?? 256;
-              worldSeason = worldData.season ?? 'spring';
-              worldDayTime = worldData.dayTime ?? 8;
-              worldAge = worldData.worldAge ?? 0;
+            if (response.ok) {
+              const data = await response.json();
+              guestToken = data.token;
+              playerId = data.playerId;
+              finalName = data.name;
+
+              // If resuming from local save, sync progress to the newly created server account
+              if (isResume) {
+                const currentLocalPlayer = get().player;
+                if (currentLocalPlayer) {
+                  await fetch('/api/players/save', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${guestToken}`,
+                    },
+                    body: JSON.stringify({
+                      ...currentLocalPlayer,
+                      id: playerId,
+                      name: finalName,
+                    }),
+                  });
+                  loadedPlayer = {
+                    ...currentLocalPlayer,
+                    id: playerId,
+                    name: finalName,
+                  };
+                }
+              }
             }
+          } catch (err) {
+            console.error('[Session] Failed to connect to server backend, falling back to local simulation:', err);
+          }
+        }
+
+        // Load world state
+        try {
+          const worldResponse = await fetch(`/api/world/${worldSeed}`, {
+            method: 'GET',
+          });
+
+          if (worldResponse.ok) {
+            const worldData = await worldResponse.json();
+            worldWidth = worldData.width ?? 256;
+            worldHeight = worldData.height ?? 256;
+            worldSeason = worldData.season ?? 'spring';
+            worldDayTime = worldData.dayTime ?? 8;
+            worldAge = worldData.worldAge ?? 0;
           }
         } catch (err) {
-          console.error('[Session] Failed to connect to server backend, falling back to local simulation:', err);
+          console.error('[Session] Failed to load world state:', err);
         }
 
         set({
           sessionStarted: true,
           playerToken: guestToken || null,
-          player: {
+          player: loadedPlayer || {
             id: playerId,
             name: finalName,
             worldSeed,

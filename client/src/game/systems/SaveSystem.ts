@@ -146,7 +146,7 @@ export class SaveSystem {
 
     gameStore.setPlayer(save.player);
     gameStore.setWorldState(save.world);
-    gameStore.startSession(save.player.name);
+    gameStore.startSession(save.player.name, true);
 
     if (save.world.farmPlots) farmingSystem.loadPlots(save.world.farmPlots);
     if (save.world.leylineNodes) leylineSystem.loadNodes(save.world.leylineNodes);

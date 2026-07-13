@@ -31,18 +31,8 @@ items and `GAME_DESIGN_BIBLE.md` for the full critical review.
 ## Outstanding
 
 ### Foundation-blocking (Phase 1)
-- **Combat has zero server authority.** `CombatSystem.ts` computes damage
-  entirely client-side against client-only Enemy sprites; there is no
-  shared server-side enemy state at all. Making this real requires
-  inventing server-side enemy simulation, not just adding a validation
-  check — a materially bigger effort than the movement-validation fix, not
-  attempted this pass.
-- **Persistence is client-trusted and delayed.** `SaveSystem` writes to
-  localStorage as the source of truth and pushes to the server every 60s
-  with the client's full computed player object. Server restart or crash
-  mid-session loses anything not yet flushed. The anti-cheat check on that
-  endpoint now rejects bad deltas outright (see above), but the underlying
-  60s-delayed, client-computed save cadence itself is unchanged.
+- **Combat has partial server authority (DONE for kills/rewards).** `CombatSystem.ts` computes damage client-side, but enemy deaths now post a `claimKillReward` check to the server. The server calculates and persists experience/gold rewards on the database directly, enforcing a 300ms min interval and 60 kills/min cap. Server-side enemy physical simulation/position authority remains PLANNED.
+- **Persistence is partially server-authoritative and write-through.** Session resuming is now fixed: the client calls `/api/players/me` with their persisted JWT token to load stats, rather than starting new guest credentials every time. Hacked/inflated local saves are synced to the database on first resume but are still protected by rate heuristics. Combat rewards write-through directly to the database on every kill.
 - **Party membership is not server-authoritative.** Invite consent and
   roster sync are now real (see "Fixed this pass"), but there is no
   server-side `PartyService` validating who's actually in which party —
