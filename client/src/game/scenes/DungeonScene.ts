@@ -50,6 +50,13 @@ export class DungeonScene extends Phaser.Scene {
   private wasdKeys!: Record<string, Phaser.Input.Keyboard.Key>;
   private numberKeys!: Phaser.Input.Keyboard.Key[];
   private spaceKey!: Phaser.Input.Keyboard.Key;
+  
+  private isDashing = false;
+  private dashTimeRemaining = 0;
+  private dashCooldownRemaining = 0;
+  private dashVelocity = { x: 0, y: 0 };
+  public isPlayerInvulnerable = false;
+  private shiftKey!: Phaser.Input.Keyboard.Key;
 
   private dungeonData: any;
   private wallLayer!: Phaser.Physics.Arcade.StaticGroup;
@@ -99,6 +106,18 @@ export class DungeonScene extends Phaser.Scene {
     this.drawDungeonTiles();
     this.setupInput();
 
+    // Touch/mobile controls hook
+    (window as Window & { __mobileDash?: () => void }).__mobileDash = () => {
+      this.triggerDodgeRoll();
+    };
+    window.addEventListener('ir:trigger_dash', this.handleTriggerDash);
+
+    // Cleanup on scene shutdown/destroy
+    this.events.on('shutdown', () => {
+      window.removeEventListener('ir:trigger_dash', this.handleTriggerDash);
+      delete (window as any).__mobileDash;
+    });
+
     // Collision setup
     this.physics.add.collider(this.player, this.wallLayer);
 
@@ -135,11 +154,35 @@ export class DungeonScene extends Phaser.Scene {
     if (useUIStore.getState().currentScreen !== 'game') return;
 
     const dt = delta / 1000;
+
+    // Process dodge roll state
+    if (this.isDashing) {
+      this.dashTimeRemaining -= delta;
+      if (this.dashTimeRemaining <= 0) {
+        this.isDashing = false;
+        this.isPlayerInvulnerable = false;
+        this.playerBody.setAngle(0);
+        this.playerBody.setScale(1.0);
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        body.setVelocity(0, 0);
+      } else {
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        body.setVelocity(this.dashVelocity.x, this.dashVelocity.y);
+
+        if (Math.random() < 0.3) {
+          this.spawnDashParticle(this.player.x, this.player.y);
+        }
+      }
+    }
+
     this.handlePlayerInput(dt);
     this.updateEnemies(dt);
 
     if (this.playerAttackCooldown > 0) {
       this.playerAttackCooldown = Math.max(0, this.playerAttackCooldown - delta);
+    }
+    if (this.dashCooldownRemaining > 0) {
+      this.dashCooldownRemaining = Math.max(0, this.dashCooldownRemaining - delta);
     }
   }
 
@@ -275,6 +318,7 @@ export class DungeonScene extends Phaser.Scene {
     }) as Record<string, Phaser.Input.Keyboard.Key>;
 
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.shiftKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
     this.numberKeys = [
       this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ONE),
       this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.TWO),
@@ -284,8 +328,16 @@ export class DungeonScene extends Phaser.Scene {
   }
 
   private handlePlayerInput(dt: number) {
+    if (this.isDashing) return;
+
     const gameStore = useGameStore.getState();
     const speed = gameStore.player?.stats?.speed ?? 150;
+
+    // Dash / Dodge Roll Trigger
+    if (Phaser.Input.Keyboard.JustDown(this.shiftKey)) {
+      this.triggerDodgeRoll();
+      return;
+    }
 
     let vx = 0, vy = 0;
     if (this.cursors.left.isDown || this.wasdKeys.left.isDown) {
@@ -760,26 +812,6 @@ export class DungeonScene extends Phaser.Scene {
   private handleEnemyDeath(enemy: EnemySprite) {
     enemy.enemyData.state = 'dead';
     this.combatSystem.showDeathEffect(enemy.x, enemy.y);
-    (enemy.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
-    (enemy.body as Phaser.Physics.Arcade.Body).enable = false;
-
-    this.tweens.add({
-      targets: enemy,
-      alpha: 0,
-      angle: 90,
-      duration: 800,
-      onComplete: () => {
-        enemy.destroy();
-        this.enemies = this.enemies.filter((e) => e !== enemy);
-        
-        if (enemy.enemyData.type === 'dragon') {
-          this.dungeonData.bossAlive = false;
-          useUIStore.getState().addToast('Dungeon Warden Defeated!', 'success');
-        }
-        
-        this.broadcastDungeonState();
-      },
-    });
 
     claimKillReward(enemy.enemyData.type ?? 'dungeon_mob', (enemy.enemyData as any).level ?? 1);
   }
@@ -870,5 +902,113 @@ export class DungeonScene extends Phaser.Scene {
   private exitDungeon() {
     this.scene.stop('DungeonScene');
     this.scene.start('WorldScene', { returnFromDungeon: true, rx: this.returnX, ry: this.returnY });
+  }
+
+  private handleTriggerDash = (() => {
+    this.triggerDodgeRoll();
+  }).bind(this);
+
+  private triggerDodgeRoll() {
+    if (this.isDashing || this.dashCooldownRemaining > 0) {
+      return;
+    }
+
+    const gameStore = useGameStore.getState();
+    if (!gameStore.player || gameStore.isDead) return;
+
+    // Determine direction
+    let dx = 0;
+    let dy = 0;
+
+    if (this.cursors.left.isDown  || this.wasdKeys.left.isDown)  dx = -1;
+    if (this.cursors.right.isDown || this.wasdKeys.right.isDown) dx = 1;
+    if (this.cursors.up.isDown    || this.wasdKeys.up.isDown)    dy = -1;
+    if (this.cursors.down.isDown  || this.wasdKeys.down.isDown)  dy = 1;
+
+    if (dx === 0 && dy === 0) {
+      switch (this.playerDirection) {
+        case 'up':    dy = -1; break;
+        case 'down':  dy = 1; break;
+        case 'left':  dx = -1; break;
+        case 'right': dx = 1; break;
+      }
+    }
+
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len > 0) {
+      dx /= len;
+      dy /= len;
+    }
+
+    this.isDashing = true;
+    this.isPlayerInvulnerable = true;
+    this.dashTimeRemaining = 250;
+    this.dashCooldownRemaining = 1200;
+
+    const baseSpeed = gameStore.player?.stats?.speed ?? 150;
+    const dashSpeed = baseSpeed * 2.5;
+    this.dashVelocity = { x: dx * dashSpeed, y: dy * dashSpeed };
+
+    soundSystem.playDash();
+
+    // Dispatch event to HUD for cooldown rendering
+    window.dispatchEvent(new CustomEvent('ir:dash_cast', { detail: { cooldown: 1200 } }));
+
+    this.tweens.add({
+      targets: this.playerBody,
+      angle: dx >= 0 ? 360 : -360,
+      scaleX: { from: 1.2, to: 1.0 },
+      scaleY: { from: 0.8, to: 1.0 },
+      duration: 250,
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        this.playerBody.setAngle(0);
+        this.playerBody.setScale(1.0);
+      }
+    });
+
+    this.spawnDashBurst(this.player.x, this.player.y);
+  }
+
+  private spawnDashBurst(x: number, y: number) {
+    if (!this.textures.exists('fx-pixel')) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('fx-pixel', 4, 4);
+    }
+
+    const particles = this.add.particles(x, y, 'fx-pixel', {
+      color: [0xdddddd, 0xaaaaaa, 0x777777],
+      lifespan: 400,
+      angle: { min: 0, max: 360 },
+      speed: { min: 40, max: 100 },
+      scale: { start: 1.5, end: 0 },
+      alpha: { start: 0.6, end: 0 },
+      emitting: false,
+    });
+    particles.explode(10);
+    this.time.delayedCall(450, () => particles.destroy());
+  }
+
+  private spawnDashParticle(x: number, y: number) {
+    if (!this.textures.exists('fx-pixel')) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('fx-pixel', 4, 4);
+    }
+
+    const particle = this.add.image(x, y, 'fx-pixel');
+    particle.setTint(0xbbbbbb);
+    particle.setAlpha(0.5);
+    particle.setScale(1.2);
+    this.tweens.add({
+      targets: particle,
+      alpha: 0,
+      scale: 0,
+      duration: 300,
+      onComplete: () => particle.destroy()
+    });
   }
 }

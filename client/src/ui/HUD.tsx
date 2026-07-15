@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useGameStore } from '@stores/useGameStore';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
@@ -10,6 +11,36 @@ export function HUD() {
   const { quests } = useQuestStore();
   const { currentScreen, addToast } = useUIStore();
   const { t } = useI18nStore();
+
+  const [dashCooldown, setDashCooldown] = useState(0);
+  const [maxDashCooldown, setMaxDashCooldown] = useState(1200);
+
+  useEffect(() => {
+    const handleDashCast = (e: Event) => {
+      const customEvent = e as CustomEvent<{ cooldown: number }>;
+      const cd = customEvent.detail.cooldown;
+      setDashCooldown(cd);
+      setMaxDashCooldown(cd);
+    };
+
+    window.addEventListener('ir:dash_cast', handleDashCast);
+    return () => window.removeEventListener('ir:dash_cast', handleDashCast);
+  }, []);
+
+  useEffect(() => {
+    if (dashCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setDashCooldown((prev) => {
+        const next = prev - 50;
+        if (next <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return next;
+      });
+    }, 50);
+    return () => clearInterval(interval);
+  }, [dashCooldown]);
 
   if (!player || currentScreen !== 'game') return null;
 
@@ -96,7 +127,7 @@ export function HUD() {
       </div>
 
       {/* ── Bottom-left: Hotbar ── */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-auto flex items-center gap-3">
         <div className="flex items-center gap-3 premium-glass premium-border px-5 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
           {[Sword, Shield, FlaskConical, Navigation, Gem].map((Icon, i) => (
             <button
@@ -107,6 +138,25 @@ export function HUD() {
               <span className="absolute bottom-1 right-2 font-mono text-[10px] text-white/40 group-hover:text-realm-accent font-bold">{i + 1}</span>
             </button>
           ))}
+
+          {/* Dodge Roll Slot */}
+          <button
+            className="w-14 h-14 bg-black/60 border border-white/20 rounded-xl flex items-center justify-center text-white/50 hover:text-realm-mana hover:border-realm-mana hover:bg-realm-mana/20 transition-all hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(0,200,255,0.4)] relative overflow-hidden group animate-fade-in"
+            onClick={() => window.dispatchEvent(new CustomEvent('ir:trigger_dash'))}
+          >
+            <span className="text-xl relative z-10 select-none">🏃</span>
+            <span className="absolute bottom-1 right-2 font-mono text-[10px] text-white/40 group-hover:text-realm-mana font-bold">Shift</span>
+            {dashCooldown > 0 && (
+              <div 
+                className="absolute inset-0 bg-black/85 flex items-center justify-center font-mono text-xs text-realm-mana font-bold z-20"
+                style={{
+                  clipPath: `inset(${(1 - dashCooldown / maxDashCooldown) * 100}% 0px 0px 0px)`
+                }}
+              >
+                {(dashCooldown / 1000).toFixed(1)}s
+              </div>
+            )}
+          </button>
         </div>
       </div>
 
@@ -137,6 +187,7 @@ export function HUD() {
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
         <div className="glass-dark px-3 py-1.5 text-xs font-mono text-realm-text-muted flex gap-4">
           <span>WASD Move</span>
+          <span>SHIFT Dodge</span>
           <span>SPACE Attack</span>
           <span>1-4 Spells</span>
           <span>E Interact</span>

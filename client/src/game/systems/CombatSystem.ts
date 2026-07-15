@@ -48,6 +48,10 @@ export class CombatSystem {
 
   /** Apply damage to player */
   damagePlayer(damage: number, isCrit = false) {
+    if (this.scene && (this.scene as any).isPlayerInvulnerable) {
+      return;
+    }
+
     const eventStore = useEventStore.getState();
     if (eventStore.activeEvent?.type === 'dragon_attack') {
       damage = Math.round(damage * 1.25); // Dragon attack increases enemy damage against player by 25%

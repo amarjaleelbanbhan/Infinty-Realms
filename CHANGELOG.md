@@ -7,6 +7,12 @@ for the older, unverified cycle-log history).
 ## [Unreleased]
 
 ### Added
+- Dodge rolling (dashing) mechanic in `WorldScene.ts` and `DungeonScene.ts` triggered by the **SHIFT** key on keyboards or a virtual touch button (🏃) on mobile overlays.
+- Localized visual cooldown slice overlay on the dodge roll hotbar slot in `HUD.tsx` with top-to-bottom drain animation using CSS `clipPath` and `ir:dash_cast` CustomEvent hooks.
+- Invincibility (damage immunity) window during dodge rolling in `CombatSystem.ts`.
+- Synthesized custom triangle-wave whoosh sound effect (`soundSystem.playDash`) connecting to the master GainNode.
+- Particle trail emission (burst on dash start, trailing dust puffs during dash) for visual juice.
+- Dedicated unit tests for the dodge roll state machine (`movementDodge.test.ts`) covering states, speed boost, invincibility, cooldown, and mount dismount behaviour.
 - Server-authoritative combat kills/rewards validation (`CombatService.claimKill`).
 - Write-through persistence directly writing gold and experience rewards to the database on kill validation.
 - Rate-limiting and interval checks (300ms min interval, 60 kills/min cap) to secure kill claims against client-side exploitation.
@@ -17,6 +23,8 @@ for the older, unverified cycle-log history).
 - Unit tests for server-side `CombatService` using Jest.
 
 ### Fixed
+- Diagonal movement feel: implemented sliding collisions in `WorldScene.ts` so the player slides smoothly along walls instead of locking up completely.
+- Corrected root `README.md` status table and roadmap checklist to remove false claims and reflect actual progress.
 - "Continue" button on Main Menu resetting player level and gold due to `startSession` creating a new guest token and resetting stats unconditionally.
 - Removed dead and misleading comment block in `CombatSystem.calculateDamage()`.
 - Verified and fixed TypeScript compilation errors in `WorldScene.ts` and `DungeonScene.ts`.

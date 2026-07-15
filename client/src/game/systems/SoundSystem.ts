@@ -263,6 +263,26 @@ export class SoundSystem {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.2);
   }
+
+  playDash() {
+    if (!this.enabled || !this.ctx) return;
+    this.resume();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.15);
+    
+    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+    
+    osc.connect(gain);
+    gain.connect(this.masterGain || this.ctx.destination);
+    
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
+  }
 }
 
 export const soundSystem = new SoundSystem();

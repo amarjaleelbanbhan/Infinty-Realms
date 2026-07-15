@@ -15,17 +15,18 @@ A **never-ending browser RPG** with procedurally generated worlds, AI-driven NPC
 
 | Feature | Status |
 |---------|--------|
-| 🗺️ Procedural worlds (seeded noise, biomes, cities, dungeons) | ✅ MVP |
-| 🚶 Player movement (WASD + touch joystick) | ✅ MVP |
-| ⚔️ Top-down action combat | ✅ MVP |
-| 🤖 AI-generated quests & NPC dialogue | ✅ MVP |
-| 💾 Auto-save (localStorage → server sync) | ✅ MVP |
-| 🌦️ Dynamic weather system | ✅ MVP |
-| 🎒 Inventory & loot system | ✅ MVP |
-| 👥 Multiplayer (room codes) & Trading | ✅ Phase 2 |
-| 🏙️ Living world (Guilds, Dynamic Economy) | ✅ Phase 3 |
-| 🎭 AI Dungeon Master & Seasonal Events | ✅ Phase 4 |
-| 🌐 Localization & Creator Tools | ✅ Phase 5 |
+| 🗺️ Procedural worlds (seeded noise, biomes, cities, dungeons) | ✅ DONE |
+| 🚶 Player movement (WASD + touch joystick) | ✅ DONE |
+| ⚔️ Top-down action combat | 🔄 PARTIAL (client simulation, server-authoritative rewards) |
+| 🤖 AI-generated quests & NPC dialogue | 🔄 PARTIAL (dormant provider code, template fallback default) |
+| 💾 Auto-save (localStorage → server sync) | ✅ DONE |
+| 🌦️ Dynamic weather system | ✅ DONE |
+| 🎒 Inventory & loot system | ✅ DONE (server-authoritative) |
+| 👥 Multiplayer (room codes) & Trading | ✅ DONE (server-authoritative transaction trade completion) |
+| 🏙️ Living world (Guilds, Dynamic Economy) | 🔄 PARTIAL (server Guild CRUD done, roster/economy incomplete) |
+| 🎭 AI Dungeon Master & Seasonal Events | 🔄 PARTIAL (proximity events + night FX done, memory/Dungeon Master planned) |
+| 🌐 Localization & Settings UI | ✅ DONE |
+| 🛠️ Creator Tools | 📅 PLANNED |
 
 ---
 
@@ -128,11 +129,15 @@ Biomes: Ocean · Beach · Plains · Forest · Desert · Snow · Volcano · Swamp
 
 ## 🛣️ Roadmap
 
-- **Phase 1 (MVP)** — Procedural world, movement, combat, AI quests, solo play ✅
-- **Phase 2** — Multiplayer, room codes, trading, chat ✅
-- **Phase 3** — AI NPCs with memory, dynamic economy, procedural dungeons, guilds ✅
-- **Phase 4** — Massive shared world, seasonal events, AI Dungeon Master, marketplace ✅
-- **Phase 5** — Mobile app, localization, creator tools, modding API ✅
+- **Phase 0 — Truth Pass** — Full repository audit and correction of false claims ✅ DONE
+- **Phase 1 — Foundation** — Monorepo path fixes, NestJS boot, Jest/Vitest infrastructure, server-authoritative movement/trade/inventory/combat rewards, anti-cheat, real party invites ✅ DONE
+- **Phase 2 — Core Gameplay** — Biome-reactive magic grimoire (DONE), diagonal sliding movement feel (DONE), dodge rolling mechanics (DONE) 🔄 PARTIAL
+- **Phase 3 — World** — Deepening procedural gen, cities/villages, day/night cycle, weather 📅 PLANNED
+- **Phase 4 — AI** — NPC memory, real AI dialogue/quest generator defaults 📅 PLANNED
+- **Phase 5 — Multiplayer** — Guild roster refinement, party sync, chat moderation 📅 PLANNED
+- **Phase 6 — Living World** — NPC schedules, faction relationships, dynamic wars 📅 PLANNED
+- **Phase 7 — Creator Platform** — Modding API, quest/NPC/dungeon editors 📅 PLANNED
+- **Phase 8 — Infinite Game** — Player politics, kingdoms, legendary events 📅 PLANNED
 
 ---
 

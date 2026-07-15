@@ -126,6 +126,33 @@ Verification:
 - Created Vitest tests for `useGameStore` inventory actions (28/28 passing on client).
 - Verified global workspace typecheck completed successfully.
 - Phase 1 - Foundation is officially complete.
+
+[2026-07-16 01:15] Cycle 20 — Phase 2: Movement Feel & Dodge Rolling
+Status: DONE
+Files changed:
+- `README.md`
+- `client/src/ui/MobileControls.tsx`
+- `client/src/ui/HUD.tsx`
+- `client/src/game/systems/SoundSystem.ts`
+- `client/src/game/systems/CombatSystem.ts`
+- `client/src/game/scenes/WorldScene.ts`
+- `client/src/game/scenes/DungeonScene.ts`
+- `client/src/game/systems/movementDodge.test.ts` (created)
+Tests added:
+- `client/src/game/systems/movementDodge.test.ts` (6 cases covering triggers, invincibility, dismount, and cooldowns)
+Verification:
+- All 38 Vitest tests passing (both new dodge tests and existing stores/combat tests).
+- All 50 Jest server tests passing.
+- Global monorepo build and typecheck compiling clean.
+Technical notes:
+- Added diagonal sliding collisions to `WorldScene.ts` so players slide along walls instead of locking up.
+- Implemented Shift key dodge rolls in `WorldScene.ts` and `DungeonScene.ts` at 2.5x base speed for 250ms with a 1.2s cooldown.
+- Automatically dismounts player on dodge roll to avoid speedhack false positives on the server.
+- Added virtual dash button (🏃) in `MobileControls.tsx` and custom custom-event listener in `HUD.tsx` to display a cooldown slice overlay.
+- Added synthesized whoosh sound (`SoundSystem.playDash`) and custom particle trails for juice.
+- Wired damage immunity during rolls inside `CombatSystem.ts`.
+Next: Phase 2: Combat depth (attack combos, weapon type swings, stun animations).
+
 [2026-07-13 21:05] Cycle 19 — Phase 2: Biome-Reactive Magic Grimoire
 Status: DONE
 Files changed:
@@ -152,6 +179,7 @@ Verification:
 - Added unit tests in `combatBiome.test.ts` verifying slow, stun, DOT tick damage, and enemy death resolution (100% passing).
 - Verified global workspace typecheck compiles successfully.
 Next: Phase 2: Movement feel & dodge rolling.
+
 
 [2026-07-11 21:54] Cycle 1 — Milestone 3, Task: Inventory & Skill Tree Logic
 Status: done

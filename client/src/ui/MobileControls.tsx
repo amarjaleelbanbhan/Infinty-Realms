@@ -67,6 +67,16 @@ export function MobileControls() {
           ⚔️
         </button>
         <button
+          className="w-14 h-14 rounded-full glass border border-realm-mana/50 flex items-center justify-center text-xl active:scale-90 transition-transform"
+          style={{ boxShadow: '0 0 15px rgba(93,188,232,0.3)' }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            (window as Window & { __mobileDash?: () => void }).__mobileDash?.();
+          }}
+        >
+          🏃
+        </button>
+        <button
           className="w-14 h-14 rounded-full glass border border-realm-accent/50 flex items-center justify-center text-xl active:scale-90 transition-transform"
           onTouchStart={(e) => {
             e.preventDefault();

@@ -41,5 +41,5 @@ fully DONE — see the "Foundation-blocking" rule in `ROADMAP.md`.
 ## Remove / already cut (do not re-add without re-justifying from first principles)
 - [ ] Any GTA6/RDR2/Cyberpunk competitive framing in marketing docs
 - [ ] Golem/Factorio-style automation as previously scoped
-- [ ] README "✅" claims for anything not actually verified (audit the rest
+- [x] README "✅" claims for anything not actually verified (audit the rest
       of the README against Phase 0 findings — not yet fully done)

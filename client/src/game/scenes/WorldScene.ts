@@ -108,6 +108,14 @@ export class WorldScene extends Phaser.Scene {
   private buildModeActive = false;
   private buildModeType: CitadelStructureType = 'wall';
   private buildModeGuildId = '';
+
+  private isDashing = false;
+  private dashTimeRemaining = 0;
+  private dashCooldownRemaining = 0;
+  private dashVelocity = { x: 0, y: 0 };
+  public isPlayerInvulnerable = false;
+  private shiftKey!: Phaser.Input.Keyboard.Key;
+
   private handleJoinedBound = this.handleRemotePlayerJoined.bind(this);
   private handleMovedBound = this.handleRemotePlayerMoved.bind(this);
   private handleAttackedBound = this.handleRemotePlayerAttacked.bind(this);
@@ -279,6 +287,7 @@ export class WorldScene extends Phaser.Scene {
     window.addEventListener('ir:siege_invasion', this.handleSiegeEvent);
     window.addEventListener('ir:god_intervention_cast', this.handleGodIntervention);
     window.addEventListener('ir:respawn', this.handleRespawn);
+    window.addEventListener('ir:trigger_dash', this.handleTriggerDash);
 
     console.log(`[WorldScene] World ready! Cities: ${this.world.cities.length}`);
   }
@@ -720,6 +729,7 @@ export class WorldScene extends Phaser.Scene {
     this.mKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
     this.fKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
 
     this.numberKeys = [
       this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE),
@@ -867,6 +877,9 @@ export class WorldScene extends Phaser.Scene {
     (window as Window & { __mobileInteract?: () => void }).__mobileInteract = () => {
       this.interactWithNearest();
     };
+    (window as Window & { __mobileDash?: () => void }).__mobileDash = () => {
+      this.triggerDodgeRoll();
+    };
     (window as Window & { __spectatorMode?: () => void }).__spectatorMode = () => {
       this.cameras.main.stopFollow();
       this.tweens.add({
@@ -942,6 +955,51 @@ export class WorldScene extends Phaser.Scene {
     if (useGameStore.getState().isDead) return;
 
     const dt = delta / 1000;
+
+    // Process dodge roll state
+    if (this.isDashing) {
+      this.dashTimeRemaining -= delta;
+      if (this.dashTimeRemaining <= 0) {
+        this.isDashing = false;
+        this.isPlayerInvulnerable = false;
+        this.playerBody.setAngle(0);
+        this.playerBody.setScale(1.0);
+      } else {
+        const speed = (useGameStore.getState().player?.stats?.speed ?? 150) * 2.5;
+        let vx = this.dashVelocity.x;
+        let vy = this.dashVelocity.y;
+        
+        let targetX = this.player.x;
+        let targetY = this.player.y;
+        const dx = vx * dt;
+        const dy = vy * dt;
+
+        if (dx !== 0 || dy !== 0) {
+          const nextX = this.player.x + dx;
+          const nextY = this.player.y + dy;
+
+          if (this.isTileWalkable(nextX, nextY)) {
+            targetX = nextX;
+            targetY = nextY;
+          } else if (dx !== 0 && dy !== 0) {
+            if (this.isTileWalkable(nextX, this.player.y)) {
+              targetX = nextX;
+            } else if (this.isTileWalkable(this.player.x, nextY)) {
+              targetY = nextY;
+            }
+          }
+
+          if (targetX !== this.player.x || targetY !== this.player.y) {
+            this.player.setPosition(targetX, targetY);
+          }
+        }
+
+        if (Math.random() < 0.3) {
+          this.spawnDashParticle(this.player.x, this.player.y);
+        }
+      }
+    }
+
     this.handlePlayerInput(dt);
     this.updateEnemies(dt);
     this.updateNPCs(dt);
@@ -981,8 +1039,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private handlePlayerInput(dt: number) {
+    if (this.isDashing) return;
+
     const gameStore = useGameStore.getState();
     let speed = (gameStore.player?.stats?.speed ?? 150);
+
+    // Dash / Dodge Roll Trigger
+    if (Phaser.Input.Keyboard.JustDown(this.shiftKey)) {
+      this.triggerDodgeRoll();
+      return;
+    }
     
     if (gameStore.player?.isMounted) {
       speed *= MountSystem.getMountSpeedMultiplier(gameStore.player.mount);
@@ -1031,16 +1097,31 @@ export class WorldScene extends Phaser.Scene {
       vy *= 0.707;
     }
 
-    // Collision check against world bounds
-    const newX = this.player.x + vx * dt;
-    const newY = this.player.y + vy * dt;
-    const tileX = Math.floor(newX / TILE_SIZE);
-    const tileY = Math.floor(newY / TILE_SIZE);
+    // Collision check with sliding collisions
+    let targetX = this.player.x;
+    let targetY = this.player.y;
+    const dx = vx * dt;
+    const dy = vy * dt;
 
-    if (tileX >= 0 && tileX < this.world.width && tileY >= 0 && tileY < this.world.height) {
-      const tile = this.world.tiles[tileY][tileX];
-      if (tile.walkable) {
-        this.player.setPosition(newX, newY);
+    if (dx !== 0 || dy !== 0) {
+      const nextX = this.player.x + dx;
+      const nextY = this.player.y + dy;
+
+      if (this.isTileWalkable(nextX, nextY)) {
+        targetX = nextX;
+        targetY = nextY;
+      } else if (dx !== 0 && dy !== 0) {
+        // Diagonal sliding: try moving horizontally first
+        if (this.isTileWalkable(nextX, this.player.y)) {
+          targetX = nextX;
+        } else if (this.isTileWalkable(this.player.x, nextY)) {
+          // Then try moving vertically
+          targetY = nextY;
+        }
+      }
+
+      if (targetX !== this.player.x || targetY !== this.player.y) {
+        this.player.setPosition(targetX, targetY);
       }
     }
 
@@ -1800,6 +1881,9 @@ export class WorldScene extends Phaser.Scene {
     if (this.playerAttackCooldown > 0) {
       this.playerAttackCooldown = Math.max(0, this.playerAttackCooldown - delta);
     }
+    if (this.dashCooldownRemaining > 0) {
+      this.dashCooldownRemaining = Math.max(0, this.dashCooldownRemaining - delta);
+    }
   }
 
   private depthSort() {
@@ -2174,6 +2258,149 @@ export class WorldScene extends Phaser.Scene {
     window.removeEventListener('ir:god_intervention_cast', this.handleGodIntervention);
     window.removeEventListener('enter-house', this.handleEnterHouse);
     window.removeEventListener('ir:respawn', this.handleRespawn);
+    window.removeEventListener('ir:trigger_dash', this.handleTriggerDash);
+    delete (window as any).__mobileDash;
+  }
+
+  private handleTriggerDash = (() => {
+    this.triggerDodgeRoll();
+  }).bind(this);
+
+  private isTileWalkable(x: number, y: number): boolean {
+    const tileX = Math.floor(x / TILE_SIZE);
+    const tileY = Math.floor(y / TILE_SIZE);
+    if (tileX >= 0 && tileX < this.world.width && tileY >= 0 && tileY < this.world.height) {
+      return this.world.tiles[tileY][tileX].walkable;
+    }
+    return false;
+  }
+
+  private triggerDodgeRoll() {
+    if (this.isDashing || this.dashCooldownRemaining > 0) {
+      return;
+    }
+
+    const gameStore = useGameStore.getState();
+    if (!gameStore.player || gameStore.isDead) return;
+
+    // Dismount if mounted
+    if (gameStore.player.isMounted) {
+      gameStore.setPlayer({ ...gameStore.player, isMounted: false });
+      window.dispatchEvent(new CustomEvent('ir:mount_dismissed'));
+      useUIStore.getState().addToast('Dismounted to dodge roll!', 'info');
+    }
+
+    // Determine direction
+    let dx = 0;
+    let dy = 0;
+
+    if (this.cursors.left?.isDown  || this.wasd.left?.isDown)  dx = -1;
+    if (this.cursors.right?.isDown || this.wasd.right?.isDown) dx = 1;
+    if (this.cursors.up?.isDown    || this.wasd.up?.isDown)    dy = -1;
+    if (this.cursors.down?.isDown  || this.wasd.down?.isDown)  dy = 1;
+
+    // Support joystick direction
+    if (this.joystickPointer && (Math.abs(this.joystickVector.x) > 0.1 || Math.abs(this.joystickVector.y) > 0.1)) {
+      dx = this.joystickVector.x;
+      dy = this.joystickVector.y;
+    }
+
+    // Gamepad support
+    const pad = this.input.gamepad?.pad1;
+    if (pad && pad.axes.length >= 2) {
+      const xAxis = pad.axes[0].getValue();
+      const yAxis = pad.axes[1].getValue();
+      if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
+        dx = xAxis;
+        dy = yAxis;
+      }
+    }
+
+    if (dx === 0 && dy === 0) {
+      switch (this.playerDirection) {
+        case 'up':    dy = -1; break;
+        case 'down':  dy = 1; break;
+        case 'left':  dx = -1; break;
+        case 'right': dx = 1; break;
+      }
+    }
+
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len > 0) {
+      dx /= len;
+      dy /= len;
+    }
+
+    this.isDashing = true;
+    this.isPlayerInvulnerable = true;
+    this.dashTimeRemaining = 250;
+    this.dashCooldownRemaining = 1200;
+
+    const baseSpeed = gameStore.player?.stats?.speed ?? 150;
+    const dashSpeed = baseSpeed * 2.5;
+    this.dashVelocity = { x: dx * dashSpeed, y: dy * dashSpeed };
+
+    soundSystem.playDash();
+
+    // Dispatch event to HUD for cooldown rendering
+    window.dispatchEvent(new CustomEvent('ir:dash_cast', { detail: { cooldown: 1200 } }));
+
+    this.tweens.add({
+      targets: this.playerBody,
+      angle: dx >= 0 ? 360 : -360,
+      scaleX: { from: 1.2, to: 1.0 },
+      scaleY: { from: 0.8, to: 1.0 },
+      duration: 250,
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        this.playerBody.setAngle(0);
+        this.playerBody.setScale(1.0);
+      }
+    });
+
+    this.spawnDashBurst(this.player.x, this.player.y);
+  }
+
+  private spawnDashBurst(x: number, y: number) {
+    if (!this.textures.exists('fx-pixel')) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('fx-pixel', 4, 4);
+    }
+
+    const particles = this.add.particles(x, y, 'fx-pixel', {
+      color: [0xdddddd, 0xaaaaaa, 0x777777],
+      lifespan: 400,
+      angle: { min: 0, max: 360 },
+      speed: { min: 40, max: 100 },
+      scale: { start: 1.5, end: 0 },
+      alpha: { start: 0.6, end: 0 },
+      emitting: false,
+    });
+    particles.explode(10);
+    this.time.delayedCall(450, () => particles.destroy());
+  }
+
+  private spawnDashParticle(x: number, y: number) {
+    if (!this.textures.exists('fx-pixel')) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('fx-pixel', 4, 4);
+    }
+
+    const particle = this.add.image(x, y, 'fx-pixel');
+    particle.setTint(0xbbbbbb);
+    particle.setAlpha(0.5);
+    particle.setScale(1.2);
+    this.tweens.add({
+      targets: particle,
+      alpha: 0,
+      scale: 0,
+      duration: 300,
+      onComplete: () => particle.destroy()
+    });
   }
 
   private handleRespawn = (() => {
