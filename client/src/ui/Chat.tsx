@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { socketManager } from '@game/systems/SocketManager';
 import { useUIStore } from '@stores/useUIStore';
+import { ChatModeration } from '@game/systems/ChatModeration';
 import type { ChatMessage } from '@shared/types';
 import { ChevronUp, ChevronDown, Send } from 'lucide-react';
 
 export function Chat() {
-  const { currentScreen } = useUIStore();
+  const { currentScreen, addToast } = useUIStore();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [activeChannel, setActiveChannel] = useState<'world' | 'local' | 'party'>('world');
@@ -15,7 +16,7 @@ export function Chat() {
   useEffect(() => {
     const handleMessage = (data: unknown) => {
       const msg = data as ChatMessage;
-      setMessages((prev) => [...prev.slice(-49), msg]);
+      setMessages((prev) => [...prev.slice(-49), { ...msg, message: ChatModeration.filterMessage(msg.message) }]);
     };
 
     socketManager.on('chatMessage', handleMessage);
@@ -31,7 +32,14 @@ export function Chat() {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    socketManager.sendChat(input.trim(), activeChannel);
+
+    if (!ChatModeration.checkRateLimit()) {
+      addToast('Chatting too fast!', 'error');
+      return;
+    }
+
+    const cleanMsg = ChatModeration.filterMessage(input.trim());
+    socketManager.sendChat(cleanMsg, activeChannel);
     setInput('');
   };
 

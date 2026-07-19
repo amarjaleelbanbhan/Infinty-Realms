@@ -61,10 +61,9 @@ currently defaults to `mock` in both `.env` files — flip this only once a
 real provider path is verified end-to-end, not before.
 
 ## Phase 5 — Multiplayer
-**Status: PLANNED** (builds on Phase 1's trading/movement foundation)
+**Status: DONE**
 
-Real trading is PARTIAL from Phase 1. This phase adds: guilds, party sync,
-server reconciliation, chat moderation, cross-session persistence.
+Server-authoritative P2P trading (DONE), server-backed Guild CRUD (DONE), party invite consent & roster sync (DONE), cross-session token resume persistence (DONE), movement anti-cheat validation (DONE), ChatModeration filtering & spam rate-limiting (DONE).
 
 ## Phase 6 — Living World
 **Status: PLANNED**
