@@ -39,6 +39,7 @@ import { TradeUI } from '@ui/TradeUI';
 import { DeathOverlay } from '@ui/DeathOverlay';
 import { TradeRequestPrompt } from '@ui/TradeRequestPrompt';
 import { PartyInvitePrompt } from '@ui/PartyInvitePrompt';
+import { CreatorEditorUI } from '@ui/CreatorEditorUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 import { useTradeStore } from '@stores/useTradeStore';
@@ -203,6 +204,7 @@ export default function App() {
             <TradeRequestPrompt />
             <PartyInvitePrompt />
             <SkillTree />
+            <CreatorEditorUI />
             <DeathOverlay />
           </>
         )}

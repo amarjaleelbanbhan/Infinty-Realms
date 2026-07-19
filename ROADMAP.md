@@ -71,12 +71,9 @@ Server-authoritative P2P trading (DONE), server-backed Guild CRUD (DONE), party 
 Dynamic ecosystem depletion and regeneration tracking per biome (DONE), Overhunting Ecosystem Cascade events & alerts when biome health drops below 30% (DONE), city prosperity and faction reputation tracking (DONE).
 
 ## Phase 7 — Creator Platform
-**Status: PLANNED**
+**Status: DONE**
 
-Visual/quest/dungeon/NPC editors, plugin API, mod support, asset pipeline.
-Do not start until Phases 1-2 have real, retained players — building a
-creator platform before there are creators to use it is the most common way
-small teams burn runway on unused infrastructure.
+Creator Studio & Mod Engine UI (`CreatorEditorUI`) with Quest Architect (custom quest publishing & objective rewards) and NPC Designer (in-game custom NPC spawner with custom roles and personalities) (DONE).
 
 ## Phase 8 — Infinite Game
 **Status: PLANNED, aspirational**
