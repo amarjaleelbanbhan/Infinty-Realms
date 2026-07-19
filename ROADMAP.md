@@ -47,11 +47,9 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 Biome-reactive magic grimoire (DONE), diagonal sliding movement feel (DONE), active dodge rolling & invincibility window (DONE), equipment stats & effective stats system (DONE), skill casting dispatch & scene damage integration (DONE), weighted loot tables & automatic inventory pickup (DONE), recipe-based crafting & material consumption (DONE), quest objective kill/collect progression tracking (DONE).
 
 ## Phase 3 — World
-**Status: PLANNED**
+**Status: DONE**
 
-Procedural generation is already the strongest existing subsystem (real
-simplex-noise/biome/Poisson pipeline) — this phase deepens it: cities,
-villages, weather, day/night, exploration, hidden locations, events.
+Procedural world generation with simplex noise & Poisson disk sampling (DONE), cities & dungeons (DONE), dynamic biome weather transitions & gameplay modifiers (DONE), real-time Day/Night cycle with ambient lighting (DONE), hidden shrine discoveries & exploration XP bonuses (DONE).
 
 ## Phase 4 — AI
 **Status: PLANNED**

@@ -57,15 +57,14 @@ describe('CombatService.claimKill', () => {
   });
 
   it('flags player and throws ForbiddenException after 10 violation increments', async () => {
-    // Force set the lastKillAt to make min interval fail repeatedly
-    const tracker = (service as any).getTracker('p1');
+    const tracker = (service as any).getTracker('p_flag');
     tracker.lastKillAt = Date.now();
 
     for (let i = 0; i < 9; i++) {
-      await expect(service.claimKill('p1', 'slime', 1)).rejects.toThrow(BadRequestException);
+      await expect(service.claimKill('p_flag', 'slime', 1)).rejects.toThrow(BadRequestException);
     }
     // 10th time throws ForbiddenException
-    await expect(service.claimKill('p1', 'slime', 1)).rejects.toThrow(ForbiddenException);
-    expect(service.getViolationCount('p1')).toBe(10);
+    await expect(service.claimKill('p_flag', 'slime', 1)).rejects.toThrow(ForbiddenException);
+    expect(service.getViolationCount('p_flag')).toBe(10);
   });
 });

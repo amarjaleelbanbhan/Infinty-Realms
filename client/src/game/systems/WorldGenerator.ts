@@ -98,6 +98,7 @@ export interface GeneratedWorld {
   tiles: WorldTile[][];
   cities: City[];
   dungeonTiles: Array<{ x: number; y: number }>;
+  shrineTiles?: Array<{ x: number; y: number; name: string }>;
   spawnX: number;
   spawnY: number;
 }
@@ -204,5 +205,21 @@ export function generateWorld(seed: string, width = 128, height = 128): Generate
     dungeonTiles.push({ x: dx, y: dy });
   }
 
-  return { width, height, seed, tiles, cities, dungeonTiles, spawnX, spawnY };
+  // ── Place Hidden Shrines ──
+  const shrineCount = Math.floor(4 + rng() * 4);
+  const shrineTiles: Array<{ x: number; y: number; name: string }> = [];
+  const shrineNames = ['Shrine of Eternity', 'Sunken Monolith', 'Celestial Altar', 'Whispering Obelisk', 'Leyline Spire'];
+
+  for (let i = 0; i < shrineCount * 20 && shrineTiles.length < shrineCount; i++) {
+    const sx = Math.floor(rng() * width);
+    const sy = Math.floor(rng() * height);
+    const tile = tiles[sy]?.[sx];
+    if (!tile || !tile.walkable || tile.structure) continue;
+    if (tile.biome === 'ocean') continue;
+
+    tiles[sy][sx].structure = 'shrine';
+    shrineTiles.push({ x: sx, y: sy, name: shrineNames[shrineTiles.length % shrineNames.length] });
+  }
+
+  return { width, height, seed, tiles, cities, dungeonTiles, shrineTiles, spawnX, spawnY };
 }

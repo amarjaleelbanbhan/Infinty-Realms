@@ -25,6 +25,7 @@ import { claimKillReward } from '@game/systems/combatApi';
 import { getEffectiveStats } from '@game/systems/StatsHelper';
 import { rollLoot } from '@game/systems/LootTable';
 import { useQuestStore } from '@stores/useQuestStore';
+import { DayNightSystem } from '@game/systems/DayNightSystem';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -118,6 +119,8 @@ export class WorldScene extends Phaser.Scene {
   private dashVelocity = { x: 0, y: 0 };
   public isPlayerInvulnerable = false;
   private shiftKey!: Phaser.Input.Keyboard.Key;
+  private dayNightSystem!: DayNightSystem;
+  private discoveredShrines = new Set<string>();
 
   private handleJoinedBound = this.handleRemotePlayerJoined.bind(this);
   private handleMovedBound = this.handleRemotePlayerMoved.bind(this);
@@ -232,10 +235,13 @@ export class WorldScene extends Phaser.Scene {
     // ── Minimap ──
     this.setupMinimap();
 
-    // ── Weather overlay ──
+    // ── Weather & DayNight overlay ──
     const weather = this.weatherSystem.getRandomWeather('plains');
     this.weatherSystem.createOverlay(width, height);
     this.weatherSystem.setWeather(weather);
+
+    this.dayNightSystem = new DayNightSystem(this);
+    this.dayNightSystem.createOverlay(width, height);
 
     leylineSystem.onOverload = () => {
       if (this.weatherSystem.getCurrentWeather() !== 'storm') {
@@ -959,6 +965,29 @@ export class WorldScene extends Phaser.Scene {
     if (useGameStore.getState().isDead) return;
 
     const dt = delta / 1000;
+
+    // Day / Night cycle tick
+    if (this.dayNightSystem) {
+      this.dayNightSystem.update(dt);
+    }
+
+    // Shrine discovery check
+    if (this.world?.shrineTiles && this.player) {
+      for (const shrine of this.world.shrineTiles) {
+        const key = `${shrine.x},${shrine.y}`;
+        if (!this.discoveredShrines.has(key)) {
+          const sx = shrine.x * TILE_SIZE + TILE_SIZE / 2;
+          const sy = shrine.y * TILE_SIZE + TILE_SIZE / 2;
+          const dx = this.player.x - sx;
+          const dy = this.player.y - sy;
+          if (Math.sqrt(dx * dx + dy * dy) < 48) {
+            this.discoveredShrines.add(key);
+            useGameStore.getState().addExperience(100);
+            useUIStore.getState().addToast(`✨ Discovered ${shrine.name}! (+100 XP)`, 'success');
+          }
+        }
+      }
+    }
 
     // Process dodge roll state
     if (this.isDashing) {
