@@ -22,6 +22,9 @@ import { citadelSystem } from '@game/systems/CitadelSystem';
 import { MountSystem } from '@game/systems/MountSystem';
 import { antiCheatSystem } from '@game/systems/AntiCheatSystem';
 import { claimKillReward } from '@game/systems/combatApi';
+import { getEffectiveStats } from '@game/systems/StatsHelper';
+import { rollLoot } from '@game/systems/LootTable';
+import { useQuestStore } from '@stores/useQuestStore';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -288,6 +291,7 @@ export class WorldScene extends Phaser.Scene {
     window.addEventListener('ir:god_intervention_cast', this.handleGodIntervention);
     window.addEventListener('ir:respawn', this.handleRespawn);
     window.addEventListener('ir:trigger_dash', this.handleTriggerDash);
+    window.addEventListener('ir:skill_cast', this.handleSkillCast);
 
     console.log(`[WorldScene] World ready! Cities: ${this.world.cities.length}`);
   }
@@ -1212,9 +1216,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.playerAttackCooldown = 600; // ms
 
-    const gameStore = useGameStore.getState();
-    const playerStats = gameStore.player?.stats;
-    if (!playerStats) return;
+    const playerStats = getEffectiveStats();
 
     // Visual attack flash
     this.tweens.add({
@@ -1297,9 +1299,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private castDamageSpell(baseDamage: number) {
-    const gameStore = useGameStore.getState();
-    const playerStats = gameStore.player?.stats;
-    if (!playerStats) return;
+    const playerStats = getEffectiveStats();
 
     const tx = Math.floor(this.player.x / TILE_SIZE);
     const ty = Math.floor(this.player.y / TILE_SIZE);
@@ -1452,23 +1452,28 @@ export class WorldScene extends Phaser.Scene {
         enemy.destroy();
 
         // Spawn loot
-        if (Math.random() < 0.5) {
-          const itemTypes = ['gold', 'potion', 'gem'];
-          const type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
-          const icon = this.add.image(enemy.x, enemy.y, `item-${type}`);
-          icon.setDepth(15);
-          this.items.push(this.add.container(enemy.x, enemy.y, [icon]));
-          icon.setData('itemType', type);
+        const lootItem = rollLoot(useGameStore.getState().player?.level ?? 1);
+        if (lootItem) {
+          useGameStore.getState().addToInventory(lootItem, 1);
+          useUIStore.getState().addToast(`Looted: ${lootItem.icon} ${lootItem.name}`, 'success');
         }
       },
     });
 
-    // Server-authoritative rewards: POST the kill to the server, which validates
-    // the claim against its own reward table and rate limits, then writes XP+gold
-    // to the DB. The returned values are applied here — not the client's own computation.
+    // Server-authoritative rewards
     const enemyType = enemy.enemyData.type ?? 'skeleton';
     const enemyLevel = (enemy.enemyData as any).level ?? 1;
     claimKillReward(enemyType, enemyLevel);
+
+    // Progress active kill quests
+    const activeQuests = useQuestStore.getState().quests.filter(q => q.status === 'active');
+    for (const quest of activeQuests) {
+      quest.objectives.forEach((obj, i) => {
+        if (obj.targetType === 'enemy' && obj.current < obj.quantity) {
+          questSystem.progressObjective(quest.id, i, 1);
+        }
+      });
+    }
   }
 
   private updateEnemyHPBar(enemy: EnemySprite) {
@@ -2259,11 +2264,19 @@ export class WorldScene extends Phaser.Scene {
     window.removeEventListener('enter-house', this.handleEnterHouse);
     window.removeEventListener('ir:respawn', this.handleRespawn);
     window.removeEventListener('ir:trigger_dash', this.handleTriggerDash);
+    window.removeEventListener('ir:skill_cast', this.handleSkillCast);
     delete (window as any).__mobileDash;
   }
 
   private handleTriggerDash = (() => {
     this.triggerDodgeRoll();
+  }).bind(this);
+
+  private handleSkillCast = ((e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (detail.type === 'damage' || detail.type === 'utility') {
+      this.castDamageSpell(detail.damage || detail.value || 30);
+    }
   }).bind(this);
 
   private isTileWalkable(x: number, y: number): boolean {

@@ -7,6 +7,10 @@ import { useSkillStore } from '@game/systems/SkillSystem';
 import { useSettingsStore } from '@stores/useSettingsStore';
 import { claimKillReward } from '@game/systems/combatApi';
 import { soundSystem } from '@game/systems/SoundSystem';
+import { getEffectiveStats } from '@game/systems/StatsHelper';
+import { rollLoot } from '@game/systems/LootTable';
+import { useQuestStore } from '@stores/useQuestStore';
+import { questSystem } from '@game/systems/QuestSystem';
 
 const TILE_SIZE = 32;
 
@@ -111,10 +115,12 @@ export class DungeonScene extends Phaser.Scene {
       this.triggerDodgeRoll();
     };
     window.addEventListener('ir:trigger_dash', this.handleTriggerDash);
+    window.addEventListener('ir:skill_cast', this.handleSkillCast);
 
     // Cleanup on scene shutdown/destroy
     this.events.on('shutdown', () => {
       window.removeEventListener('ir:trigger_dash', this.handleTriggerDash);
+      window.removeEventListener('ir:skill_cast', this.handleSkillCast);
       delete (window as any).__mobileDash;
     });
 
@@ -330,8 +336,8 @@ export class DungeonScene extends Phaser.Scene {
   private handlePlayerInput(dt: number) {
     if (this.isDashing) return;
 
-    const gameStore = useGameStore.getState();
-    const speed = gameStore.player?.stats?.speed ?? 150;
+    const playerStats = getEffectiveStats();
+    const speed = playerStats.speed ?? 150;
 
     // Dash / Dodge Roll Trigger
     if (Phaser.Input.Keyboard.JustDown(this.shiftKey)) {
@@ -814,6 +820,23 @@ export class DungeonScene extends Phaser.Scene {
     this.combatSystem.showDeathEffect(enemy.x, enemy.y);
 
     claimKillReward(enemy.enemyData.type ?? 'dungeon_mob', (enemy.enemyData as any).level ?? 1);
+
+    // Roll loot
+    const lootItem = rollLoot(useGameStore.getState().player?.level ?? 1);
+    if (lootItem) {
+      useGameStore.getState().addToInventory(lootItem, 1);
+      useUIStore.getState().addToast(`Looted: ${lootItem.icon} ${lootItem.name}`, 'success');
+    }
+
+    // Progress active kill quests
+    const activeQuests = useQuestStore.getState().quests.filter(q => q.status === 'active');
+    for (const quest of activeQuests) {
+      quest.objectives.forEach((obj, i) => {
+        if (obj.targetType === 'enemy' && obj.current < obj.quantity) {
+          questSystem.progressObjective(quest.id, i, 1);
+        }
+      });
+    }
   }
 
   private collectKey(player: any, key: Phaser.Physics.Arcade.Sprite) {
@@ -906,6 +929,28 @@ export class DungeonScene extends Phaser.Scene {
 
   private handleTriggerDash = (() => {
     this.triggerDodgeRoll();
+  }).bind(this);
+
+  private handleSkillCast = ((e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (detail.type === 'damage' || detail.type === 'utility') {
+      const dmg = detail.damage || detail.value || 30;
+      const spellRange = this.ATTACK_RANGE * 2.0;
+      for (const enemy of this.enemies) {
+        if (enemy.enemyData.state === 'dead') continue;
+        const dx = this.player.x - enemy.x;
+        const dy = this.player.y - enemy.y;
+        if (Math.sqrt(dx * dx + dy * dy) < spellRange) {
+          enemy.enemyData.hp -= dmg;
+          this.combatSystem.showDamageNumber(enemy.x, enemy.y - 12, dmg, false);
+          if (enemy.enemyData.hp <= 0) {
+            this.handleEnemyDeath(enemy);
+          } else {
+            enemy.enemyData.state = 'chase';
+          }
+        }
+      }
+    }
   }).bind(this);
 
   private triggerDodgeRoll() {

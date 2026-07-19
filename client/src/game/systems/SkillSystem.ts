@@ -99,6 +99,7 @@ export const useSkillStore = create<SkillStore>((set, get) => ({
       const newHp = Math.min(stats.maxHp, stats.hp + skill.value);
       gameStore.updatePlayerStats({ hp: newHp });
       uiStore.addToast(`+${skill.value} HP Healed!`, 'success');
+      window.dispatchEvent(new CustomEvent('ir:skill_cast', { detail: { skillId: skill.id, type: 'heal', value: skill.value } }));
     } else {
       let finalDamage = skill.value;
       const weather = gameStore.currentWeather;
@@ -114,7 +115,7 @@ export const useSkillStore = create<SkillStore>((set, get) => ({
 
       finalDamage = Math.round(finalDamage);
       uiStore.addToast(`Cast ${skill.name}! Deals ${finalDamage} dmg${weatherMsg}`, 'info');
-      // In a real flow, this would dispatch an event to WorldScene to spawn a projectile
+      window.dispatchEvent(new CustomEvent('ir:skill_cast', { detail: { skillId: skill.id, damage: finalDamage, type: skill.type, value: skill.value } }));
     }
 
     // Set cooldown

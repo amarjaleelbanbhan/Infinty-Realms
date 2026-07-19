@@ -253,8 +253,13 @@ export class InventoryService {
 
   private modifyStatsForEquipment(stats: PlayerStats, item: any, isEquip: boolean) {
     const sign = isEquip ? 1 : -1;
-    if (item.id === 'iron-sword') {
-      stats.attack += 5 * sign;
+    const itemStats = item?.stats || ITEM_CATALOG[item?.id]?.stats;
+    if (itemStats) {
+      for (const [key, val] of Object.entries(itemStats)) {
+        if (key in stats && typeof val === 'number') {
+          (stats as any)[key] += (val as number) * sign;
+        }
+      }
     }
   }
 

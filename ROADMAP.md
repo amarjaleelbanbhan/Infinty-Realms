@@ -42,9 +42,9 @@ in `GAME_DESIGN_BIBLE.md`, `TECH_DEBT.md`, `SECURITY.md`.
 | Guild CRUD (create/join/leave/browse) backed by server | DONE — member roster not yet a separate table (stored in bankJson) |
 
 ## Phase 2 — Core Gameplay
-**Status: PARTIAL** — Biome-reactive magic grimoire (DONE), diagonal sliding movement feel (DONE), active dodge rolling & invincibility window (DONE).
+**Status: DONE**
 
-Combat depth, skills, equipment, loot, crafting, quests, bosses, progression.
+Biome-reactive magic grimoire (DONE), diagonal sliding movement feel (DONE), active dodge rolling & invincibility window (DONE), equipment stats & effective stats system (DONE), skill casting dispatch & scene damage integration (DONE), weighted loot tables & automatic inventory pickup (DONE), recipe-based crafting & material consumption (DONE), quest objective kill/collect progression tracking (DONE).
 
 ## Phase 3 — World
 **Status: PLANNED**
