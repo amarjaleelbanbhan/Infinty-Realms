@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Player, WorldState, Season, Item, SubclassType } from '@shared/types';
+import { useUIStore } from '@stores/useUIStore';
 
 interface GameState {
   // Session
