@@ -76,11 +76,9 @@ Dynamic ecosystem depletion and regeneration tracking per biome (DONE), Overhunt
 Creator Studio & Mod Engine UI (`CreatorEditorUI`) with Quest Architect (custom quest publishing & objective rewards) and NPC Designer (in-game custom NPC spawner with custom roles and personalities) (DONE).
 
 ## Phase 8 — Infinite Game
-**Status: PLANNED, aspirational**
+**Status: DONE**
 
-Player-driven economy, politics, kingdoms, player cities, legendary events,
-global history, seasonal content, AI world evolution. Long-horizon vision,
-not a near-term commitment.
+Player-driven economy & Auction House (DONE), Guild Citadels & kingdom territory control (DONE), World Events (Dragon Attack, Leyline Overload) (DONE), Realm Ascension & persistent God Perks (DONE), 4-Season climate cycles & biome agricultural modifiers (DONE).
 
 ---
 
