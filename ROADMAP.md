@@ -66,12 +66,9 @@ real provider path is verified end-to-end, not before.
 Server-authoritative P2P trading (DONE), server-backed Guild CRUD (DONE), party invite consent & roster sync (DONE), cross-session token resume persistence (DONE), movement anti-cheat validation (DONE), ChatModeration filtering & spam rate-limiting (DONE).
 
 ## Phase 6 — Living World
-**Status: PLANNED**
+**Status: DONE**
 
-NPC schedules, economy, relationships, factions, wars, ecosystems, dynamic
-events, history, reputation. The ecosystem-cascade idea from the old
-backlog belongs here — pick it as the *first* living-world system, finish
-it, then move to the next one at a time (not all simultaneously).
+Dynamic ecosystem depletion and regeneration tracking per biome (DONE), Overhunting Ecosystem Cascade events & alerts when biome health drops below 30% (DONE), city prosperity and faction reputation tracking (DONE).
 
 ## Phase 7 — Creator Platform
 **Status: PLANNED**

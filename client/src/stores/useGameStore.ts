@@ -463,12 +463,19 @@ export const useGameStore = create<GameState>()(
         set((s) => {
           if (!s.worldState || !s.worldState.biomeDepletion) return {};
           const current = s.worldState.biomeDepletion[biome as keyof typeof s.worldState.biomeDepletion] ?? 100;
+          const nextVal = Math.max(0, current - amount);
+
+          if (current >= 30 && nextVal < 30) {
+            useUIStore.getState().addToast(`⚠️ Ecosystem Cascade: ${biome.toUpperCase()} wildlife overhunted!`, 'error');
+            window.dispatchEvent(new CustomEvent('ir:ecosystem_cascade', { detail: { biome } }));
+          }
+
           return {
             worldState: {
               ...s.worldState,
               biomeDepletion: {
                 ...s.worldState.biomeDepletion,
-                [biome]: Math.max(0, current - amount)
+                [biome]: nextVal
               }
             }
           };
