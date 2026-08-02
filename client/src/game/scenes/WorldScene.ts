@@ -25,6 +25,7 @@ import { claimKillReward } from '@game/systems/combatApi';
 import { getEffectiveStats } from '@game/systems/StatsHelper';
 import { rollLoot } from '@game/systems/LootTable';
 import { useQuestStore } from '@stores/useQuestStore';
+import { useCodexStore } from '@stores/useCodexStore';
 import { DayNightSystem } from '@game/systems/DayNightSystem';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
@@ -1493,6 +1494,7 @@ export class WorldScene extends Phaser.Scene {
     const enemyType = enemy.enemyData.type ?? 'skeleton';
     const enemyLevel = (enemy.enemyData as any).level ?? 1;
     claimKillReward(enemyType, enemyLevel);
+    useCodexStore.getState().recordEnemyKill(enemyType);
 
     // Progress active kill quests
     const activeQuests = useQuestStore.getState().quests.filter(q => q.status === 'active');

@@ -3,7 +3,8 @@ import { useGameStore } from '@stores/useGameStore';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useI18nStore } from '@stores/useI18nStore';
-import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle } from 'lucide-react';
+import { useCodexStore } from '@stores/useCodexStore';
+import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle, BookOpen } from 'lucide-react';
 import { PerformanceStats } from './PerformanceStats';
 
 export function HUD() {
@@ -162,12 +163,20 @@ export function HUD() {
 
       {/* ── Top-right: Active quest & Home ── */}
       <div className="absolute top-24 right-6 z-10 pointer-events-auto flex flex-col gap-4 items-end">
-        <button
-          className="glass px-4 py-2 rounded-2xl shadow-lg border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 text-white/90"
-          onClick={() => window.dispatchEvent(new CustomEvent('enter-house'))}
-        >
-          <span>🏕️ Return Home</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="glass px-3 py-2 rounded-2xl shadow-lg border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 text-white/90 text-xs font-mono"
+            onClick={() => useCodexStore.getState().toggleCodex()}
+          >
+            <BookOpen className="w-4 h-4 text-purple-400" /> Codex (K)
+          </button>
+          <button
+            className="glass px-4 py-2 rounded-2xl shadow-lg border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 text-white/90 text-xs font-mono"
+            onClick={() => window.dispatchEvent(new CustomEvent('enter-house'))}
+          >
+            <span>🏕️ Return Home</span>
+          </button>
+        </div>
 
         {activeQuest && (
           <div className="glass px-4 py-3 max-w-[240px] rounded-2xl shadow-lg border-white/10 select-none pointer-events-none">
@@ -193,6 +202,7 @@ export function HUD() {
           <span>E Interact</span>
           <span>I Inventory</span>
           <span>Q Quests</span>
+          <span>K Codex</span>
         </div>
       </div>
       

@@ -10,6 +10,7 @@ import { soundSystem } from '@game/systems/SoundSystem';
 import { getEffectiveStats } from '@game/systems/StatsHelper';
 import { rollLoot } from '@game/systems/LootTable';
 import { useQuestStore } from '@stores/useQuestStore';
+import { useCodexStore } from '@stores/useCodexStore';
 import { questSystem } from '@game/systems/QuestSystem';
 
 const TILE_SIZE = 32;
@@ -820,6 +821,7 @@ export class DungeonScene extends Phaser.Scene {
     this.combatSystem.showDeathEffect(enemy.x, enemy.y);
 
     claimKillReward(enemy.enemyData.type ?? 'dungeon_mob', (enemy.enemyData as any).level ?? 1);
+    useCodexStore.getState().recordEnemyKill(enemy.enemyData.type ?? 'dungeon_mob');
 
     // Roll loot
     const lootItem = rollLoot(useGameStore.getState().player?.level ?? 1);
