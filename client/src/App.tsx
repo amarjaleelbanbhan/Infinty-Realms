@@ -41,6 +41,7 @@ import { TradeRequestPrompt } from '@ui/TradeRequestPrompt';
 import { PartyInvitePrompt } from '@ui/PartyInvitePrompt';
 import { CreatorEditorUI } from '@ui/CreatorEditorUI';
 import { CodexUI } from '@ui/CodexUI';
+import { RelicTransmutationUI } from '@ui/RelicTransmutationUI';
 import { eventSystem } from '@game/systems/EventSystem';
 import { useUIStore } from '@stores/useUIStore';
 import { useTradeStore } from '@stores/useTradeStore';
@@ -207,6 +208,7 @@ export default function App() {
             <SkillTree />
             <CreatorEditorUI />
             <CodexUI />
+            <RelicTransmutationUI />
             <DeathOverlay />
           </>
         )}

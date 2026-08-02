@@ -4,7 +4,8 @@ import { useQuestStore } from '@stores/useQuestStore';
 import { useUIStore } from '@stores/useUIStore';
 import { useI18nStore } from '@stores/useI18nStore';
 import { useCodexStore } from '@stores/useCodexStore';
-import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle, BookOpen } from 'lucide-react';
+import { useRelicStore } from '@stores/useRelicStore';
+import { Heart, Droplet, Star, Coins, Sword, Shield, FlaskConical, Navigation, Gem, CheckCircle2, Circle, BookOpen, Zap } from 'lucide-react';
 import { PerformanceStats } from './PerformanceStats';
 
 export function HUD() {
@@ -164,6 +165,12 @@ export function HUD() {
       {/* ── Top-right: Active quest & Home ── */}
       <div className="absolute top-24 right-6 z-10 pointer-events-auto flex flex-col gap-4 items-end">
         <div className="flex gap-2">
+          <button
+            className="glass px-3 py-2 rounded-2xl shadow-lg border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 text-white/90 text-xs font-mono"
+            onClick={() => useRelicStore.getState().toggleRelicUI()}
+          >
+            <Zap className="w-4 h-4 text-cyan-400" /> Relics (R)
+          </button>
           <button
             className="glass px-3 py-2 rounded-2xl shadow-lg border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 text-white/90 text-xs font-mono"
             onClick={() => useCodexStore.getState().toggleCodex()}
