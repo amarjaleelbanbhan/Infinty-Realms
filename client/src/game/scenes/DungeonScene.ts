@@ -12,6 +12,7 @@ import { rollLoot } from '@game/systems/LootTable';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useCodexStore } from '@stores/useCodexStore';
 import { questSystem } from '@game/systems/QuestSystem';
+import { soundtrackSystem } from '@game/systems/SoundtrackSystem';
 
 const TILE_SIZE = 32;
 
@@ -117,6 +118,7 @@ export class DungeonScene extends Phaser.Scene {
     };
     window.addEventListener('ir:trigger_dash', this.handleTriggerDash);
     window.addEventListener('ir:skill_cast', this.handleSkillCast);
+    soundtrackSystem.playTrack('dungeon');
 
     // Cleanup on scene shutdown/destroy
     this.events.on('shutdown', () => {
@@ -672,6 +674,7 @@ export class DungeonScene extends Phaser.Scene {
         
         // Boss Mechanics
         if (enemy.enemyData.isBoss) {
+          soundtrackSystem.playTrack('boss');
           const hpPercent = enemy.enemyData.hp / enemy.enemyData.maxHp;
           let currentPhase = 1;
           if (hpPercent <= 0.3) currentPhase = 3;

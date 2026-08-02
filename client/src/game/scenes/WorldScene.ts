@@ -27,6 +27,7 @@ import { rollLoot } from '@game/systems/LootTable';
 import { useQuestStore } from '@stores/useQuestStore';
 import { useCodexStore } from '@stores/useCodexStore';
 import { DayNightSystem } from '@game/systems/DayNightSystem';
+import { soundtrackSystem } from '@game/systems/SoundtrackSystem';
 import type { BiomeType, FarmPlot, CitadelStructureType } from '@shared/types';
 
 const TILE_SIZE = 32;
@@ -300,6 +301,7 @@ export class WorldScene extends Phaser.Scene {
     window.addEventListener('ir:trigger_dash', this.handleTriggerDash);
     window.addEventListener('ir:skill_cast', this.handleSkillCast);
 
+    soundtrackSystem.playTrack('explore');
     console.log(`[WorldScene] World ready! Cities: ${this.world.cities.length}`);
   }
 
